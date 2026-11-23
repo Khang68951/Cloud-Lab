@@ -1,0 +1,32 @@
+A **statically stable** system keeps working correctly when part of the infrastructure fails **without changing anything**: no new instances, no DNS edits, no API calls.
+
+## Data plane vs control plane
+
+| | **Control plane** | **Data plane** |
+|---|---|---|
+| Does | Creates, changes and deletes resources (RunInstances, CreateTable…) | Serves traffic (running instances, DynamoDB reads and writes…) |
+| Complexity | High | Lower, designed for higher availability |
+| During incidents | Often slow or throttled — everyone calls it at once | Usually keeps working |
+
+Static stability means **recovering using only the data plane**.
+
+## Pre-provision headroom
+
+To survive losing an AZ, the remaining AZs must carry the **full** peak:
+
+| AZs | Capacity to pre-provision | Example: peak needs 12 instances |
+|---|---|---|
+| 2 | 200% | 12 per AZ → 24 |
+| 3 | 150% | 6 per AZ → 18 |
+
+Auto Scaling also recovers, but it depends on the control plane **during the incident** and takes minutes. Critical systems often combine pre-provisioned headroom with Auto Scaling.
+
+## Limiting the blast radius
+
+- **Cell-based architecture**: split the system into independent cells, each serving a slice of customers. A broken cell hurts only some users.
+- **Shuffle sharding**: each customer gets a random combination of workers, so one "poison" customer rarely affects others.
+- **Wave deployments**: one cell or AZ, then a Region, then everything — with **automatic rollback** on alarms.
+
+<Callout type="key">
+Databases must be statically stable too: **Multi-AZ** fails over with no action from you. Caches are optional — but make sure the database survives an empty cache, or use a cache with replicas.
+</Callout>

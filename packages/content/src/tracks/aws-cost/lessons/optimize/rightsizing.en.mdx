@@ -1,0 +1,28 @@
+Most cloud resources are sized "to be safe" at launch and never revisited. **Measure first, then cut** often saves 20–40% without users noticing.
+
+## The levers, easiest first
+
+| Lever | What | Typical saving |
+|---|---|---|
+| **Turn off what is unused** | Dev/test outside working hours, orphaned resources | 60–70% on dev environments |
+| **Rightsize** | p99 CPU < 40%? Drop a size | ~50% per size down |
+| **Scale with demand** | Auto Scaling instead of peak capacity 24/7 | Depends on traffic shape |
+| **Graviton** | m7g, c7g, r7g; RDS, ElastiCache, Lambda arm64 | ~20%, often faster too |
+| **Spot** | Interruptible work: batch, CI, stateless workers | Up to ~90% |
+| **Change the architecture** | Cache in front of the DB, serverless for low traffic, containers for steady | Can be huge |
+
+## How to measure
+
+- **Compute Optimizer** recommends sizes for EC2, ASGs, EBS, Lambda and ECS from real metrics (enable enhanced metrics for 3 months of data).
+- Look at **p99 and peaks**, not averages — and check **memory** (needs the CloudWatch agent).
+- **Trusted Advisor** and **Cost Optimization Hub** collect recommendations in one place.
+
+## Spot done right
+
+- Diversify: **many instance types, many AZs**, *price-capacity-optimized* allocation.
+- Handle the 2-minute interruption notice: checkpoint, drain work.
+- Mix an on-demand base with Spot on top in the same ASG.
+
+<Callout type="key">
+Rightsizing is **continuous**, not a one-off. Make it a habit: every month, review Compute Optimizer and act on the top 10.
+</Callout>

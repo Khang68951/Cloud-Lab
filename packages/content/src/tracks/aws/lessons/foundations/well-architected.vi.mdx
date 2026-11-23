@@ -1,0 +1,30 @@
+**AWS Well-Architected Framework** là bộ tiêu chí mà kiến trúc sư AWS dùng để đánh giá bất kỳ thiết kế nào. Tab **Đánh giá** trong Lab chính là một bản thu nhỏ của bộ tiêu chí này.
+
+## 6 trụ cột
+
+| Trụ cột | Câu hỏi cốt lõi | Thực hành tiêu biểu |
+|---|---|---|
+| **Vận hành xuất sắc** (Operational Excellence) | Có triển khai, theo dõi và cải tiến hệ thống một cách an toàn không? | IaC, thay đổi nhỏ và hoàn tác được, runbook, rút kinh nghiệm sau sự cố |
+| **Bảo mật** (Security) | Dữ liệu và hệ thống có được bảo vệ không? | Least privilege, mã hoá, bảo mật ở mọi tầng, truy vết mọi thay đổi |
+| **Độ tin cậy** (Reliability) | Có phục hồi được sau sự cố và chịu được thay đổi tải không? | Multi-AZ, tự phục hồi, backup đã được kiểm tra, giới hạn bán kính ảnh hưởng |
+| **Hiệu năng** (Performance Efficiency) | Có dùng tài nguyên hiệu quả khi nhu cầu thay đổi không? | Chọn đúng loại dịch vụ, cache, CDN, đo đạc rồi mới tối ưu |
+| **Tối ưu chi phí** (Cost Optimization) | Có trả đúng cho thứ mình cần không? | Rightsizing, mô hình giá phù hợp, đo chi phí theo team và sản phẩm |
+| **Bền vững** (Sustainability) | Có giảm thiểu tài nguyên và năng lượng tiêu tốn không? | Tận dụng tối đa tài nguyên, dịch vụ managed, xoá dữ liệu không dùng |
+
+## Các trụ cột đánh đổi lẫn nhau
+
+- Multi-AZ tăng **độ tin cậy** nhưng tốn thêm **chi phí**.
+- Cache tăng **hiệu năng** nhưng thêm độ phức tạp **vận hành** (invalidation, dữ liệu cũ).
+- Mã hoá mọi thứ tăng **bảo mật**, đổi lại một chút độ trễ và phí KMS.
+
+<Callout type="key">
+Không có thiết kế nào "điểm tuyệt đối" ở cả 6 trụ cột. Hãy chọn đánh đổi **có chủ đích**, dựa trên tác động tới business: một hệ thống thanh toán ưu tiên độ tin cậy, còn một prototype nội bộ ưu tiên chi phí.
+</Callout>
+
+## Dùng framework trong thực tế
+
+- **AWS Well-Architected Tool** (miễn phí, có trên console) hỏi bạn theo từng trụ cột và sinh ra danh sách rủi ro cần xử lý.
+- Ngoài framework chung còn có các **Lens** cho từng loại workload: Serverless, SaaS, Analytics…
+- Trong Lab, mỗi cảnh báo ở tab Đánh giá đều có nhãn trụ cột. Hãy dùng chúng như một checklist trước khi nộp bài.
+
+<TryLab template="three-tier" label="Mở kiến trúc mẫu và xem tab Đánh giá" />

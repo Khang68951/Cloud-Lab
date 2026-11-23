@@ -1,0 +1,31 @@
+Container giải quyết chuyện "trên máy em chạy được". Câu hỏi tiếp theo là **ai chạy và điều phối** chúng.
+
+## Bộ điều phối và nơi chạy
+
+|  | **ECS** | **EKS** |
+|---|---|---|
+| Là gì | Bộ điều phối riêng của AWS | Kubernetes được quản lý |
+| Độ phức tạp | Thấp: task definition, service, cluster | Cao: pod, deployment, ingress, Helm, CRD… |
+| Phí control plane | **Miễn phí** | ~$73/tháng mỗi cluster |
+| Hệ sinh thái | Tích hợp sâu với AWS | Rất lớn, chạy được trên nhiều cloud |
+| Phù hợp | Phần lớn team dùng AWS | Tổ chức đã dùng Kubernetes, cần portability |
+
+|  | **Fargate** | **EC2 launch type / node group** |
+|---|---|---|
+| Server | Không phải quản lý | Bạn quản lý instance |
+| Giá | Cao hơn mỗi vCPU | Rẻ hơn, nhất là khi có Savings Plans hoặc Spot |
+| Kiểm soát | Ít hơn (không có GPU, không daemonset trên host) | Đầy đủ |
+| Phù hợp | Team nhỏ, tải thay đổi | Fleet lớn, cần GPU, tối ưu chi phí |
+
+**App Runner** là lựa chọn đơn giản nhất: đưa vào một image, nhận lại một URL HTTPS tự scale. Nó hợp với web service đơn giản.
+
+<Callout type="key">
+Đừng chọn Kubernetes chỉ vì nó phổ biến. Với vài service và một team nhỏ, **ECS + Fargate** cho bạn 90% lợi ích với 10% công vận hành. Chọn EKS khi bạn thật sự cần hệ sinh thái Kubernetes.
+</Callout>
+
+## Câu hỏi để chọn
+
+1. Team đã thành thạo Kubernetes chưa? Chưa → ECS.
+2. Có cần chạy cả on-prem hoặc ở cloud khác không? Có → EKS.
+3. Có cần GPU, daemon trên mỗi host, hay tinh chỉnh kernel không? Có → launch type EC2.
+4. Muốn tối thiểu việc vận hành? → Fargate (hoặc App Runner).

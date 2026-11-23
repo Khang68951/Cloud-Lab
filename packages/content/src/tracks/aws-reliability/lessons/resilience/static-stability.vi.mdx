@@ -1,0 +1,32 @@
+Một hệ thống **static stable** tiếp tục hoạt động đúng khi một phần hạ tầng hỏng **mà không cần thay đổi gì**: không cần khởi chạy instance mới, không cần sửa DNS, không cần gọi API nào.
+
+## Data plane và control plane
+
+| | **Control plane** | **Data plane** |
+|---|---|---|
+| Làm gì | Tạo, sửa, xoá tài nguyên (RunInstances, CreateTable…) | Phục vụ traffic (instance đang chạy, đọc ghi DynamoDB…) |
+| Độ phức tạp | Cao | Thấp hơn, được thiết kế cho availability cao hơn |
+| Lúc sự cố | Dễ bị chậm hoặc throttle vì ai cũng gọi cùng lúc | Thường vẫn hoạt động |
+
+Static stability nghĩa là **chỉ dựa vào data plane để phục hồi**.
+
+## Dựng sẵn dư địa
+
+Muốn chịu được việc mất một AZ, các AZ còn lại phải gánh được **toàn bộ** tải cao điểm:
+
+| Số AZ | Capacity cần dựng sẵn | Ví dụ: cao điểm cần 12 instance |
+|---|---|---|
+| 2 | 200% | 12 mỗi AZ → 24 |
+| 3 | 150% | 6 mỗi AZ → 18 |
+
+Auto Scaling cũng phục hồi được, nhưng nó phụ thuộc vào control plane **ngay trong sự cố**, và mất vài phút. Hệ thống quan trọng thường kết hợp dư địa dựng sẵn với Auto Scaling.
+
+## Giới hạn bán kính ảnh hưởng
+
+- **Cell-based architecture**: chia hệ thống thành nhiều "cell" độc lập, mỗi cell phục vụ một phần khách hàng. Một cell hỏng chỉ ảnh hưởng một phần người dùng.
+- **Shuffle sharding**: mỗi khách hàng được gán một tổ hợp worker ngẫu nhiên, nên một khách hàng "độc hại" hiếm khi ảnh hưởng tới người khác.
+- **Triển khai theo đợt** (wave): một cell hoặc một AZ, rồi một Region, rồi tất cả. Kèm **tự động rollback** khi alarm kêu.
+
+<Callout type="key">
+Database cũng phải static stable: **Multi-AZ** tự failover mà không cần bạn can thiệp. Cache thì không bắt buộc, nhưng hãy chắc chắn database chịu được khi cache trống, hoặc dùng cache có replica.
+</Callout>

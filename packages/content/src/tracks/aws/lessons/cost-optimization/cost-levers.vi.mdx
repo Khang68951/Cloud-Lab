@@ -1,0 +1,23 @@
+Tối ưu chi phí cloud (FinOps) có thứ tự rõ ràng. Làm sai thứ tự là tự khoá mình vào sự lãng phí.
+
+| # | Đòn bẩy | Ví dụ | Thường tiết kiệm |
+|---|---|---|---|
+| 1 | **Dọn lãng phí** | Tắt môi trường dev ban đêm, xoá ổ EBS không gắn vào đâu, xoá snapshot cũ, xoá load balancer bỏ quên | 10–30% |
+| 2 | **Rightsizing** | Instance chạy ở 5% CPU → giảm 2–4 cấp | 20–50% |
+| 3 | **Kiến trúc** | Lambda cho tải thấp, cache trước DB, VPC endpoint thay NAT, CloudFront cho nội dung tĩnh | Rất khác nhau |
+| 4 | **Cam kết** | Savings Plans/Reserved cho phần tải nền **ổn định** | 28–72% |
+| 5 | **Spot** | Batch, CI, worker chịu được bị ngắt | tới 90% |
+
+<Callout type="key">
+**Đo trước, cắt sau.** Trong Lab, nhãn % ở góc mỗi node là mức tải lúc cao điểm. Dưới ~15% nghĩa là bạn đang trả tiền cho phần ngồi không. Mục *Đánh giá* sẽ gợi ý những chỗ đó.
+</Callout>
+
+## Những khoản hay "ẩn"
+
+- **Data transfer**: ra internet, giữa các AZ ($0.01/GB mỗi chiều), qua NAT ($0.045/GB).
+- **Thứ không ai tắt**: NAT Gateway và ALB tính tiền theo giờ dù không có traffic.
+- **Log**: CloudWatch Logs tính phí theo GB nạp vào. Hãy đặt retention, đừng giữ mãi mãi.
+
+## Văn hoá
+
+Gắn **tag** (`team`, `env`, `project`) cho mọi tài nguyên, bật **AWS Budgets** để cảnh báo khi vượt ngưỡng, và xem **Cost Explorer** hằng tuần. Chi phí là một chỉ số kỹ thuật, giống như độ trễ.

@@ -1,0 +1,39 @@
+**Terraform** (and its open-source fork **OpenTofu**) is the most widely used IaC tool for multi-cloud setups. It manages AWS and other services — Cloudflare, GitHub, Datadog… — with one language.
+
+## The workflow
+
+```
+write HCL ──► terraform init ──► terraform plan ──► review ──► terraform apply
+                                     │                              │
+                                     └──── compared with ── state ◄─┘
+```
+
+```hcl
+resource "aws_s3_bucket" "logs" {
+  bucket = "acme-logs-prod"
+}
+
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+  cidr    = "10.0.0.0/16"
+}
+```
+
+## State: Terraform's heart
+
+- **State** records which real resources belong to which code. Lose it and Terraform "forgets" your infrastructure.
+- Keep it in a **remote backend**: S3 with versioning and encryption, plus state locking (S3 native locking or DynamoDB).
+- State can contain **secrets** — restrict access.
+- Split state per environment or component to limit blast radius and keep `plan` fast.
+
+## Good practice
+
+- Versioned **modules** for shared building blocks (VPC, standard service).
+- In CI: `fmt`, `validate`, `plan` on every pull request; save the plan and **apply exactly the reviewed plan**.
+- Policy checks with **tfsec/Checkov** or OPA, cost estimates with **Infracost**.
+- `import` blocks bring hand-made resources under management; `moved` blocks avoid destroy/recreate during refactors.
+
+<Callout type="key">
+Read the `plan` like a code review. A `-/+ (forces replacement)` line on a database is a stop sign.
+</Callout>

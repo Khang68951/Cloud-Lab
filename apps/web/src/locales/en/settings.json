@@ -1,0 +1,39 @@
+{
+  "title": "Settings",
+  "subtitle": "All settings are stored in the local database on your machine.",
+  "appearance": {
+    "title": "Appearance & language",
+    "themeHint": "\"System\" follows your operating system's light/dark mode.",
+    "languageHint": "AWS terms always stay in English, with explanations in your language."
+  },
+  "currency": {
+    "title": "Currency",
+    "showVnd": "Show VND equivalent",
+    "showVndHint": "AWS bills in USD. Turn this on to also see an estimated VND amount.",
+    "rate": "Exchange rate (VND per 1 USD)",
+    "rateHint": "Entered by you — CloudLab doesn't call any exchange-rate API.",
+    "preview": "Example"
+  },
+  "data": {
+    "title": "Data",
+    "body": "All progress, answers, designs and settings live in data/cloudlab.db on your machine. Export one JSON file to back up or move to another computer.",
+    "export": "Export data (JSON)",
+    "import": "Import data…",
+    "reset": "Reset progress",
+    "confirmImport": "Importing this file REPLACES all current data (progress, answers, designs, settings). Continue?",
+    "confirmReset": "Delete all learning progress and answers? Saved designs and settings are kept.",
+    "imported": "Data imported",
+    "importFailed": "Invalid file, or the API is not running",
+    "exportFailed": "Export failed — is the API running?",
+    "resetDone": "Progress reset",
+    "resetFailed": "Reset failed"
+  },
+  "saved": "Saved",
+  "saving": "Saving…",
+  "offline": "API offline",
+  "profile": {
+    "title": "Profile",
+    "name": "Display name",
+    "nameHint": "Printed on course completion certificates."
+  }
+}

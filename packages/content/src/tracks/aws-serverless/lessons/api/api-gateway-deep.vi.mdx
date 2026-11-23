@@ -1,0 +1,28 @@
+API Gateway là "cửa trước" của hầu hết ứng dụng serverless. Chọn đúng loại API và cấu hình đúng sẽ quyết định chi phí, bảo mật và trải nghiệm của client.
+
+## Ba loại API
+
+| | **HTTP API** | **REST API** | **WebSocket API** |
+|---|---|---|---|
+| Giá | ~$1 / triệu request | ~$3.50 / triệu request | $1 / triệu message + phí phút kết nối |
+| Độ trễ | Thấp nhất | Cao hơn một chút | Kết nối lâu dài |
+| Xác thực | JWT (Cognito, OIDC), Lambda authorizer, IAM | Cognito, Lambda authorizer, IAM, **API key** | IAM, Lambda authorizer khi `$connect` |
+| Tính năng thêm | CORS, route đơn giản | **Usage plan**, biến đổi request/response, **cache**, **WAF**, private endpoint, validate request | Route theo `$connect`, `$disconnect`, `$default` |
+| Dùng cho | **Mặc định** cho API mới | Khi thật sự cần các tính năng thêm | Chat, thông báo realtime, game |
+
+## Bảo vệ API
+
+- **Throttling** gồm nhiều tầng: account (mặc định 10.000 rps), stage, route và từng client (usage plan). Vượt ngưỡng thì trả về `429 Too Many Requests`.
+- **Xác thực**: ưu tiên JWT authorizer với Cognito hoặc IdP của bạn; dùng Lambda authorizer khi cần logic tuỳ chỉnh, và nhớ **cache** kết quả của nó.
+- **WAF** (với REST API, hoặc đặt CloudFront phía trước) chặn SQL injection, bot và giới hạn rate theo IP.
+- **Validate request** ngay ở gateway để bad request không tốn một lượt gọi Lambda.
+
+## Giới hạn cần nhớ
+
+- **Timeout tích hợp ~29 giây**: việc dài phải chuyển sang bất đồng bộ (trả `202` + job ID, xử lý qua SQS hoặc Step Functions).
+- Payload tối đa **10 MB**; file lớn đi qua **presigned URL tới S3**.
+- **Tích hợp trực tiếp** (service integration): API Gateway có thể ghi thẳng vào SQS, DynamoDB hay Step Functions mà không cần Lambda ở giữa, vừa rẻ hơn vừa ít code hơn.
+
+<Callout type="key">
+Mặc định chọn **HTTP API**. Chỉ dùng REST API khi bạn cần một tính năng cụ thể của nó (usage plan, cache, WAF, biến đổi request). Với traffic rất cao và đều, cân nhắc **ALB** vì không tính phí theo request.
+</Callout>

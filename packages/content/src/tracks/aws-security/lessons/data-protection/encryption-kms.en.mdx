@@ -1,0 +1,36 @@
+Encryption on AWS has two sides: **at rest** and **in transit**. At the centre of both is **AWS KMS**, the key management service.
+
+## In transit vs at rest
+
+| | In transit | At rest |
+|---|---|---|
+| Protects against | Eavesdropping on the wire | Someone reading disks, snapshots, backups |
+| Tools | TLS (free certificates from **ACM** for ALB/CloudFront/API Gateway) | S3, EBS, RDS, DynamoDB… encryption via KMS |
+| Enforce | `aws:SecureTransport` condition — HTTPS only | On by default (S3 and DynamoDB are encrypted); check with SCPs/Config |
+
+## KMS key types
+
+| Type | Managed by | Use when |
+|---|---|---|
+| **AWS owned** | AWS, invisible to you | Default for many services, free |
+| **AWS managed** (`aws/s3`, `aws/rds`…) | AWS, in your account | Simple, but you cannot edit the key policy |
+| **Customer managed** | You | You need control over who uses it, cross-account sharing, own rotation, separate audit. $1/month each |
+
+## Envelope encryption
+
+KMS does not encrypt your large files directly. Instead:
+
+1. KMS generates a **data key**.
+2. The service encrypts the data locally with it.
+3. The data key is **encrypted under your KMS key** and stored next to the data.
+4. To read: KMS decrypts the data key, which then decrypts the data.
+
+<Callout type="key">
+For KMS, **the key policy is the root of trust**. An IAM policy allowing `kms:Decrypt` is not enough unless the key policy allows it or delegates to the account's IAM.
+</Callout>
+
+## Cost and tips
+
+- $0.03 per 10,000 requests. S3 with SSE-KMS calls KMS **per object** — enable **S3 Bucket Keys** to cut requests by up to ~99%.
+- Turn on automatic key rotation; old data stays readable.
+- To **delete data by destroying the key** (crypto-shredding), use a separate customer managed key per customer or tenant.

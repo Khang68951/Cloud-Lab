@@ -1,0 +1,32 @@
+Every system-design problem can follow the same process. It stops you from skipping important steps and tells you where you are in a discussion.
+
+## 6 steps
+
+| # | Step | You should come out with |
+|---|---|---|
+| 1 | **Clarify requirements** | Core features; non-functional needs: scale, latency, availability, consistency, budget |
+| 2 | **Back-of-envelope estimates** | Requests/second (average and peak), storage per year, bandwidth, read/write ratio |
+| 3 | **API and data** | A few key endpoints; what the data looks like and how it is queried (access patterns) |
+| 4 | **High-level architecture** | The simplest diagram that satisfies steps 1–3 |
+| 5 | **Deep dives** | Bottlenecks, hot spots, failures (AZ, dependencies), cost; fix and redraw |
+| 6 | **Trade-offs and evolution** | Why this design, what breaks at ×10 and ×100, what you would change |
+
+## Estimates: numbers worth memorising
+
+- A day ≈ **86,400 seconds** (≈ 10⁵ for quick maths). A month ≈ **2.6 million seconds**.
+- 1 request/second, steadily ≈ **2.6 million requests/month**.
+- Peaks are usually **2–5×** the average; special events can be ×10.
+- Requests/second ≈ daily active users × requests per user ÷ 86,400.
+
+<Callout type="key">
+**Start simple, then add**: add a cache, a queue or multi-region only when a specific requirement demands it. Every component has a price — money, latency, and one more thing that can fail.
+</Callout>
+
+## Use the Lab for steps 4–6
+
+1. Set the **Scenario** to your numbers from step 2.
+2. Build the simplest architecture and see which node turns red.
+3. Use **Chaos** (AZ down, 10× traffic) to find weak spots.
+4. Read the **Cost** tab: what is the biggest line, and can you trade it?
+
+The exercises below practise steps 1–2. The next lesson is your first capstone.

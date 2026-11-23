@@ -1,0 +1,33 @@
+When a process has many steps, with retries, branches, waits or cancellations, writing it all in one Lambda quickly becomes a mess. **Step Functions** turns it into a state machine you can see, monitor and change.
+
+## Standard vs Express
+
+| | **Standard** | **Express** |
+|---|---|---|
+| Max duration | **1 year** | 5 minutes |
+| Semantics | Exactly-once per step | At-least-once (async) or at-most-once (sync) |
+| Price | $0.025 / 1,000 state transitions | $1 / million executions + duration |
+| History | Full, visual in the console | Sent to CloudWatch Logs |
+| Use for | Business processes, human approval, sagas | High-volume stream/IoT processing, short flows |
+
+## Building blocks
+
+- **Task**: call Lambda, or **call 200+ AWS services directly** (DynamoDB, SQS, ECS, Bedrock…) with no glue Lambda.
+- **Choice** branches, **Parallel** runs branches together, **Map** loops over a list — the *distributed* version handles millions of S3 items.
+- **Wait** pauses **for free**. **Callbacks** (`.waitForTaskToken`) wait for an external system or a human.
+- **Retry** (with backoff and jitter) and **Catch** are declared in the definition — no code.
+
+## Sagas: transactions across services
+
+```
+ReserveFlight ──► ReserveHotel ──► ReserveCar ──► Done
+      ▲                ▲               │ fails (Catch)
+      │                └── CancelHotel ◄┘
+      └── CancelFlight ◄───────┘
+```
+
+Every step has a **compensating step**. When a step fails, the workflow runs the compensations backwards to bring the system back to a consistent state.
+
+<Callout type="key">
+Standard for long, important flows; Express for short, high-volume ones. A 10-step flow run 1 million times a month costs **$250** on Standard but a few dollars on Express.
+</Callout>

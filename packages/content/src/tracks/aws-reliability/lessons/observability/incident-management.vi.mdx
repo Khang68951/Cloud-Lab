@@ -1,0 +1,34 @@
+Sự cố chắc chắn sẽ xảy ra. Đội ngũ giỏi khác ở chỗ họ **phát hiện nhanh, giảm thiệt hại nhanh, và học được từ mỗi lần**.
+
+## Vòng đời của một sự cố
+
+```
+Phát hiện ─► Phân loại ─► Giảm thiệt hại ─► Khôi phục ─► Postmortem ─► Cải tiến
+ (alarm)    (mức độ)     (rollback,       (dịch vụ     (không đổ    (việc cần làm
+                          chuyển traffic)   bình thường)  lỗi)          có người nhận)
+```
+
+## Những nguyên tắc vàng
+
+- **Giảm thiệt hại trước, tìm nguyên nhân sau**: rollback, tắt feature flag, chuyển traffic. Debug là việc của sau đó.
+- **Mức độ (severity)** rõ ràng: SEV1 là khách hàng bị ảnh hưởng diện rộng, SEV3 là một tính năng phụ bị lỗi. Mức độ quyết định ai được gọi và gọi nhanh tới đâu.
+- **Vai trò rõ ràng**: *incident commander* điều phối, *communications lead* cập nhật cho các bên liên quan và khách hàng, các kỹ sư tập trung xử lý.
+- **Runbook**: các bước đã viết sẵn cho những sự cố quen thuộc, tốt nhất là tự động hoá (SSM Automation).
+- **Kênh liên lạc chung** và **timeline**: ghi lại mọi quyết định kèm thời điểm.
+
+## Postmortem không đổ lỗi
+
+Một postmortem tốt trả lời được:
+1. Chuyện gì đã xảy ra (timeline), và ảnh hưởng ra sao (bao nhiêu người dùng, bao lâu)?
+2. Vì sao hệ thống **cho phép** lỗi đó xảy ra, và vì sao không phát hiện sớm hơn? Hãy dùng "5 why".
+3. Những việc cần làm cụ thể, **có người phụ trách và thời hạn**.
+
+Câu hỏi đúng không phải là "ai gây lỗi?" mà là "vì sao một người làm đúng quy trình vẫn gây ra được lỗi này?".
+
+## Công cụ trên AWS
+
+**AWS Health Dashboard** (sự cố phía AWS), **Systems Manager Incident Manager** (on-call, escalation, runbook), **CloudWatch** (alarm và dashboard), **Fault Injection Service** (diễn tập).
+
+<Callout type="key">
+Mỗi sự cố là một khoản "học phí" đã trả. Nếu không có postmortem và các việc cần làm được thực hiện, bạn sẽ phải trả lại khoản học phí đó.
+</Callout>

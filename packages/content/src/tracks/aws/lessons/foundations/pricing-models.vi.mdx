@@ -1,0 +1,30 @@
+## Mọi hoá đơn AWS đều gồm 4 phần
+
+| Phần | Ví dụ | Mẹo |
+|---|---|---|
+| **Compute** (theo thời gian) | Giờ chạy EC2, giờ chạy RDS, GB-giây của Lambda | Tắt thứ không dùng, chọn đúng kích cỡ |
+| **Storage** (theo GB-tháng) | S3, ổ EBS, dung lượng database | Chọn đúng storage class, xoá dữ liệu cũ |
+| **Requests** (theo số lượt) | API Gateway, request S3, lượt ghi DynamoDB | Gom nhóm (batch), cache |
+| **Data transfer** (theo GB) | Dữ liệu đi **ra** internet, giữa các AZ, qua NAT | Data **vào** miễn phí; data **ra** thì tốn tiền |
+
+<Callout type="warning">
+**Data transfer** là khoản người mới hay quên nhất. Ở us-east-1, mỗi GB gửi ra internet tốn khoảng $0.09. Trả 10 TB mỗi tháng cho người dùng là đã ~$900.
+</Callout>
+
+## Các cách mua compute
+
+| Lựa chọn | Giảm so với On-Demand | Khi nào dùng |
+|---|---|---|
+| **On-Demand** | 0% | Mới bắt đầu, tải khó đoán, chạy ngắn |
+| **Savings Plans / Reserved** (1–3 năm) | ~28–72% | Tải **đều, chạy 24/7**, biết chắc còn dùng lâu |
+| **Spot** | tới ~90% | Việc **chịu được bị ngắt**: batch, CI, xử lý dữ liệu |
+
+Thứ tự đúng để tối ưu: **dọn lãng phí → chọn đúng kích cỡ → rồi mới cam kết**. Cam kết sớm chỉ khoá chặt sự lãng phí.
+
+## Tính nhanh trong đầu
+
+- Một tháng tính là **730 giờ**.
+- Chi phí instance = giá/giờ × số instance × 730.
+- 1 request/giây đều đặn ≈ **2,6 triệu request/tháng**.
+
+<TryLab template="serverless-api" label="Thử: đổi RPS của API serverless và xem chi phí thay đổi" />

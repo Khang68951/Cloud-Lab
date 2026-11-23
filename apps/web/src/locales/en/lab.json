@@ -1,0 +1,184 @@
+{
+  "perMonth": "month",
+  "perMonthShort": "mo",
+  "untitled": "Untitled design",
+  "status": {
+    "down": "DOWN"
+  },
+  "utilizationAtPeak": "Utilisation at peak",
+  "autoScales": "Scales automatically",
+  "emptyHint": "Drag services from the left onto the canvas, then connect them by dragging from one node's dot to another.",
+  "mobileHint": "The Lab works best on a wide screen (desktop).",
+  "panel": {
+    "title": "Pricing and analysis"
+  },
+  "palette": {
+    "title": "AWS services",
+    "search": "Search {{count}} services…",
+    "hint": "Drag onto the canvas, or click to add.",
+    "empty": "No matching service.",
+    "seeAll": "See all ({{count}})",
+    "dialogHint": "{{count}} services — click one to add it to the canvas.",
+    "popular": "Popular",
+    "others": "Other services",
+    "searchIn": "Search this category…",
+    "categories": "Service categories"
+  },
+  "tabs": {
+    "brief": "Brief",
+    "cost": "Cost",
+    "inspect": "Config",
+    "scenario": "Scenario",
+    "review": "Review"
+  },
+  "summary": {
+    "monthly": "Estimated monthly cost",
+    "latency": "p95 latency",
+    "latencySub": "average {{avg}} ms",
+    "availability": "Availability",
+    "downtime": "~{{min}} min down/month",
+    "maxPeak": "Max peak",
+    "maxPeakSub": "before a node saturates",
+    "errors": "Errors at peak",
+    "errorsSub": "from overload or failures"
+  },
+  "chaos": {
+    "hint": "Break the system to see if it holds.",
+    "azDown": "AZ-a goes down",
+    "azDownHelp": "Single-AZ resources fail; multi-AZ fleets lose half (Auto Scaling recovers).",
+    "spike": "Traffic ×10",
+    "spikeHelp": "A sudden spike of 10× the normal traffic.",
+    "killHint_one": "{{count}} node killed (select a node → Kill node).",
+    "killHint_other": "{{count}} nodes killed (select a node → Kill node).",
+    "reset": "Turn chaos off",
+    "survives": "System survives ({{errors}}% errors)",
+    "fails": "System is DOWN under this failure"
+  },
+  "cost": {
+    "byKind": "Cost by type",
+    "kinds": {
+      "compute": "Compute",
+      "storage": "Storage",
+      "requests": "Requests",
+      "transfer": "Data transfer",
+      "other": "Other"
+    },
+    "byService": "By service",
+    "empty": "Add services to see costs.",
+    "details": "Show details",
+    "free": "No charge",
+    "disclaimer": "Reference On-Demand prices in {{region}}, as of {{date}}. Excludes tax, free tier, tiered pricing and discounts. For comparing options, not a quote.",
+    "egressRow": "Data transfer to users"
+  },
+  "inspector": {
+    "duplicate": "Duplicate",
+    "kill": "Kill node",
+    "revive": "Revive",
+    "killHelp": "Chaos: simulate this node failing",
+    "delete": "Delete",
+    "traffic": "Traffic (avg / peak)",
+    "capacity": "Capacity",
+    "latency": "Added latency",
+    "cost": "Cost/month",
+    "layout": "Placement",
+    "usersHint": "User traffic is set in the Scenario tab (deselect all nodes to open it).",
+    "label": "Display name",
+    "guide": "When to use & pricing"
+  },
+  "layout": {
+    "regional": "Regional (multi-AZ)",
+    "single-az": "Single AZ",
+    "multi-az": "Multi-AZ"
+  },
+  "docs": {
+    "whenToUse": "When to use",
+    "whenNotTo": "When NOT to use",
+    "pros": "Pros",
+    "cons": "Cons",
+    "pitfalls": "Common pitfalls",
+    "pricing": "How it's priced"
+  },
+  "scenario": {
+    "title": "Traffic scenario",
+    "locked": "Fixed by the brief",
+    "hint": "Traffic flows from Users through your diagram. Capacity is checked at peak; cost uses the average.",
+    "rps": "Requests/second (average)",
+    "rpsHelp": "≈ {{m}} million requests/month",
+    "peak": "Peak multiplier",
+    "peakHelp": "Peak = {{peak}} requests/second",
+    "readRatio": "Read ratio",
+    "readRatioHelp": "The rest are writes. Reads go through caches/CDNs; writes always reach the database.",
+    "payload": "Response size (KB)",
+    "payloadHelp": "Drives data transfer out to the internet.",
+    "region": "Region",
+    "tip": "Tip: multiply requests/second by 10 and see which node turns red first — that's your bottleneck."
+  },
+  "review": {
+    "clean": "No issues found",
+    "cleanHint": "Try Chaos to test resilience.",
+    "hint": "Click an item to jump to the node."
+  },
+  "severity": {
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Suggestion"
+  },
+  "pillar": {
+    "reliability": "Reliability",
+    "performance": "Performance",
+    "cost": "Cost",
+    "security": "Security",
+    "operational": "Operations"
+  },
+  "challengeKind": {
+    "canvas-design": "Design",
+    "canvas-fix": "Fix the architecture"
+  },
+  "challenge": {
+    "requirements": "Requirements (checked live)",
+    "met": "Met",
+    "notMet": "Not met",
+    "hints": "Hints",
+    "showHint": "Show hint {{n}}/{{total}}",
+    "submit": "Submit",
+    "passed": "Passed! Saved to your progress.",
+    "failed": "Not yet ({{score}}%). Check the red requirements.",
+    "reference": "Show reference solution",
+    "notFound": "This exercise doesn't exist."
+  },
+  "toolbar": {
+    "title": "Design name",
+    "templates": "Templates",
+    "templatesHint": "Replace the canvas with a template (undoable)",
+    "resetChallenge": "Start over",
+    "undo": "Undo",
+    "redo": "Redo",
+    "chaos": "Chaos",
+    "export": "Export",
+    "exportPng": "PNG image",
+    "exportJson": "JSON file",
+    "importJson": "Import from JSON…",
+    "open": "Open",
+    "save": "Save"
+  },
+  "open": {
+    "title": "Saved designs",
+    "description": "Stored in the local database on your machine.",
+    "empty": "No designs yet. Click Save to store the current one.",
+    "delete": "Delete {{title}}",
+    "confirmDelete": "Delete the design \"{{title}}\"?"
+  },
+  "toast": {
+    "imported": "Design imported",
+    "importFailed": "Invalid JSON file",
+    "saved": "Saved \"{{title}}\"",
+    "saveFailed": "Couldn't save — is the API running?",
+    "openFailed": "Couldn't open the design"
+  },
+  "dataOut": "data out",
+  "back": {
+    "short": "Back",
+    "title": "Back to lesson: {{title}}",
+    "afterPass": "Back to see your result"
+  }
+}

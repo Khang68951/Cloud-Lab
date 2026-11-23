@@ -1,0 +1,36 @@
+"Có hai việc khó trong khoa học máy tính: đặt tên và vô hiệu hoá cache." Bài này giúp bạn làm việc thứ hai đúng cách.
+
+## Các mẫu ghi và đọc
+
+| Mẫu | Cách làm | Ưu | Nhược |
+|---|---|---|---|
+| **Cache-aside** (lazy loading) | Đọc cache, miss thì đọc DB rồi ghi vào cache | Chỉ cache thứ được đọc; cache sập thì app vẫn chạy | Lần đọc đầu chậm; dữ liệu có thể cũ tới hết TTL |
+| **Write-through** | Mỗi lượt ghi cập nhật cả DB lẫn cache | Cache luôn mới | Tốn thêm lượt ghi; cache cả dữ liệu không ai đọc |
+| **Write-behind** | Ghi vào cache, sau đó ghi xuống DB theo lô | Ghi cực nhanh | Có thể mất dữ liệu nếu cache sập |
+| **Invalidate on write** | Ghi DB rồi **xoá** key trong cache | Đơn giản, tránh ghi giá trị cũ đè giá trị mới | Lần đọc sau bị miss |
+
+## TTL và eviction
+
+- **TTL** là "lưới an toàn": kể cả khi quên invalidate, dữ liệu cũng tự hết hạn. Hãy thêm **jitter** (TTL ± ngẫu nhiên) để các key không hết hạn cùng một lúc.
+- **Eviction** khi đầy bộ nhớ: `allkeys-lru` (bỏ key lâu không dùng) là lựa chọn phổ biến cho cache thuần.
+
+## Chống cache stampede
+
+Khi một key nóng hết hạn, hàng nghìn request cùng miss rồi cùng dội vào DB. Các cách xử lý:
+- **Request coalescing / lock**: chỉ một request đi làm mới giá trị, các request khác chờ.
+- **Stale-while-revalidate**: trả giá trị cũ, làm mới ở nền.
+- **Làm mới trước khi hết hạn** cho các key cực nóng.
+
+## Cấu trúc dữ liệu của Redis/Valkey
+
+| Cấu trúc | Dùng cho |
+|---|---|
+| String | Cache giá trị, bộ đếm (`INCR`) |
+| Hash | Đối tượng, session |
+| Sorted set | **Bảng xếp hạng**, hàng đợi ưu tiên |
+| List / Stream | Hàng đợi nhẹ, luồng sự kiện |
+| Bộ đếm có TTL | **Rate limiting** |
+
+<Callout type="key">
+Cache phải là thứ **có thể mất**: app vẫn phải chạy đúng (chỉ chậm hơn) khi cache trống. Nếu mất cache là mất dữ liệu, thì đó không còn là cache. Khi đó hãy dùng MemoryDB hoặc một database thật.
+</Callout>

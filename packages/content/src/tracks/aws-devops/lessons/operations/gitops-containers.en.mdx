@@ -1,0 +1,33 @@
+With containers, "deploying" means getting a known image running on ECS or EKS. **GitOps** makes Git the single description of *what is running*.
+
+## The container supply chain
+
+```
+code ─► build image ─► scan (Inspector) ─► sign ─► push to ECR (immutable tag)
+     ─► update manifest in Git ─► Argo CD/Flux syncs ─► EKS
+```
+
+| Step | Good practice |
+|---|---|
+| **Base image** | Minimal (distroless, Alpine, AL2023 minimal), updated often |
+| **Build** | Multi-stage builds; no secrets baked into images |
+| **ECR** | **Tag immutability**, scan on push and continuous Inspector scanning, lifecycle policies for old images |
+| **Deploy** | Reference images by **digest** or immutable tag — never `latest` |
+| **Runtime** | Non-root, read-only filesystem, per-task/pod IAM (task roles, EKS Pod Identity) |
+
+## GitOps
+
+- **Push model** (CI runs `kubectl apply` or `aws ecs update-service`): simple, but CI holds cluster credentials.
+- **Pull model** (GitOps): an agent **inside the cluster** (Argo CD, Flux) continuously compares Git with the cluster and **corrects drift**.
+  - Every change is a reviewed, audited pull request.
+  - Rollback is `git revert`.
+  - CI needs no access to the cluster.
+
+## ECS or EKS for GitOps?
+
+- **ECS**: usually a push model with CodeDeploy (blue/green) or rolling updates; IaC (CDK, Terraform) describes services.
+- **EKS**: Argo CD or Flux is the common standard, with Helm or Kustomize per environment and Argo Rollouts for canaries.
+
+<Callout type="key">
+You should be able to answer "**what exactly is running in production?**" by looking at Git alone. If you cannot, you have drift.
+</Callout>

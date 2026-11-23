@@ -1,0 +1,41 @@
+Ứng dụng chat cần **đẩy** tin nhắn tới người nhận ngay khi nó được gửi, chứ không chờ client hỏi. Đó là điểm khác biệt lớn nhất so với một API thông thường.
+
+## Yêu cầu
+
+- Chat 1-1 và nhóm; lịch sử tin nhắn; trạng thái online.
+- Luôn có 100.000 kết nối đồng thời; 3.000 tin nhắn/giây (gấp đôi lúc cao điểm).
+- Gửi tới người nhận trong < 200 ms; không mất tin nhắn.
+
+## Kết nối realtime
+
+| Cách | Ưu | Nhược |
+|---|---|---|
+| Polling | Đơn giản | Tốn request, độ trễ cao |
+| Long polling / SSE | Đỡ tốn hơn | Một chiều (SSE) |
+| **WebSocket** | Hai chiều, độ trễ thấp | Phải quản lý kết nối |
+
+## Kiến trúc serverless
+
+```
+Clients ═══ WebSocket ═══ API Gateway (WebSocket API)
+                             │ $connect / $disconnect / sendMessage
+                             ▼
+                          Lambda ─┬─► DynamoDB "connections": user_id → connection_id
+                                  ├─► DynamoDB "messages": PK = conversation_id, SK = timestamp#msg_id
+                                  └─► @connections API: đẩy tin nhắn tới connection của người nhận
+```
+
+- **Lịch sử**: một lần `Query` theo `conversation_id`, sắp theo SK, có phân trang.
+- **Offline**: tin nhắn đã được lưu; khi kết nối lại, client đồng bộ từ ID cuối cùng đã thấy, kèm push notification (SNS hoặc Pinpoint).
+- **Thứ tự**: ID do server gán theo từng cuộc trò chuyện, không tin đồng hồ của client.
+- **Idempotency**: client gửi `client_msg_id` để tránh trùng khi gửi lại.
+
+## Khi nào cần thứ khác
+
+- **Nhóm rất lớn** (hàng nghìn thành viên): fan-out qua SNS/SQS hoặc worker riêng.
+- **Quy mô hàng triệu kết nối và độ trễ cực thấp**: fleet container giữ WebSocket kèm Redis Pub/Sub; rẻ hơn khi tải đều và rất lớn.
+- **Trạng thái online**: heartbeat cập nhật TTL trong Redis hoặc DynamoDB.
+
+<Callout type="tip">
+Thử thách trong Lab: đặt API Gateway ở loại WebSocket với 100.000 kết nối, lưu tin nhắn vào DynamoDB, chịu được sự cố AZ, và xem phí "phút kết nối" xuất hiện trong bảng giá.
+</Callout>

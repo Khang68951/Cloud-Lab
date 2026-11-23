@@ -1,0 +1,40 @@
+**Infrastructure as Code (IaC)** nghĩa là mô tả hạ tầng bằng file được quản lý trong Git, thay vì bấm tay trên console. Nhờ vậy hạ tầng có thể review, lặp lại, rollback và audit được.
+
+## CloudFormation: engine gốc của AWS
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| **Template** | YAML hoặc JSON mô tả các tài nguyên |
+| **Stack** | Một lần triển khai template; tạo, cập nhật và xoá các tài nguyên cùng nhau |
+| **Change set** | Xem trước thay đổi, kể cả tài nguyên nào sẽ bị **thay thế** |
+| **Drift detection** | Phát hiện tài nguyên bị sửa tay, lệch khỏi template |
+| **Rollback** | Cập nhật lỗi thì tự quay về trạng thái trước |
+| **StackSets** | Triển khai cùng một stack ra nhiều account và Region |
+
+<Callout type="warning">
+Một số thay đổi thuộc tính (vd đổi tên DB, đổi engine) buộc CloudFormation **tạo tài nguyên mới và xoá cái cũ**. Với tài nguyên có trạng thái, hãy đặt `DeletionPolicy: Retain` và `UpdateReplacePolicy: Retain`, bật deletion protection, và luôn xem change set trước.
+</Callout>
+
+## CDK: viết hạ tầng bằng ngôn ngữ lập trình
+
+```ts
+const table = new dynamodb.Table(this, 'Orders', {
+  partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.RETAIN,
+});
+const fn = new lambda.NodejsFunction(this, 'Api', { entry: 'src/api.ts' });
+table.grantReadWriteData(fn); // tự sinh IAM policy tối thiểu
+```
+
+- **Construct** là khối tái sử dụng. L1 tương ứng 1-1 với CloudFormation, L2 có mặc định hợp lý, L3 là cả một pattern.
+- `cdk synth` sinh template CloudFormation, `cdk diff` xem thay đổi, `cdk deploy` triển khai.
+- Viết **test** cho hạ tầng (assertion trên template) như code bình thường.
+
+## Chọn công cụ nào
+
+| | CloudFormation | CDK | Terraform |
+|---|---|---|---|
+| Ngôn ngữ | YAML/JSON | TS, Python, Java, Go… | HCL |
+| Phạm vi | AWS | AWS (cộng cdk8s, cdktf) | Đa cloud, SaaS |
+| State | AWS quản lý | AWS quản lý | Bạn tự quản lý |

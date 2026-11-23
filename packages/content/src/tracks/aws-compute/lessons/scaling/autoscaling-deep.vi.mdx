@@ -1,0 +1,33 @@
+Auto Scaling group (ASG) giữ đúng số instance cần thiết: **thay instance hỏng** và **co giãn theo tải**.
+
+## Các loại scaling policy
+
+| Policy | Cách hoạt động | Dùng khi |
+|---|---|---|
+| **Target tracking** | Giữ một metric quanh mục tiêu (CPU 60%, request mỗi target 1.000) | Mặc định, phù hợp phần lớn trường hợp |
+| **Step scaling** | Thêm hoặc bớt theo bậc khi alarm vượt các ngưỡng | Cần phản ứng mạnh hơn khi tải tăng vọt |
+| **Scheduled** | Đặt min/max theo lịch | Biết trước quy luật: 8 giờ sáng, cuối tuần, khuyến mãi |
+| **Predictive** | Học từ lịch sử, bật instance *trước* khi tải tới | Tải có chu kỳ hằng ngày rõ ràng |
+
+**Metric tốt** phản ánh tải thật: *ALBRequestCountPerTarget*, độ sâu queue trên mỗi instance, CPU. Tránh dùng metric "chậm" như dung lượng ổ đĩa.
+
+## Làm cho scale out nhanh
+
+- **AMI nướng sẵn (baked)**: cài sẵn mọi thứ trong AMI thay vì cài trong user-data lúc khởi động.
+- **Warm pool**: giữ sẵn instance đã khởi tạo ở trạng thái *stopped* (chỉ tốn tiền EBS) để bật lên trong vài giây.
+- **Lifecycle hook**: chạy việc cần thiết khi bật (kéo cấu hình) và khi tắt (rút kết nối, đẩy log).
+
+## Health check
+
+- Mặc định ASG dùng **EC2 status check**, chỉ thấy máy ảo có sống không.
+- Hãy bật **ELB health check** để instance mà ứng dụng trả lỗi 500 cũng bị thay.
+- Đặt *health check grace period* đủ dài cho app khởi động xong.
+
+<Callout type="key">
+Đặt **min ≥ 2** và trải trên **≥ 2 AZ**. Đặt **max** như một trần chi phí, đủ cao cho cao điểm và đủ thấp để một vòng lặp lỗi không đốt hết ngân sách.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Scale in quá nhanh rồi scale out lại liên tục ("flapping"). Hãy để thời gian *cooldown* hoặc *warm-up* hợp lý.
+- App lưu session trên đĩa của instance, nên khi scale in người dùng bị đăng xuất. Đưa session vào ElastiCache hoặc DynamoDB.

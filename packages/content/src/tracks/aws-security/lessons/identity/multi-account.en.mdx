@@ -1,0 +1,37 @@
+As a company grows, putting everything in **one account** turns small mistakes into big incidents. The standard today is **many accounts** managed with **AWS Organizations**.
+
+## Why many accounts?
+
+| Reason | Why |
+|---|---|
+| **Blast radius** | Accounts are the strongest isolation boundary: a dev mistake cannot touch prod |
+| **Billing** | Each account has its own bill — easy to see what each team spends |
+| **Quotas** | Service limits are per account |
+| **Simpler permissions** | "Who can enter prod" is easier than hundreds of tag-based policies |
+
+## A suggested structure
+
+```
+Organization (management account — billing and governance only)
+├─ OU Security:   Log Archive · Security Tooling
+├─ OU Workloads:  app-prod · app-staging · app-dev
+├─ OU Sandbox:    per-engineer experiment accounts (with budgets)
+└─ OU Suspended:  accounts waiting to be closed
+```
+
+## The main tools
+
+- **SCPs (Service Control Policies)** — guardrails for whole OUs: deny non-approved Regions, forbid disabling CloudTrail, forbid leaving the organisation.
+- **IAM Identity Center** — people sign in **once**, pick an account and a *permission set*; all credentials are short-lived.
+- **Cross-account roles** — CI/CD in a "tooling" account assumes a role in prod to deploy.
+- **Control Tower** — sets up a best-practice landing zone (log accounts, guardrails, Account Factory).
+
+<Callout type="key">
+The **management account** is for governance and billing only. Run no workloads there — SCPs do not apply to it.
+</Callout>
+
+## Common mistakes
+
+- IAM users for people in every account instead of Identity Center.
+- CloudTrail logs stored in the workload account — an attacker who owns it can erase their tracks.
+- Over-broad SCPs rolled out without testing on a small OU first.

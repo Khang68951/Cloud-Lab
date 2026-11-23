@@ -1,0 +1,27 @@
+## Hai thứ khác nhau mà hay bị nhầm
+
+| | Scalability (khả năng mở rộng) | High availability (sẵn sàng cao) |
+|---|---|---|
+| Câu hỏi | Chịu được **cao điểm** không? | Sống sót khi có **thứ gì đó hỏng** không? |
+| Công cụ | Auto Scaling, instance lớn hơn, cache | Nhiều instance trên **nhiều AZ**, Multi-AZ database, health check |
+
+## Tầng web chuẩn
+
+```
+Users → ALB (nhiều AZ) → Auto Scaling group (AZ-a + AZ-b) → RDS Multi-AZ
+```
+
+- **ALB** chia traffic và tự loại instance có health check thất bại.
+- **Auto Scaling group**: đặt `min` (luôn chạy), `max` (trần chi phí) và mục tiêu, vd *giữ CPU ở mức 60–70%*. Group thêm instance lúc cao điểm và bớt khi vắng.
+- **Trải trên ≥ 2 AZ**: hai instance cùng một AZ chỉ chống được lỗi instance, **không** chống được lỗi AZ.
+
+<Callout type="key">
+Thiết kế cho **lưu lượng đỉnh**, không phải lưu lượng trung bình. Trong Lab, tab Kịch bản có *hệ số cao điểm*: capacity được kiểm tra lúc cao điểm, còn chi phí tính theo trung bình (nhờ Auto Scaling).
+</Callout>
+
+## Khi một AZ sập
+
+- Fleet **không có** Auto Scaling mất một nửa capacity. Phần còn lại có thể không gánh nổi cao điểm.
+- Fleet **có** Auto Scaling sẽ bật instance thay thế ở AZ còn lại (ngoài thực tế mất vài phút). Hệ thống cực kỳ quan trọng còn chừa sẵn dư địa để không phụ thuộc vào việc scale kịp ("static stability").
+
+Thử ngay: mở bài tập bên dưới, bật **Chaos → Sập AZ-a** trước và sau khi sửa.

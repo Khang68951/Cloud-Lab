@@ -1,0 +1,29 @@
+**FinOps** là văn hoá làm việc trong đó kỹ sư, tài chính và kinh doanh cùng chịu trách nhiệm về chi phí cloud. Công cụ chỉ là một phần, phần quan trọng hơn là **ai sở hữu con số**.
+
+## Ba giai đoạn của FinOps
+
+| Giai đoạn | Mục tiêu | Ví dụ |
+|---|---|---|
+| **Inform** (minh bạch) | Ai tiêu gì, vào việc gì | Tag, account theo team, dashboard, showback |
+| **Optimize** (tối ưu) | Giảm lãng phí, tăng hiệu quả | Rightsizing, cam kết, kiến trúc |
+| **Operate** (vận hành) | Biến thành thói quen | Budget, review hằng tháng, KPI |
+
+## Nền tảng: phân bổ chi phí
+
+- **Multi-account** (AWS Organizations): mỗi team hoặc môi trường một account. Đây là cách phân bổ sạch nhất.
+- **Cost allocation tags**: `team`, `env`, `service`, `cost-center`. **Kích hoạt** chúng trong Billing, và bắt buộc gắn bằng tag policy, SCP hoặc kiểm tra trong IaC.
+- **Cost Categories**: gom account và tag thành nhóm có ý nghĩa với doanh nghiệp.
+- **Showback** (cho các team xem chi phí của họ), rồi tiến tới **chargeback** (tính vào ngân sách của team).
+
+## Phát hiện sớm
+
+- **AWS Budgets**: ngưỡng theo account, tag hoặc dịch vụ; cảnh báo theo **dự báo**, không chỉ theo số thực tế; budget action để tự động chặn.
+- **Cost Anomaly Detection**: ML phát hiện chi tiêu bất thường trong vài giờ.
+
+## Đo đúng: unit economics
+
+Tổng hoá đơn tăng chưa chắc đã xấu. Hãy đo **chi phí đơn vị**: $/đơn hàng, $/người dùng hoạt động, $/GB xử lý. Nếu khối lượng tăng 80% mà hoá đơn chỉ tăng 40%, bạn đang làm tốt.
+
+<Callout type="key">
+Hãy đưa chi phí vào **quy trình kỹ thuật**: ước tính chi phí trong design review, hiển thị chi phí trong pull request (vd Infracost), và đặt chi phí đơn vị cạnh latency và error rate trên dashboard.
+</Callout>

@@ -1,0 +1,48 @@
+{
+  "hero": {
+    "eyebrow": "Practice first, just enough theory",
+    "title": "Learn AWS by designing, breaking and fixing systems",
+    "welcomeBack": "Welcome back — let’s keep going",
+    "subtitle": "An 11-course roadmap from foundations to system design. Short lessons, instantly graded exercises and design challenges in the Lab — free and fully local.",
+    "primary": "Start learning",
+    "continue": "Continue learning",
+    "roadmap": "View roadmap",
+    "focus": "Recommended course"
+  },
+  "progress": {
+    "title": "Your progress",
+    "courses": "Courses completed",
+    "lessons": "Lessons completed",
+    "exercises": "Exercises passed",
+    "challenges": "Lab challenges"
+  },
+  "focus": {
+    "inProgress": "In progress",
+    "startHere": "Start here"
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "subtitle": "From foundations to system design — % is the share of lessons done in each course.",
+    "open": "Open roadmap",
+    "stage": "Stage {{n}}"
+  },
+  "tools": {
+    "title": "Practice tools",
+    "lab": {
+      "title": "Architecture Lab",
+      "body": "Drag AWS services, connect them, and instantly see price, latency, availability and bottlenecks. Turn on Chaos to break things."
+    },
+    "practice": {
+      "title": "Practice",
+      "body": "Exercises only: scenario quizzes, estimations and challenges — filterable by course."
+    },
+    "explore": {
+      "title": "Service Explorer",
+      "body": "Look up and compare AWS services: when to use them, when not to, pricing."
+    },
+    "glossary": {
+      "title": "Glossary",
+      "body": "Bilingual cloud terms for quick lookup while reading docs."
+    }
+  }
+}

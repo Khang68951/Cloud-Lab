@@ -1,0 +1,33 @@
+Multi-Region gives the highest availability and low latency for global users — and is the **most complex and expensive** architecture. Start with the maths.
+
+## Availability maths
+
+- **Series** (A, then B): multiply availabilities. 99.99% × 99.99% ≈ **99.98%**.
+- **Parallel** (A or B is enough): multiply **failure** probabilities. Two 99.9% stacks give 1 − 0.001² = **99.9999%**.
+
+| Availability | Downtime per month |
+|---|---|
+| 99.9% | ~43 minutes |
+| 99.95% | ~22 minutes |
+| 99.99% | ~4.3 minutes |
+| 99.999% | ~26 seconds |
+
+A chain of 99.99% components in one Region struggles to exceed 99.99%. Beyond that you need **redundancy at the top**: a whole stack in another Region.
+
+## Routing between Regions
+
+- **Route 53** with health checks: *failover* (active-passive), *latency* (closest), *geolocation*, *weighted*.
+- **Global Accelerator**: static anycast IPs, shifts traffic in seconds, no DNS TTL.
+- **CloudFront** with origin failover for content.
+
+## The data problem
+
+| Approach | Example | Trade-off |
+|---|---|---|
+| One write Region, read everywhere | Aurora Global Database | Writes go to the primary; failover takes minutes; ~1 s RPO |
+| Write everywhere | DynamoDB Global Tables | Conflicts resolved by last-writer-wins |
+| Users partitioned by "home" Region | Each user belongs to one Region | Avoids conflicts; routing must be right |
+
+<Callout type="key">
+Active-passive is far simpler than active-active. Start with active-passive (warm standby), and move to active-active only when the business really needs it — and **rehearse failover** regularly.
+</Callout>

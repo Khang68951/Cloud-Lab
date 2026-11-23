@@ -1,0 +1,20 @@
+AWS has three main ways to run your code. Each is the right answer **for a different traffic shape and team**.
+
+<ServiceCompare ids="ec2,fargate,lambda" />
+
+## Quick decision questions
+
+1. **Does it run longer than 15 minutes?** Yes → not Lambda.
+2. **Is traffic steady 24/7, or spiky with near-zero periods?** Spiky/low → Lambda or Fargate. Steady and high → EC2/Fargate (+ Savings Plans).
+3. **Does the team want to patch OSes, manage AMIs and capacity?** No → Fargate or Lambda.
+4. **Need GPUs, host access, special software?** Yes → EC2.
+
+## The cost crossover
+
+Lambda bills **per request**; EC2/Fargate bill **per hour whether busy or not**. So Lambda is cheaper at low traffic, and the order flips at high, steady traffic. Move the slider to find the crossover:
+
+<CostCrossover />
+
+<Callout type="tip">
+The exact crossover depends on request duration and memory. Change them in the Lab: select the Lambda node, edit *Avg duration*, and watch the cost line move.
+</Callout>

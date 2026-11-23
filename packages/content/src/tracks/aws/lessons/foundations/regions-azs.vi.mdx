@@ -1,0 +1,25 @@
+## Ba lớp hạ tầng
+
+| Khái niệm | Là gì | Bạn dùng để |
+|---|---|---|
+| **Region** | Một khu vực địa lý (vd `ap-southeast-1` Singapore), độc lập hoàn toàn với các Region khác | Đặt hệ thống gần người dùng, đáp ứng luật về nơi lưu dữ liệu |
+| **Availability Zone (AZ)** | Một hoặc nhiều data center có nguồn điện, làm mát và mạng riêng. Mỗi Region có **≥ 3 AZ**, cách nhau vài km đến vài chục km | Chịu lỗi: chạy ở ≥ 2 AZ để một AZ sập không kéo theo hệ thống |
+| **Edge location** | Hàng trăm điểm nhỏ trên khắp thế giới | CloudFront (CDN) và Route 53 (DNS) phục vụ người dùng gần nhất |
+
+<Callout type="key">
+**Quy tắc vàng:** thứ gì quan trọng thì phải nằm ở **ít nhất 2 AZ**. Một AZ sập là sự cố hiếm nhưng có thật, và thiết kế của bạn phải chịu được nó.
+</Callout>
+
+## Chọn Region dựa trên gì?
+
+1. **Tuân thủ**: luật có bắt dữ liệu phải nằm ở một quốc gia/khu vực nào không? Yếu tố này loại các Region khác trước tiên.
+2. **Độ trễ**: Region càng gần người dùng thì càng nhanh. Người dùng ở Việt Nam thường dùng Singapore (`ap-southeast-1`).
+3. **Dịch vụ có sẵn**: dịch vụ mới thường ra mắt ở `us-east-1` trước.
+4. **Giá**: cùng một dịch vụ, giá khác nhau theo Region. Singapore thường đắt hơn N. Virginia khoảng 10–30%.
+
+## Ai chịu trách nhiệm cái gì? (Shared Responsibility)
+
+- **AWS lo bảo mật *của* cloud**: data center, phần cứng, mạng, hypervisor.
+- **Bạn lo bảo mật *trong* cloud**: dữ liệu, IAM, cấu hình mạng, mã hoá, và hệ điều hành nếu bạn dùng EC2.
+
+Dịch vụ càng "được quản lý" (RDS, Lambda, DynamoDB) thì phần việc của bạn càng ít. Bạn không phải vá hệ điều hành của RDS, nhưng vẫn phải cấu hình ai được kết nối vào nó.

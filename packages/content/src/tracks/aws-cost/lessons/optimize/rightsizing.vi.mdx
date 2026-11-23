@@ -1,0 +1,28 @@
+Phần lớn tài nguyên cloud được định cỡ "cho chắc" lúc ra mắt rồi không ai xem lại. **Đo trước, cắt sau** thường giảm được 20–40% hoá đơn mà người dùng không hề nhận ra.
+
+## Các đòn bẩy, xếp theo độ dễ
+
+| Đòn bẩy | Làm gì | Tiết kiệm điển hình |
+|---|---|---|
+| **Tắt cái không dùng** | Môi trường dev/test ngoài giờ, tài nguyên mồ côi | 60–70% cho môi trường dev |
+| **Rightsize** | Instance có CPU p99 < 40% thì hạ một size | ~50% cho mỗi size giảm |
+| **Scale theo nhu cầu** | Auto Scaling thay vì dựng cho cao điểm 24/7 | Tuỳ hình dạng traffic |
+| **Graviton** | m7g, c7g, r7g; RDS, ElastiCache, Lambda arm64 | ~20% và thường nhanh hơn |
+| **Spot** | Workload chịu được gián đoạn: batch, CI, worker không trạng thái | Tới ~90% |
+| **Chuyển kiến trúc** | Cache trước DB, serverless cho tải thấp, container cho tải đều | Có thể rất lớn |
+
+## Đo thế nào
+
+- **Compute Optimizer**: gợi ý size cho EC2, ASG, EBS, Lambda, ECS dựa trên metric thực tế (bật enhanced metrics để có 3 tháng dữ liệu).
+- Hãy xem **p99 và peak**, đừng chỉ nhìn trung bình. Kiểm tra cả **bộ nhớ** (cần CloudWatch agent).
+- **Trusted Advisor** và **Cost Optimization Hub** gom các gợi ý về một chỗ.
+
+## Spot đúng cách
+
+- Đa dạng hoá: **nhiều loại instance, nhiều AZ**, chiến lược *price-capacity-optimized*.
+- Xử lý thông báo ngắt (2 phút): lưu checkpoint, rút việc ra khỏi worker.
+- Trộn on-demand làm phần nền và Spot cho phần còn lại trong cùng một ASG.
+
+<Callout type="key">
+Rightsizing là việc **liên tục**, không phải làm một lần. Hãy đưa nó vào nhịp làm việc: mỗi tháng xem gợi ý từ Compute Optimizer và xử lý top 10.
+</Callout>

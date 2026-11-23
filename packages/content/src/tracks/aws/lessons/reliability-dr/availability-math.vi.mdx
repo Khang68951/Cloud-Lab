@@ -1,0 +1,28 @@
+## Nối tiếp thì nhân, song song thì nhân xác suất hỏng
+
+- **Nối tiếp** (request phải đi qua A **rồi** B): `A × B`. Kết quả luôn **tệ hơn** mắt xích yếu nhất.
+- **Song song** (chỉ cần **một** trong hai): `1 − (1−A) × (1−B)`. Dự phòng đẩy availability lên rất nhanh.
+
+Thử nghịch với các con số:
+
+<AvailabilityCalculator />
+
+<Callout type="key">
+Dự phòng (nhiều instance trên nhiều AZ) đưa một tầng lên gần 100%, nên **thành phần đơn lẻ yếu nhất quyết định trần của cả hệ thống**. Hai dịch vụ 99,95% nối tiếp chỉ còn ~99,90%.
+</Callout>
+
+Trong Lab, availability được tính từ con số SLA của từng dịch vụ (vd ALB 99,99%, RDS Multi-AZ 99,95%, một instance EC2 99,5%), cộng thêm xác suất nhỏ một AZ bị sập. SLA là **cận dưới**: thực tế thường tốt hơn, nhưng cách lập luận thì giống hệt.
+
+## RTO, RPO và 4 chiến lược DR
+
+- **RTO** (Recovery Time Objective): mất **bao lâu** để chạy lại.
+- **RPO** (Recovery Point Objective): chấp nhận mất **bao nhiêu dữ liệu** (tính theo thời gian).
+
+| Chiến lược | RTO / RPO | Chi phí | Mô tả |
+|---|---|---|---|
+| **Backup & restore** | Hàng giờ / hàng giờ | $ | Chỉ có backup ở region khác |
+| **Pilot light** | Hàng chục phút / phút | $$ | Database đã được nhân bản sẵn, server tắt |
+| **Warm standby** | Phút / giây | $$$ | Một bản thu nhỏ chạy sẵn ở region khác |
+| **Multi-site active/active** | Gần 0 / gần 0 | $$$$ | Chạy đầy đủ ở hai region cùng lúc |
+
+Chọn chiến lược theo **mức thiệt hại khi sập**, đừng chọn cái xịn nhất.

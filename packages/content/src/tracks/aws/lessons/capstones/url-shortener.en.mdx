@@ -1,0 +1,23 @@
+This is the classic system-design interview question — except now you can **run** your design.
+
+## The brief
+
+- **1,000 requests/second** on average, **3,000** at peak.
+- **95% are redirects**: `GET /abc123` → `301` to the long URL.
+- 5% create links: `POST /links`.
+- Tiny responses (~1 KB).
+
+## How to approach it (interview style)
+
+1. **Clarify** — read- or write-heavy? How consistent? Do links expire?
+2. **Estimate** — 1,000 rps ≈ 2.6 billion requests/month, ~130 million new links/month; ~500 bytes each → ~65 GB/month.
+3. **Data model** — `code → longUrl`. Pure key-value lookups.
+4. **Hot read path** — redirects must be very fast and cheap. Is a cache worth it?
+5. **Resilience** — what happens when an AZ dies? When traffic triples?
+6. **Cost** — which component dominates the bill? Can you trade it?
+
+<Callout type="tip">
+There is no single answer. Try **at least two designs** (e.g. containers + DynamoDB, and serverless) in a free Lab and compare the price panels before submitting.
+</Callout>
+
+After you pass, ask yourself: *at 100× the traffic, what breaks first, and what would you change?*

@@ -1,0 +1,31 @@
+Route 53 is more than an address book — it is a **traffic director** running at hundreds of edge locations with a 100% SLA.
+
+## Public vs private hosted zones
+
+| | Public hosted zone | Private hosted zone |
+|---|---|---|
+| Who can resolve | The whole internet | Only VPCs associated with the zone |
+| Used for | `example.com`, `api.example.com` | `db.internal.example.com`, internal service discovery |
+
+**Route 53 Resolver** lets VPCs and on-prem networks resolve each other's names (inbound/outbound endpoints and forwarding rules), and **DNS Firewall** can block malicious domains.
+
+## Routing policies
+
+| Policy | Behaviour | Example |
+|---|---|---|
+| Simple | One target | A simple website |
+| **Weighted** | Split by percentage | 95/5 canary deployments |
+| **Latency** | Lowest-latency Region for each user | App in Singapore and Frankfurt |
+| **Failover** | Primary; switch to secondary when its health check fails | Active-passive DR |
+| Geolocation | By the user's country/continent | Content per local law |
+| Geoproximity | By distance, with a "bias" to pull more traffic | Gradually shifting traffic between Regions |
+| Multivalue | Return several healthy IPs | Simple client-side load balancing |
+
+## Alias records
+
+- Point at AWS resources (CloudFront, ALB, S3 website, API Gateway…) and **work at the zone apex** (`example.com`), which CNAME cannot.
+- Alias queries to AWS resources are **free**.
+
+<Callout type="key">
+DNS failover is only as fast as the **TTL** plus health-check detection time. Use 60-second TTLs on records you fail over — some clients and resolvers still cache longer, so use Global Accelerator when you need failover in seconds.
+</Callout>

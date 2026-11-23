@@ -1,0 +1,31 @@
+Containers solve "it works on my machine". The next question is **who runs and orchestrates** them.
+
+## Orchestrator and where it runs
+
+|  | **ECS** | **EKS** |
+|---|---|---|
+| What | AWS's own orchestrator | Managed Kubernetes |
+| Complexity | Low: task definitions, services, clusters | High: pods, deployments, ingress, Helm, CRDs… |
+| Control-plane fee | **Free** | ~$73/month per cluster |
+| Ecosystem | Deeply integrated with AWS | Huge, multi-cloud |
+| Fits | Most teams on AWS | Orgs already on Kubernetes, needing portability |
+
+|  | **Fargate** | **EC2 launch type / node groups** |
+|---|---|---|
+| Servers | None to manage | You manage instances |
+| Price | Higher per vCPU | Cheaper, especially with Savings Plans or Spot |
+| Control | Less (no GPUs, no host daemons) | Full |
+| Fits | Small teams, variable load | Large fleets, GPUs, cost tuning |
+
+**App Runner** is the simplest option: give it an image, get an autoscaling HTTPS URL — great for straightforward web services.
+
+<Callout type="key">
+Don't choose Kubernetes because it is popular. For a few services and a small team, **ECS + Fargate** gives 90% of the benefit for 10% of the operations. Choose EKS when you truly need the Kubernetes ecosystem.
+</Callout>
+
+## Questions to decide
+
+1. Does the team already know Kubernetes well? No → ECS.
+2. Must it also run on-prem or on other clouds? Yes → EKS.
+3. Need GPUs, per-host daemons or kernel tuning? Yes → EC2 launch type.
+4. Want minimal operations? → Fargate (or App Runner).

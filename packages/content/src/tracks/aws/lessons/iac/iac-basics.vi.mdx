@@ -1,0 +1,32 @@
+Bấm tay trên console thì nhanh lúc đầu, nhưng **không lặp lại được, không review được, và không biết ai đã đổi gì**. **Infrastructure as Code (IaC)** mô tả hạ tầng bằng file text và đưa nó vào git như code.
+
+## Các công cụ phổ biến
+
+| Công cụ | Ngôn ngữ | Điểm mạnh |
+|---|---|---|
+| **CloudFormation** | YAML/JSON | Công cụ gốc của AWS, không cần quản lý state, rollback tự động |
+| **AWS CDK** | TypeScript, Python… | Dùng vòng lặp, hàm, kiểu dữ liệu; sinh ra CloudFormation |
+| **Terraform / OpenTofu** | HCL | Đa cloud, hệ sinh thái provider khổng lồ, `plan` rất rõ ràng |
+
+```yaml
+# CloudFormation: một bucket có versioning
+Resources:
+  Photos:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+```
+
+## Vòng làm việc
+
+1. Sửa template.
+2. **Plan / change set**: xem trước sẽ **tạo, sửa, xoá** những gì.
+3. Review qua pull request.
+4. **Apply** (thường chạy tự động trong CI/CD).
+
+<Callout type="warning">
+**Drift** là khi ai đó sửa tay trên console và hạ tầng thật không còn khớp với code. Lần apply sau có thể ghi đè hoặc phá thay đổi đó. Hãy coi console là chế độ **chỉ đọc** ở production.
+</Callout>
+
+IaC Lab (viết template, `plan`, `apply` vào mini AWS) sẽ có ở giai đoạn sau. Hiện tại bạn có thể **xuất JSON** của sơ đồ trong Lab, vì nó chính là một dạng "kiến trúc dưới dạng dữ liệu".

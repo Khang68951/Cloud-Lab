@@ -1,0 +1,28 @@
+Người dùng ở xa region của bạn sẽ chịu độ trễ lớn. AWS có hai cách để đưa họ vào mạng xương sống của AWS ngay tại điểm gần nhất.
+
+| | **CloudFront** | **Global Accelerator** |
+|---|---|---|
+| Giao thức | HTTP/HTTPS, WebSocket | **TCP và UDP** bất kỳ |
+| Cache | **Có** | Không |
+| Địa chỉ | Tên miền, IP thay đổi | **2 IP anycast tĩnh** |
+| Failover giữa các region | Origin group / failover origin | **Trong vài giây**, dựa trên health check |
+| Tính năng ở biên | WAF, Functions, Lambda@Edge, nén, chữ ký URL | Không xử lý nội dung |
+| Giá | Theo GB ra + request | $0.025/giờ + phụ phí theo GB |
+
+## Kể cả không cache, CloudFront vẫn có ích
+
+- **Kết thúc TLS gần người dùng**: bắt tay TLS diễn ra ở edge cách người dùng vài ms, chứ không phải ở region cách vài trăm ms.
+- **Tái sử dụng kết nối**: edge giữ sẵn kết nối tới origin trên mạng xương sống của AWS.
+- **Bảo vệ**: WAF và Shield nằm ngay ở biên.
+
+## Xử lý ở biên
+
+| | CloudFront Functions | Lambda@Edge |
+|---|---|---|
+| Chạy ở | Mọi edge location | Edge cache cấp region |
+| Thời gian | Dưới 1 ms | Tới vài giây |
+| Dùng cho | Viết lại URL, header, chuyển hướng, kiểm tra token đơn giản | Logic nặng hơn, gọi mạng, sinh nội dung |
+
+<Callout type="key">
+Nội dung **cache được** → **CloudFront**. Traffic **không phải HTTP** (game, VoIP, IoT), hoặc cần **IP tĩnh** và failover multi-region rất nhanh → **Global Accelerator**. Hai dịch vụ này có thể dùng cùng nhau.
+</Callout>

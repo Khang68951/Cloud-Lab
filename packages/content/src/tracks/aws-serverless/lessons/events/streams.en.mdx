@@ -1,0 +1,34 @@
+A queue answers "who does this job?". A **stream** answers "what happened, and in what order?". Stream data is **retained**, so many consumers can read it independently and replay it.
+
+## Queues vs streams
+
+| | Queue (SQS) | Stream (Kinesis / MSK) |
+|---|---|---|
+| After reading | Message deleted | Data stays (24 hours – 365 days) |
+| Consumers | Workers share the work | Each consumer reads **the whole** stream independently |
+| Ordering | Not guaranteed (except FIFO) | Ordered **within a shard or partition** |
+| Replay | No | Yes — rewind the read position |
+
+## Kinesis Data Streams
+
+- **Shards**: each takes **1,000 records/s or 1 MB/s** in and serves 2 MB/s out.
+- The **partition key** decides the shard. Records with the same key (e.g. `user_id`) stay in order.
+- **On-demand mode** scales shards for you; **provisioned** is cheaper for steady load.
+- **Enhanced fan-out**: each consumer gets its own 2 MB/s per shard, ~70 ms latency.
+- Lambda reads in **batches**. One bad record blocks the shard unless you use *bisect on error*, *max retries* and an on-failure destination.
+
+## MSK (managed Kafka)
+
+Choose **MSK** when your team knows Kafka, needs its ecosystem (Connect, Streams) or is migrating existing systems. **MSK Serverless** removes broker management.
+
+## Common shapes
+
+```
+App/IoT ──► Kinesis ──┬──► Lambda (real-time alerts)
+                      ├──► Firehose ──► S3 (data lake)
+                      └──► Managed Flink (windowed aggregations)
+```
+
+<Callout type="key">
+A **hot shard** appears when one partition key is too popular — choose keys with many, evenly used values. If you need strict global ordering, you get one shard, and therefore limited throughput.
+</Callout>

@@ -1,0 +1,34 @@
+Rất nhiều công ty vẫn có data center hoặc văn phòng cần kết nối với AWS, gọi là kiến trúc **hybrid**.
+
+## Ba lựa chọn
+
+| | **Site-to-Site VPN** | **Direct Connect (DX)** | **Client VPN** |
+|---|---|---|---|
+| Đi qua | Internet (IPsec mã hoá) | Đường truyền riêng tới một điểm DX | Internet, từ máy cá nhân |
+| Dựng | Vài phút | Vài tuần (cần đối tác hoặc điểm kết nối) | Vài phút |
+| Băng thông | ~1,25 Gbps mỗi tunnel | 1, 10, 100 Gbps (hoặc hosted 50 Mbps–25 Gbps) | Theo từng người dùng |
+| Độ trễ | Thay đổi theo internet | **Ổn định** | Thay đổi |
+| Chi phí | $0.05/giờ mỗi kết nối | Phí cổng theo giờ + data ra **rẻ hơn** internet | Theo endpoint và kết nối |
+| Dùng cho | Bắt đầu nhanh, dự phòng | Lưu lượng lớn, ổn định, yêu cầu tuân thủ | Nhân viên làm việc từ xa |
+
+## Thiết kế có dự phòng
+
+```
+Data center ──DX (địa điểm 1)──┐
+            ──DX (địa điểm 2)──┼──► Direct Connect Gateway ──► Transit Gateway ──► các VPC
+            ──VPN (dự phòng)───┘
+```
+
+- **Quan trọng**: hai đường DX ở hai địa điểm khác nhau.
+- **Tiết kiệm**: một đường DX kèm VPN làm dự phòng.
+- Mỗi kết nối VPN đã có **2 tunnel** sẵn (ở hai endpoint AWS khác nhau); hãy cấu hình cả hai.
+
+<Callout type="key">
+DX **không được mã hoá mặc định**. Nếu cần mã hoá, hãy chạy VPN bên trên DX, dùng MACsec (với cổng hỗ trợ), hoặc mã hoá ở tầng ứng dụng (TLS).
+</Callout>
+
+## Sai lầm thường gặp
+
+- Chỉ cấu hình một trong hai tunnel VPN.
+- Dải IP on-prem chồng lên CIDR của VPC.
+- Không tính thời gian chờ có đường DX vào kế hoạch dự án.

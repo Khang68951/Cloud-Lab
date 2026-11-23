@@ -1,0 +1,31 @@
+**Data lake** là nơi lưu mọi dữ liệu của tổ chức, cả có cấu trúc lẫn không cấu trúc, ở dạng **rẻ, bền và truy vấn được**. Trên AWS, nền móng của nó là **S3**.
+
+## Các vùng dữ liệu
+
+```
+nguồn ─► raw / bronze ─► cleaned / silver ─► curated / gold ─► BI, ML, báo cáo
+         (nguyên bản,     (chuẩn hoá,         (tổng hợp theo
+          bất biến)        Parquet, đã lọc)     nghiệp vụ)
+```
+
+Luôn giữ vùng **raw** bất biến: khi logic xử lý thay đổi, bạn có thể **xử lý lại** từ đầu.
+
+## Định dạng và bố cục
+
+| Kỹ thuật | Vì sao |
+|---|---|
+| **Parquet / ORC** (dạng cột, nén) | Truy vấn chỉ đọc các cột cần, thường giảm 10 lần lượng quét |
+| **Partition** (`dt=2026-11-21/`) | Bỏ qua những phần không liên quan |
+| **Kích thước file 128 MB – 1 GB** | Quá nhiều file nhỏ làm truy vấn chậm; hãy gộp (compaction) định kỳ |
+| **Table format** (Apache Iceberg) | Hỗ trợ cập nhật, xoá, time travel và thay đổi schema an toàn trên S3; có **S3 Tables** được quản lý sẵn |
+
+## Catalog và quản trị
+
+- **Glue Data Catalog**: lưu schema và partition của các bảng; Athena, Redshift Spectrum và EMR đều dùng chung.
+- **Glue crawler** hoặc **partition projection** giữ catalog luôn cập nhật.
+- **Lake Formation**: phân quyền chi tiết ở mức **bảng, cột, dòng** và chia sẻ dữ liệu giữa các account.
+- **Mã hoá** (SSE-KMS), **Block Public Access**, và **CloudTrail data events** để biết ai đọc gì.
+
+<Callout type="warning">
+Thiếu catalog và quản trị, data lake sẽ thành **data swamp**: không ai biết dữ liệu nào đúng, ai sở hữu, và có được phép dùng hay không. Hãy gắn owner, mô tả và mức độ nhạy cảm cho từng bảng ngay từ đầu.
+</Callout>

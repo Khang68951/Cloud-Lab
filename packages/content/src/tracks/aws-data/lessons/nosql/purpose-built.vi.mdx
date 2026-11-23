@@ -1,0 +1,34 @@
+AWS theo triết lý **"database chuyên dụng"**: mỗi kiểu dữ liệu và kiểu truy vấn có một engine được tối ưu riêng. Ép mọi thứ vào một database thường dẫn tới chậm, đắt hoặc cả hai.
+
+| Kiểu dữ liệu / truy vấn | Dịch vụ | Ví dụ |
+|---|---|---|
+| Quan hệ, transaction | RDS, Aurora | Đơn hàng, kế toán |
+| Key-value ở quy mô cực lớn | **DynamoDB** | Session, giỏ hàng, hồ sơ người dùng |
+| In-memory | **ElastiCache**, **MemoryDB** (bền vững) | Cache, bảng xếp hạng, rate limit |
+| Document (JSON, tương thích MongoDB) | **DocumentDB** | Catalog sản phẩm linh hoạt |
+| Wide-column (tương thích Cassandra) | **Keyspaces** | Ứng dụng đã viết sẵn cho Cassandra |
+| Graph | **Neptune** | Mạng xã hội, gợi ý, phát hiện gian lận |
+| Time-series | **Timestream** | IoT, metric, dữ liệu thị trường |
+| Tìm kiếm toàn văn, log | **OpenSearch** | Tìm sản phẩm, phân tích log |
+| Kho dữ liệu phân tích (OLAP) | **Redshift** | Báo cáo trên hàng tỉ dòng |
+| Sổ cái bất biến | QLDB đã ngừng; dùng Aurora kèm bảng audit, hoặc chữ ký | Lịch sử giao dịch kiểm chứng được |
+
+## Kết hợp nhiều database
+
+```
+App ──ghi──► Aurora (nguồn dữ liệu gốc)
+                │ change data capture
+                ├──► OpenSearch (tìm kiếm)
+                ├──► ElastiCache (đọc nóng)
+                └──► S3 / Redshift (phân tích)
+```
+
+<Callout type="key">
+Mỗi database thêm vào là thêm một thứ phải vận hành, đồng bộ và trả tiền. Hãy bắt đầu với **ít database nhất** đáp ứng được yêu cầu, và chỉ thêm engine chuyên dụng khi một truy vấn cụ thể thật sự cần.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Dùng OpenSearch làm nguồn dữ liệu gốc: index có thể phải dựng lại, nên dữ liệu gốc phải nằm ở nơi khác.
+- Chạy truy vấn phân tích nặng trên database phục vụ request (OLTP) và làm chậm người dùng.
+- Chọn graph database cho dữ liệu thật ra chỉ có quan hệ 1–2 bước.

@@ -1,0 +1,13 @@
+{
+  "title": "Service Explorer",
+  "subtitle": "Mỗi dịch vụ AWS: dùng khi nào, khi nào không, ưu nhược điểm và cách tính giá. Chọn tối đa vài dịch vụ để so sánh cạnh nhau.",
+  "search": "Tìm theo tên hoặc mô tả…",
+  "compareHint": "Chọn tối đa {{max}} dịch vụ để so sánh.",
+  "comparing_one": "So sánh {{count}} dịch vụ",
+  "comparing_other": "So sánh {{count}} dịch vụ",
+  "clear": "Bỏ chọn",
+  "details": "Chi tiết",
+  "compare": "So sánh",
+  "equivalents": "Tương đương",
+  "tryInLab": "Thử trong Lab"
+}

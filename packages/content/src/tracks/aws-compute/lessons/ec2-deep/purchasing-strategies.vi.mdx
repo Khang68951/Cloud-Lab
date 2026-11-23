@@ -1,0 +1,37 @@
+Cùng một instance, giá có thể chênh tới 10 lần tuỳ **cách bạn mua**. Chiến lược tốt là **kết hợp** nhiều cách mua, không chọn duy nhất một.
+
+## Các lựa chọn
+
+| Cách mua | Giảm giá | Cam kết | Rủi ro |
+|---|---|---|---|
+| **On-Demand** | 0% | Không | Không |
+| **Compute Savings Plans** | tới ~66% | $/giờ trong 1–3 năm; linh hoạt họ, region, cả Fargate và Lambda | Trả tiền kể cả khi không dùng |
+| **EC2 Instance Savings Plans** | tới ~72% | Cố định họ instance trong một region | Kém linh hoạt hơn |
+| **Reserved Instances** | tới ~72% | Loại instance cụ thể | Cách cũ; Savings Plans thường tiện hơn |
+| **Spot** | tới ~90% | Không | Bị thu hồi với **2 phút báo trước** |
+
+## Kết hợp theo "lớp"
+
+```
+Số instance
+ 30 ┤        ╭──╮              ← cao điểm: On-Demand (+ Spot cho phần stateless)
+    │      ╭─╯  ╰─╮
+ 10 ┼──────╯      ╰──────      ← nền luôn chạy: Savings Plan
+    └──────────────────── giờ trong ngày
+```
+
+1. **Nền** (thứ luôn chạy 24/7) → Savings Plan.
+2. **Phần dao động** → On-Demand với Auto Scaling.
+3. **Việc chịu được bị ngắt** (batch, CI, worker sau queue, xử lý dữ liệu) → **Spot**.
+
+## Dùng Spot an toàn
+
+- **Đa dạng hoá**: nhiều loại instance (vd m6i, m6a, m7g, c6i) và nhiều AZ. Dùng chiến lược *price-capacity-optimized*.
+- **Xử lý thông báo ngắt 2 phút**: lưu trạng thái, rút khỏi load balancer, trả message về queue.
+- Workload phải **idempotent** và **không giữ trạng thái quan trọng** trên máy.
+
+<Callout type="key">
+Thứ tự đúng: **rightsize trước, cam kết sau**. Cam kết Savings Plan cho fleet quá cỡ chỉ là khoá chặt sự lãng phí trong 1–3 năm.
+</Callout>
+
+Thử thách bên dưới: kết hợp rightsizing và Spot cho một fleet worker.

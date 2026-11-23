@@ -1,0 +1,36 @@
+"There are two hard things in computer science: naming things and cache invalidation." This lesson helps with the second.
+
+## Read/write patterns
+
+| Pattern | How | Pros | Cons |
+|---|---|---|---|
+| **Cache-aside** (lazy loading) | Read cache; on miss read DB and fill cache | Caches only what is read; app survives a cache outage | First read is slow; data can be stale until TTL |
+| **Write-through** | Every write updates DB and cache | Cache always fresh | Extra writes; caches data nobody reads |
+| **Write-behind** | Write to cache, flush to DB in batches | Very fast writes | Data loss if the cache dies |
+| **Invalidate on write** | Write DB, then **delete** the cache key | Simple, avoids racing stale values | Next read misses |
+
+## TTLs and eviction
+
+- **TTL** is your safety net — even if you forget to invalidate, data expires. Add **jitter** (TTL ± random) so keys do not expire together.
+- **Eviction** when memory is full: `allkeys-lru` (drop least recently used) is the common choice for pure caches.
+
+## Preventing cache stampedes
+
+When a hot key expires, thousands of requests miss together and hammer the DB. Fixes:
+- **Request coalescing / locks** — one request refreshes, others wait.
+- **Stale-while-revalidate** — serve the old value, refresh in the background.
+- **Refresh ahead** of expiry for the hottest keys.
+
+## Redis/Valkey data structures
+
+| Structure | Use for |
+|---|---|
+| String | Cached values, counters (`INCR`) |
+| Hash | Objects, sessions |
+| Sorted set | **Leaderboards**, priority queues |
+| List / Stream | Lightweight queues, event streams |
+| Counter with TTL | **Rate limiting** |
+
+<Callout type="key">
+A cache must be **disposable**: the app must still work correctly (just slower) with an empty cache. If losing it loses data, it is not a cache — use MemoryDB or a real database.
+</Callout>

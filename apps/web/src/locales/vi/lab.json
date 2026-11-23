@@ -1,0 +1,184 @@
+{
+  "perMonth": "tháng",
+  "perMonthShort": "th",
+  "untitled": "Thiết kế chưa đặt tên",
+  "status": {
+    "down": "SẬP"
+  },
+  "utilizationAtPeak": "Mức tải lúc cao điểm",
+  "autoScales": "Tự scale",
+  "emptyHint": "Kéo dịch vụ từ cột bên trái vào đây, rồi nối chúng bằng cách kéo từ chấm tròn của một node sang node khác.",
+  "mobileHint": "Lab hoạt động tốt nhất trên màn hình rộng (máy tính).",
+  "panel": {
+    "title": "Bảng giá và phân tích"
+  },
+  "palette": {
+    "title": "Dịch vụ AWS",
+    "search": "Tìm {{count}} dịch vụ…",
+    "hint": "Kéo thả vào canvas, hoặc bấm để thêm.",
+    "empty": "Không tìm thấy dịch vụ.",
+    "seeAll": "Xem tất cả ({{count}})",
+    "dialogHint": "{{count}} dịch vụ — bấm vào một dịch vụ để thêm vào canvas.",
+    "popular": "Phổ biến",
+    "others": "Dịch vụ khác",
+    "searchIn": "Tìm trong nhóm này…",
+    "categories": "Nhóm dịch vụ"
+  },
+  "tabs": {
+    "brief": "Đề bài",
+    "cost": "Chi phí",
+    "inspect": "Cấu hình",
+    "scenario": "Kịch bản",
+    "review": "Đánh giá"
+  },
+  "summary": {
+    "monthly": "Ước tính chi phí hằng tháng",
+    "latency": "Độ trễ p95",
+    "latencySub": "trung bình {{avg}} ms",
+    "availability": "Availability",
+    "downtime": "~{{min}} phút sập/tháng",
+    "maxPeak": "Đỉnh chịu được",
+    "maxPeakSub": "trước khi có node quá tải",
+    "errors": "Lỗi lúc cao điểm",
+    "errorsSub": "do quá tải hoặc sự cố"
+  },
+  "chaos": {
+    "hint": "Phá thử hệ thống để xem nó có trụ được không.",
+    "azDown": "Sập AZ-a",
+    "azDownHelp": "Tài nguyên single-AZ sập; fleet multi-AZ mất một nửa (Auto Scaling sẽ bù lại).",
+    "spike": "Traffic ×10",
+    "spikeHelp": "Một đợt tăng vọt gấp 10 lần lưu lượng bình thường.",
+    "killHint_one": "{{count}} node đang bị tắt (chọn node → Tắt node).",
+    "killHint_other": "{{count}} node đang bị tắt (chọn node → Tắt node).",
+    "reset": "Tắt chế độ Chaos",
+    "survives": "Hệ thống vẫn sống ({{errors}}% lỗi)",
+    "fails": "Hệ thống SẬP với sự cố này"
+  },
+  "cost": {
+    "byKind": "Chi phí theo loại",
+    "kinds": {
+      "compute": "Compute",
+      "storage": "Lưu trữ",
+      "requests": "Request",
+      "transfer": "Data transfer",
+      "other": "Khác"
+    },
+    "byService": "Theo dịch vụ",
+    "empty": "Thêm dịch vụ để xem chi phí.",
+    "details": "Xem chi tiết",
+    "free": "Không tính phí",
+    "disclaimer": "Giá tham khảo On-Demand ở {{region}}, cập nhật {{date}}. Chưa gồm thuế, free tier, giá bậc thang và chiết khấu. Dùng để so sánh phương án, không phải báo giá.",
+    "egressRow": "Data transfer tới người dùng"
+  },
+  "inspector": {
+    "duplicate": "Nhân bản",
+    "kill": "Tắt node",
+    "revive": "Bật lại",
+    "killHelp": "Chaos: giả lập node này bị hỏng",
+    "delete": "Xoá",
+    "traffic": "Traffic (TB / đỉnh)",
+    "capacity": "Sức chứa",
+    "latency": "Độ trễ thêm vào",
+    "cost": "Chi phí/tháng",
+    "layout": "Vị trí",
+    "usersHint": "Lưu lượng của Users được đặt trong tab Kịch bản (bỏ chọn node để mở).",
+    "label": "Tên hiển thị",
+    "guide": "Khi nào dùng và giá"
+  },
+  "layout": {
+    "regional": "Regional (nhiều AZ)",
+    "single-az": "Một AZ",
+    "multi-az": "Nhiều AZ"
+  },
+  "docs": {
+    "whenToUse": "Khi nào nên dùng",
+    "whenNotTo": "Khi nào KHÔNG nên dùng",
+    "pros": "Ưu điểm",
+    "cons": "Nhược điểm",
+    "pitfalls": "Sai lầm thường gặp",
+    "pricing": "Cách tính giá"
+  },
+  "scenario": {
+    "title": "Kịch bản traffic",
+    "locked": "Cố định theo đề",
+    "hint": "Lưu lượng chảy từ Users qua sơ đồ của bạn. Capacity được kiểm tra lúc cao điểm, chi phí tính theo trung bình.",
+    "rps": "Request/giây (trung bình)",
+    "rpsHelp": "≈ {{m}} triệu request/tháng",
+    "peak": "Hệ số cao điểm",
+    "peakHelp": "Đỉnh = {{peak}} request/giây",
+    "readRatio": "Tỉ lệ đọc",
+    "readRatioHelp": "Phần còn lại là ghi. Đọc đi qua cache/CDN; ghi luôn tới database.",
+    "payload": "Kích thước response (KB)",
+    "payloadHelp": "Quyết định data transfer ra internet.",
+    "region": "Region",
+    "tip": "Mẹo: tăng request/giây lên gấp 10 và xem node nào chuyển đỏ trước — đó là điểm nghẽn của bạn."
+  },
+  "review": {
+    "clean": "Không có vấn đề nào",
+    "cleanHint": "Thử Chaos để kiểm tra độ bền vững.",
+    "hint": "Bấm vào một mục để tới node liên quan."
+  },
+  "severity": {
+    "error": "Lỗi",
+    "warning": "Cảnh báo",
+    "info": "Gợi ý"
+  },
+  "pillar": {
+    "reliability": "Độ tin cậy",
+    "performance": "Hiệu năng",
+    "cost": "Chi phí",
+    "security": "Bảo mật",
+    "operational": "Vận hành"
+  },
+  "challengeKind": {
+    "canvas-design": "Thiết kế",
+    "canvas-fix": "Sửa kiến trúc"
+  },
+  "challenge": {
+    "requirements": "Yêu cầu (kiểm tra trực tiếp)",
+    "met": "Đạt",
+    "notMet": "Chưa đạt",
+    "hints": "Gợi ý",
+    "showHint": "Xem gợi ý {{n}}/{{total}}",
+    "submit": "Nộp bài",
+    "passed": "Đạt! Bài đã được lưu vào tiến độ.",
+    "failed": "Chưa đạt ({{score}}%). Xem các yêu cầu còn đỏ.",
+    "reference": "Xem lời giải tham khảo",
+    "notFound": "Không tìm thấy bài tập này."
+  },
+  "toolbar": {
+    "title": "Tên thiết kế",
+    "templates": "Mẫu",
+    "templatesHint": "Thay canvas bằng một mẫu (có thể hoàn tác)",
+    "resetChallenge": "Làm lại từ đầu",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "chaos": "Chaos",
+    "export": "Xuất",
+    "exportPng": "Ảnh PNG",
+    "exportJson": "File JSON",
+    "importJson": "Nhập từ JSON…",
+    "open": "Mở",
+    "save": "Lưu"
+  },
+  "open": {
+    "title": "Thiết kế đã lưu",
+    "description": "Lưu trong database local trên máy bạn.",
+    "empty": "Chưa có thiết kế nào. Bấm Lưu để lưu thiết kế hiện tại.",
+    "delete": "Xoá {{title}}",
+    "confirmDelete": "Xoá thiết kế \"{{title}}\"?"
+  },
+  "toast": {
+    "imported": "Đã nhập thiết kế",
+    "importFailed": "File JSON không hợp lệ",
+    "saved": "Đã lưu \"{{title}}\"",
+    "saveFailed": "Không lưu được — API có đang chạy không?",
+    "openFailed": "Không mở được thiết kế"
+  },
+  "dataOut": "dữ liệu ra",
+  "back": {
+    "short": "Về bài",
+    "title": "Quay về bài học: {{title}}",
+    "afterPass": "Quay về xem kết quả"
+  }
+}

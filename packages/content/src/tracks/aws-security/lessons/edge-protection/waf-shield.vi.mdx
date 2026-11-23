@@ -1,0 +1,29 @@
+Mọi thứ public trên internet đều bị dò quét và tấn công liên tục. Lớp phòng thủ đầu tiên nên nằm **ở biên**, trước khi request kịp tới ứng dụng.
+
+## Ba lớp bảo vệ ở biên
+
+| Lớp | Chống lại | Ghi chú |
+|---|---|---|
+| **AWS Shield Standard** | DDoS tầng 3/4 (SYN flood, UDP reflection) | **Miễn phí, tự động** cho mọi khách hàng |
+| **AWS WAF** | Tấn công tầng 7: SQL injection, XSS, bot, lạm dụng API | Gắn vào CloudFront, ALB, API Gateway, AppSync, Cognito |
+| **Shield Advanced** | DDoS lớn, có đội phản ứng (SRT) và bồi hoàn chi phí khi bị tấn công | ~$3.000/tháng: dành cho hệ thống quan trọng |
+
+## Các loại rule WAF hay dùng
+
+- **Managed rule group** của AWS: Core rule set (OWASP), known bad inputs, SQL database, IP reputation, Bot Control.
+- **Rate-based rule**: chặn IP gửi quá N request trong 5 phút, cực hiệu quả cho `/login` và `/api`.
+- **Geo match / IP set**: chặn hoặc chỉ cho phép theo quốc gia, theo dải IP.
+- Bắt đầu ở chế độ **Count** để xem rule bắt những gì, rồi mới chuyển sang **Block**.
+
+## Khoá origin: đừng để bị đi vòng
+
+WAF đặt ở CloudFront mà origin vẫn truy cập trực tiếp được thì kẻ tấn công chỉ cần đi vòng qua.
+
+- **S3**: dùng **Origin Access Control (OAC)** và bucket policy chỉ cho phép CloudFront, đồng thời bật Block Public Access.
+- **ALB**: security group chỉ cho phép *managed prefix list* của CloudFront, kèm một header bí mật do CloudFront gắn vào; hoặc dùng **VPC origin** để ALB nằm hẳn trong subnet private.
+
+<Callout type="key">
+Phòng thủ nhiều lớp: WAF ở biên, security group ở mạng, IAM ở API, mã hoá cho dữ liệu. Không lớp nào là đủ một mình.
+</Callout>
+
+Thử thách bên dưới: sửa một API đang phơi database ra internet và chưa có WAF.

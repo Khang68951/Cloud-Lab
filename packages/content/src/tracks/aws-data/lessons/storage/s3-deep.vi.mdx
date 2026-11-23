@@ -1,0 +1,36 @@
+Ở Core bạn đã biết storage class và lifecycle. Bài này đi vào những tính năng mà hệ thống thật cần tới.
+
+## Những điều nên biết về S3
+
+| Chủ đề | Điều cần nhớ |
+|---|---|
+| **Tính nhất quán** | **Nhất quán mạnh** đọc-sau-ghi cho PUT, DELETE và LIST (từ 2020) |
+| **Hiệu năng** | ≥ 3.500 PUT và 5.500 GET mỗi giây **cho mỗi prefix**; nhiều prefix thì nhân lên. Multipart upload cho file > 100 MB |
+| **Presigned URL** | URL có chữ ký và thời hạn, cho phép tải lên hoặc tải về mà không cần credential AWS |
+| **Versioning** | Giữ mọi phiên bản, chống xoá nhầm và ghi đè; dùng kèm lifecycle để dọn các phiên bản cũ |
+| **Replication** | CRR (khác region) hoặc SRR (cùng region), có thể chuyển sang storage class khác; RTC cam kết 15 phút |
+| **Object Lock** | WORM: *governance* (người có quyền đặc biệt vẫn gỡ được) hoặc *compliance* (không ai gỡ được, kể cả root) |
+| **Event** | Gửi sự kiện tới Lambda, SQS, SNS hoặc EventBridge khi object được tạo hay xoá |
+| **Bảo mật** | Block Public Access, bucket policy, mã hoá SSE-S3/SSE-KMS, *Object Ownership = bucket owner enforced* (tắt ACL) |
+
+## Mẫu upload từ trình duyệt
+
+```
+Browser ──(1) xin URL──► API (Lambda) ──ký presigned URL──┐
+   │                                                       │
+   └──(2) PUT thẳng file lên S3 ◄──────────────────────────┘
+                     │
+                     └──(3) S3 event ──► SQS ──► worker tạo thumbnail
+```
+
+Server chỉ **ký URL**, còn dữ liệu đi thẳng từ trình duyệt vào S3. Nhờ vậy không tốn băng thông hay CPU của server.
+
+<Callout type="key">
+S3 không phải hệ thống file. Không có "sửa một phần file", "đổi tên" thực chất là copy rồi xoá, còn LIST trên hàng triệu object thì chậm. Hãy lưu **metadata trong database** và chỉ dùng S3 cho nội dung file.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Bật versioning nhưng không có lifecycle, khiến các phiên bản cũ cộng dồn chi phí mãi.
+- Dùng một prefix duy nhất cho hàng chục nghìn request mỗi giây.
+- Cho phép ACL công khai thay vì phục vụ qua CloudFront dùng OAC.

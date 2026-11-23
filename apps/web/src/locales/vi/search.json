@@ -1,0 +1,13 @@
+{
+  "title": "Tìm kiếm",
+  "placeholder": "Tìm khoá học, bài học, dịch vụ, thuật ngữ…",
+  "hint": "Gõ để tìm. Dùng ↑ ↓ để chọn, Enter để mở.",
+  "empty": "Không tìm thấy kết quả.",
+  "kinds": {
+    "course": "Khoá học",
+    "lesson": "Bài học",
+    "challenge": "Thử thách",
+    "service": "Dịch vụ AWS",
+    "term": "Thuật ngữ"
+  }
+}

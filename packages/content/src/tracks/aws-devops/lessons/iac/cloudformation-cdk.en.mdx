@@ -1,0 +1,40 @@
+**Infrastructure as Code (IaC)** means describing infrastructure in files kept in Git instead of clicking in the console — so it can be reviewed, repeated, rolled back and audited.
+
+## CloudFormation: AWS's native engine
+
+| Concept | Meaning |
+|---|---|
+| **Template** | YAML/JSON describing resources |
+| **Stack** | One deployment of a template; creates, updates and deletes resources together |
+| **Change set** | A preview of changes, including which resources will be **replaced** |
+| **Drift detection** | Finds resources changed by hand, away from the template |
+| **Rollback** | A failed update returns to the previous state |
+| **StackSets** | Deploy the same stack to many accounts and Regions |
+
+<Callout type="warning">
+Some property changes (e.g. renaming a DB, changing the engine) force CloudFormation to **create a new resource and delete the old one**. For stateful resources, set `DeletionPolicy: Retain` and `UpdateReplacePolicy: Retain`, enable deletion protection, and always review the change set.
+</Callout>
+
+## CDK: infrastructure in a programming language
+
+```ts
+const table = new dynamodb.Table(this, 'Orders', {
+  partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+  billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  removalPolicy: RemovalPolicy.RETAIN,
+});
+const fn = new lambda.NodejsFunction(this, 'Api', { entry: 'src/api.ts' });
+table.grantReadWriteData(fn); // generates a least-privilege IAM policy
+```
+
+- **Constructs** are reusable building blocks: L1 = 1:1 CloudFormation, L2 = sensible defaults, L3 = whole patterns.
+- `cdk synth` produces CloudFormation, `cdk diff` previews, `cdk deploy` deploys.
+- Write **tests** for infrastructure (template assertions) like any other code.
+
+## Which tool?
+
+| | CloudFormation | CDK | Terraform |
+|---|---|---|---|
+| Language | YAML/JSON | TS, Python, Java, Go… | HCL |
+| Scope | AWS | AWS (plus cdk8s, cdktf) | Multi-cloud, SaaS |
+| State | Managed by AWS | Managed by AWS | You manage it |

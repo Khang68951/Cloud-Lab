@@ -1,0 +1,36 @@
+S3 stores **objects** (file + metadata) in **buckets**, with 99.999999999% (11 nines) durability — data is replicated across AZs automatically.
+
+## Three kinds of storage on AWS
+
+| Kind | Service | For |
+|---|---|---|
+| **Object** | S3 | Files, images, video, backups, data lakes, static sites |
+| **Block** | EBS | An EC2 instance's disk (OS, self-managed databases) |
+| **File** | EFS / FSx | Shared folders for many instances (NFS/SMB) |
+
+## Storage classes: pay for how "hot" data is
+
+| Class | Storage ($/GB-month) | Retrieval | When |
+|---|---|---|---|
+| **Standard** | ~0.023 | Free | Frequently used data |
+| **Intelligent-Tiering** | ~0.023 → cheaper automatically | Free | Unknown access patterns |
+| **Standard-IA** | ~0.0125 | ~$0.01/GB | Read less than ~once a month |
+| **Glacier Instant Retrieval** | ~0.004 | ~$0.03/GB | Long-term, occasionally needed instantly |
+| **Glacier Deep Archive** | ~0.001 | Hours | Compliance archives, almost never read |
+
+<Callout type="warning">
+Cheap-to-**store** classes are expensive to **read**. Putting hot data in IA/Glacier can **raise** your bill.
+</Callout>
+
+## Lifecycle rules: automate it
+
+Example for logs:
+
+```
+0–30 days   → Standard
+30–90 days  → Standard-IA
+90–365 days → Glacier Instant Retrieval
+> 365 days  → Delete
+```
+
+Also: turn on **versioning** to survive accidental deletes (with lifecycle to clean old versions), keep **Block Public Access** on, and serve files to the internet through **CloudFront**, not directly from S3.

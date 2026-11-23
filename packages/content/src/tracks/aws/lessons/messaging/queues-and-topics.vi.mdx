@@ -1,0 +1,27 @@
+Gọi đồng bộ nghĩa là chuỗi gọi chạy nhanh bằng mắt xích chậm nhất và hỏng theo mắt xích yếu nhất. **Messaging** tách hai bên ra: bên gửi không cần đợi bên nhận xử lý xong.
+
+<ServiceCompare ids="sqs,sns,eventbridge,kinesis" />
+
+## Ba mẫu bạn sẽ dùng liên tục
+
+**1. Queue: làm phẳng tải (load levelling)**
+```
+API → SQS → Worker → Database
+```
+Flash sale đẩy request lên gấp 10, queue hấp thụ hết, và worker xử lý theo nhịp mà database chịu được. Database chỉ cần đủ cho lưu lượng **trung bình**, không phải lưu lượng **đỉnh**.
+
+**2. Fan-out: một sự kiện, nhiều bên quan tâm**
+```
+"Đã đặt hàng" → SNS ─┬─► SQS → Thanh toán
+                     ├─► SQS → Giao hàng
+                     └─► SQS → Email
+```
+Mỗi service có queue riêng, nên retry độc lập và một service lỗi không ảnh hưởng các service khác.
+
+**3. Stream: luồng sự kiện có thứ tự, phát lại được** (Kinesis/Kafka) cho clickstream, IoT, analytics.
+
+<Callout type="warning">
+SQS standard gửi message **ít nhất một lần** và có thể **không đúng thứ tự**. Consumer phải **idempotent** (xử lý hai lần cũng an toàn), và luôn cần một **dead-letter queue (DLQ)** để giữ lại message lỗi.
+</Callout>
+
+Trong Lab, cạnh đi ra từ queue là **nét đứt**: nằm ngoài đường request của người dùng, nên không cộng vào độ trễ. Service phía sau queue chỉ cần chịu lưu lượng trung bình.

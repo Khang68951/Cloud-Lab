@@ -1,0 +1,38 @@
+Serverless can be almost **free** — or 10× the price of containers. What decides it is the **shape of your traffic**.
+
+## Lambda's cost formula
+
+```
+Cost = requests × $0.20/million
+     + requests × duration (s) × memory (GB) × $0.0000167
+```
+
+Example: 100 M invocations × 0.2 s × 0.5 GB = 10 M GB-s ≈ **$167** + $20 of request fees.
+
+## The break-even point
+
+| Traffic | Cheaper option | Why |
+|---|---|---|
+| Low or mostly idle | **Serverless** | Nothing to pay when idle |
+| Unpredictable spikes | **Serverless** | No headroom to pay for |
+| High and steady 24/7 | **Containers / EC2** (with Savings Plans) | Hourly capacity beats per-request pricing |
+
+Once traffic is **steady at a few dozen requests per second or more**, run the numbers. REST API Gateway alone at 2,000 rps costs over **$18,000** a month.
+
+## Hidden costs
+
+- **CloudWatch Logs**: $0.50/GB ingested. Chatty logs often cost more than compute — set log levels and retention.
+- **Paying for waiting**: Lambda duration includes time waiting on a slow API. Use Step Functions direct integrations or waits, and parallelise.
+- **NAT Gateway**: VPC Lambdas calling the internet or AWS services pay data processing — use VPC endpoints.
+- **Lambda calling Lambda**: you pay twice for the same wait.
+
+## Optimising
+
+- **Tune memory** (AWS Lambda Power Tuning): more memory means more CPU and shorter runs — sometimes **cheaper** overall.
+- **Arm64 (Graviton)**: ~20% cheaper per GB-second.
+- **Batch** SQS/Kinesis messages to cut invocations.
+- **Compute Savings Plans** cover Lambda too.
+
+<Callout type="key">
+Start serverless to move fast and pay nothing when idle. When an endpoint becomes **hot and steady**, move it to containers behind an ALB — a natural evolution, not a failure.
+</Callout>

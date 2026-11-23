@@ -1,0 +1,40 @@
+SQS, SNS và EventBridge đều "chuyển message", nhưng mỗi dịch vụ giải một bài toán khác nhau. Hiểu rõ cả ba là nền móng của mọi kiến trúc event-driven.
+
+## Ba công cụ, ba vai trò
+
+| | **SQS** | **SNS** | **EventBridge** |
+|---|---|---|---|
+| Mô hình | Queue: **một** consumer xử lý mỗi message | Topic: đẩy tới **mọi** subscriber | Bus: định tuyến theo **rule trên nội dung** |
+| Lưu trữ | Tới 14 ngày | Không lưu | Có archive và replay |
+| Lọc | Không | Filter policy trên thuộc tính | Rule rất mạnh trên toàn bộ JSON |
+| Giá | $0.40 / triệu request | $0.50 / triệu publish | $1 / triệu sự kiện |
+| Dùng cho | Hàng đợi công việc, giảm tải | Fan-out đơn giản, khối lượng lớn | Microservice, sự kiện từ dịch vụ AWS, SaaS, lịch chạy |
+
+## SQS: các chi tiết quan trọng
+
+- **Standard**: throughput gần như vô hạn, **gửi ít nhất một lần**, thứ tự không được đảm bảo.
+- **FIFO**: đúng thứ tự trong mỗi *message group*, loại bỏ trùng lặp trong 5 phút; throughput giới hạn (tăng được bằng *high throughput mode*).
+- **Visibility timeout**: khoảng thời gian message bị ẩn sau khi được nhận. Đặt khoảng 6 lần thời gian xử lý.
+- **DLQ** với `maxReceiveCount`: message lỗi được tách ra sau N lần thử; luôn đặt **alarm** trên DLQ.
+- **Long polling** (`WaitTimeSeconds=20`) và **batch** (10 message) giúp giảm số request và chi phí.
+
+## Fan-out SNS → SQS
+
+```
+            ┌──► SQS billing  ──► Lambda billing
+orders ──► SNS ──► SQS shipping ──► Lambda shipping
+            └──► SQS email    ──► Lambda email   (mỗi queue có DLQ riêng)
+```
+
+Mỗi consumer có **bộ đệm riêng**: một dịch vụ chậm hay hỏng không ảnh hưởng tới các dịch vụ khác, và cũng không ảnh hưởng tới người dùng.
+
+## EventBridge: hơn cả một topic
+
+- **Rule** khớp trên mọi trường của sự kiện (`"detail.total": [{"numeric": [">", 1000]}]`).
+- **Archive và replay**: phát lại sự kiện sau khi sửa lỗi.
+- **Pipes**: nối nguồn (SQS, Kinesis, DynamoDB Streams) tới đích, kèm lọc và làm giàu dữ liệu, không cần code kết nối.
+- **Scheduler**: chạy định kỳ hoặc một lần, ở quy mô hàng triệu lịch.
+
+<Callout type="key">
+Message có thể tới **nhiều hơn một lần**. Mọi consumer phải **idempotent**: xử lý cùng một message nhiều lần vẫn cho kết quả như một lần.
+</Callout>

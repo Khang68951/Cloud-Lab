@@ -1,0 +1,31 @@
+Route 53 không chỉ là "sổ địa chỉ". Nó là **bộ điều hướng traffic** chạy ở hàng trăm điểm edge, với SLA 100%.
+
+## Public và private hosted zone
+
+| | Public hosted zone | Private hosted zone |
+|---|---|---|
+| Ai phân giải được | Cả internet | Chỉ các VPC được gắn với zone |
+| Dùng cho | `example.com`, `api.example.com` | `db.internal.example.com`, service discovery nội bộ |
+
+**Route 53 Resolver** giúp VPC và mạng on-prem phân giải tên của nhau (inbound/outbound endpoint và forwarding rule), và có thể kèm **DNS Firewall** để chặn các domain độc hại.
+
+## Routing policy
+
+| Policy | Hành vi | Ví dụ |
+|---|---|---|
+| Simple | Một đích | Trang web đơn giản |
+| **Weighted** | Chia theo tỉ lệ | Canary 95/5 khi deploy |
+| **Latency** | Đưa người dùng tới region có độ trễ thấp nhất | App chạy ở Singapore và Frankfurt |
+| **Failover** | Bản chính; khi health check fail thì chuyển sang bản phụ | DR active-passive |
+| Geolocation | Theo quốc gia/châu lục của người dùng | Nội dung theo luật địa phương |
+| Geoproximity | Theo khoảng cách, có "bias" để kéo thêm traffic | Dời dần traffic giữa các region |
+| Multivalue | Trả nhiều IP còn sống | Cân bằng tải đơn giản ở phía client |
+
+## Alias record
+
+- Trỏ tới tài nguyên AWS (CloudFront, ALB, S3 website, API Gateway…) và **dùng được ở đỉnh zone** (`example.com`), điều mà CNAME không làm được.
+- Truy vấn alias tới tài nguyên AWS **miễn phí**.
+
+<Callout type="key">
+Failover qua DNS chỉ nhanh ngang **TTL** cộng thời gian health check phát hiện lỗi. Với bản ghi cần failover, hãy đặt TTL 60 giây; nhiều client và resolver vẫn cache lâu hơn, nên nếu cần failover trong vài giây thì dùng Global Accelerator.
+</Callout>

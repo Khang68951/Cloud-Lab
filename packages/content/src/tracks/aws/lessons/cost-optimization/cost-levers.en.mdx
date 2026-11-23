@@ -1,0 +1,23 @@
+Cloud cost optimisation (FinOps) has an order. Do it in the wrong order and you lock in waste.
+
+| # | Lever | Examples | Typical saving |
+|---|---|---|---|
+| 1 | **Remove waste** | Stop dev at night, delete unattached EBS, old snapshots, forgotten load balancers | 10–30% |
+| 2 | **Rightsizing** | Instances at 5% CPU → drop 2–4 sizes | 20–50% |
+| 3 | **Architecture** | Lambda for low traffic, cache before the DB, VPC endpoints instead of NAT, CloudFront for static content | Varies widely |
+| 4 | **Commit** | Savings Plans/Reserved for the **steady** baseline | 28–72% |
+| 5 | **Spot** | Batch, CI, interruptible workers | up to 90% |
+
+<Callout type="key">
+**Measure, then cut.** In the Lab, the % badge on each node is its utilisation at peak; under ~15% means you are paying for idle capacity. The *Review* tab points those out.
+</Callout>
+
+## The usual hidden items
+
+- **Data transfer** — to the internet, between AZs ($0.01/GB each way), through NAT ($0.045/GB).
+- **Things nobody turns off** — NAT Gateways and ALBs bill hourly even with no traffic.
+- **Logs** — CloudWatch Logs charges per GB ingested; set retention instead of keeping forever.
+
+## Culture
+
+**Tag** everything (`team`, `env`, `project`), set up **AWS Budgets** alerts, and review **Cost Explorer** weekly. Cost is an engineering metric, like latency.

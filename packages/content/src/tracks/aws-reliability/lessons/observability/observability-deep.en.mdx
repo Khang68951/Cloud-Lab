@@ -1,0 +1,33 @@
+Monitoring tells you **that** something is wrong. **Observability** helps you understand **why** — even for problems you have never seen before.
+
+## Three pillars
+
+| Signal | Answers | On AWS |
+|---|---|---|
+| **Metrics** | Is something wrong? What is the trend? | CloudWatch Metrics, Managed Prometheus |
+| **Logs** | What exactly happened? | CloudWatch Logs + Logs Insights |
+| **Traces** | Where did the time go, across which services? | X-Ray, OpenTelemetry (ADOT) |
+
+Write **structured logs** (JSON) with `request_id` and `trace_id`, so you can jump from an odd metric to a trace to the exact log line.
+
+## What to measure
+
+- **Golden signals**: *latency* (p50, p99), *traffic*, *errors*, *saturation*.
+- Measure **percentiles**, not just averages — a 100 ms average can hide a 3 s p99.
+- **Business metrics**: orders per minute, payment success rate — often the most sensitive signal.
+
+## SLIs, SLOs and error budgets
+
+- **SLI**: the measurement, e.g. the share of requests that succeed in under 300 ms.
+- **SLO**: the target, e.g. 99.9% over 30 days.
+- **Error budget**: what is left — here 0.1%, ~43 minutes a month. Budget left? Ship features. Budget gone? Prioritise stability.
+
+## Alarms done right
+
+- **Burn-rate** alarms: how many times faster than normal the error budget is burning. Use two windows (e.g. 1 h and 5 min) to be fast yet quiet.
+- **Composite alarms** combine conditions to cut noise.
+- **Synthetics canaries** act like real users and check from the outside.
+
+<Callout type="key">
+A page should wake someone only when **users are affected** and a human must act. Everything else belongs on a dashboard or in a ticket — alert fatigue makes real pages get ignored.
+</Callout>

@@ -1,0 +1,33 @@
+Multi-Region mang lại availability cao nhất và độ trễ thấp cho người dùng toàn cầu, nhưng cũng là kiến trúc **phức tạp và đắt nhất**. Trước hết hãy hiểu phép tính.
+
+## Phép tính availability
+
+- **Nối tiếp** (A rồi mới tới B): nhân availability với nhau. 99,99% × 99,99% ≈ **99,98%**.
+- **Song song** (A hoặc B đều được): nhân xác suất **lỗi** với nhau. Hai stack 99,9% cho 1 − 0,001² = **99,9999%**.
+
+| Availability | Downtime mỗi tháng |
+|---|---|
+| 99,9% | ~43 phút |
+| 99,95% | ~22 phút |
+| 99,99% | ~4,3 phút |
+| 99,999% | ~26 giây |
+
+Một chuỗi thành phần 99,99% trong một Region rất khó vượt qua 99,99%. Muốn hơn nữa, bạn cần **dự phòng ở tầng cao nhất**: nguyên một stack ở Region khác.
+
+## Định tuyến giữa các Region
+
+- **Route 53** với health check: *failover* (active-passive), *latency* (gần người dùng nhất), *geolocation*, *weighted*.
+- **Global Accelerator**: IP anycast cố định, chuyển traffic trong vài giây, không phụ thuộc DNS TTL.
+- **CloudFront** với origin failover cho nội dung.
+
+## Bài toán dữ liệu
+
+| Cách làm | Ví dụ | Đánh đổi |
+|---|---|---|
+| Một Region ghi chính, các Region khác đọc | Aurora Global Database | Ghi luôn đi về Region chính; failover mất vài phút; RPO ~1 giây |
+| Ghi ở mọi Region | DynamoDB Global Tables | Xung đột được giải bằng last-writer-wins |
+| Chia người dùng theo Region "nhà" | Mỗi user thuộc một Region | Tránh xung đột; phải định tuyến đúng |
+
+<Callout type="key">
+Active-passive đơn giản hơn active-active rất nhiều. Hãy bắt đầu bằng active-passive (warm standby), và chỉ chuyển sang active-active khi yêu cầu kinh doanh thật sự cần, đồng thời phải **diễn tập failover** định kỳ.
+</Callout>

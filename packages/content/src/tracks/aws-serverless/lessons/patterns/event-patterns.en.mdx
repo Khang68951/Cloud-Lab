@@ -1,0 +1,41 @@
+Event-driven systems are flexible and scale well, but they bring new problems: duplicates, lost events, out-of-order delivery. These patterns solve them.
+
+## Idempotency
+
+Messages **will** arrive more than once, so consumers must handle duplicates harmlessly.
+
+```
+receive message (payment_id = P123)
+  → PutItem into "processed" with ConditionExpression: attribute_not_exists(pk)
+      success → charge the card
+      ConditionalCheckFailed → already done, skip
+```
+
+**Powertools for AWS Lambda** ships an idempotency utility backed by DynamoDB.
+
+## Transactional outbox
+
+Problem: save to the DB **then** publish an event. If the publish fails, the event is lost; publish first and the DB write may fail afterwards.
+
+Solution: write the event to an **outbox table in the same transaction** as the data, then a relay (DynamoDB Streams, CDC via DMS/Debezium, or a poller) pushes it to the bus. The data change and the event become **atomic**.
+
+## Choreography vs orchestration
+
+| | **Choreography** | **Orchestration** |
+|---|---|---|
+| How | Services emit and listen to events, no central controller | One workflow (Step Functions) calls each step |
+| Pros | Loosely coupled, easy to add consumers | Explicit, easy to debug, errors and compensation in one place |
+| Cons | Hard to see the whole process | The workflow becomes a dependency |
+| Fits | "Something happened" notifications between teams | Ordered business processes that need rollback |
+
+In practice you **combine** them: events between domains, orchestration inside a domain.
+
+## Other patterns worth knowing
+
+- **Event-carried state transfer**: events carry enough data that consumers need not call back.
+- **CQRS**: separate write and read models; read views are built from events.
+- **Claim check**: large payloads go to S3; the event carries only a pointer.
+
+<Callout type="key">
+Design as if "everything can be repeated, delayed or reordered". Idempotency keys, versions or timestamps in events, and alarmed DLQs are non-negotiable.
+</Callout>

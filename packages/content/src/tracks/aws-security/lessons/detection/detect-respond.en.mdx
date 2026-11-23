@@ -1,0 +1,32 @@
+However good your defences, something will eventually get through. What matters is **detecting it early** and **responding with a plan**.
+
+## Detection services
+
+| Service | Answers | Example |
+|---|---|---|
+| **CloudTrail** | *Who did what, when, from where?* | Who deleted the security group at 2 a.m. |
+| **AWS Config** | *Is resource configuration compliant, and how did it change?* | Which buckets are public? Which EBS volumes are unencrypted? |
+| **GuardDuty** | *Are there signs of attack?* | An instance contacting a crypto-mining domain; credentials used from an unusual IP |
+| **Inspector** | *Are there software vulnerabilities?* | Packages with CVEs on EC2, in ECR images or Lambdas |
+| **Security Hub** | *All findings in one place, scored against standards* | CIS and AWS Foundational Best Practices scores |
+
+Turn on an **organisation-wide CloudTrail** into the Log Archive account, and **GuardDuty + Security Hub** in every account and Region. That is the minimum.
+
+## Incident response (IR)
+
+1. **Prepare** — runbooks, break-glass access, contacts, regular game days.
+2. **Detect & analyse** — GuardDuty findings, alarms, user reports.
+3. **Contain** — move the instance to an isolation security group, deactivate access keys, revoke role sessions.
+4. **Preserve evidence** — snapshot disks and memory, copy logs *before* deleting anything.
+5. **Eradicate & recover** — rebuild from clean images (IaC), rotate every possibly exposed secret.
+6. **Learn** — postmortem; add the detection you were missing.
+
+<Callout type="key">
+Automate responses for known cases (e.g. an EventBridge rule on a GuardDuty finding triggers a Lambda that isolates the instance) — but keep humans in the loop for big decisions.
+</Callout>
+
+## Common mistakes
+
+- CloudTrail in only one Region — attackers love the Regions nobody watches.
+- Findings nobody reads — route high-severity findings to on-call.
+- Terminating a compromised instance immediately and losing the evidence.

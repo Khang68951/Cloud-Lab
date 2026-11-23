@@ -1,0 +1,35 @@
+Lambda trông đơn giản, nhưng muốn dùng tốt ở quy mô lớn thì cần hiểu nó chạy bên dưới thế nào.
+
+## Vòng đời một môi trường thực thi
+
+1. **Init** (cold start): tải code, khởi động runtime, chạy code nằm *ngoài* handler (kết nối DB, nạp cấu hình).
+2. **Invoke**: chạy handler. Môi trường được **giữ lại** để xử lý request tiếp theo (warm).
+3. Rảnh một lúc thì môi trường bị thu hồi.
+
+→ Đặt việc khởi tạo tốn kém **ngoài handler** để các lần gọi warm dùng lại được.
+
+## Concurrency
+
+**Concurrency ≈ request/giây × thời gian chạy (giây)**. Ví dụ 500 req/s × 0,2 giây = 100 môi trường chạy đồng thời.
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| Giới hạn account | Mặc định 1.000 mỗi region (có thể xin tăng) |
+| **Reserved concurrency** | Đặt trần, đồng thời giữ chỗ cho một function; bảo vệ database phía sau khỏi bị dội tải |
+| **Provisioned concurrency** | Giữ sẵn N môi trường đã init, không có cold start; tính phí theo giờ |
+| **SnapStart** | Khôi phục từ snapshot sau init (Java, Python, .NET) |
+
+## Bộ nhớ = CPU
+
+Tăng bộ nhớ thì CPU tăng tỉ lệ thuận. Với code nặng CPU, tăng gấp đôi bộ nhớ thường làm thời gian chạy giảm một nửa, nên **chi phí gần như không đổi mà nhanh gấp đôi**. Dùng *Lambda Power Tuning* để tìm điểm tối ưu.
+
+## Giới hạn cần nhớ
+
+- Chạy tối đa **15 phút**; payload đồng bộ **6 MB**; `/tmp` tối đa 10 GB.
+- Gọi qua API Gateway còn bị giới hạn bởi timeout tích hợp của API Gateway.
+
+<Callout type="key">
+Lambda gọi RDS: hàng trăm môi trường chạy đồng thời đồng nghĩa với hàng trăm kết nối DB. Dùng **RDS Proxy**, đặt reserved concurrency, hoặc chọn DynamoDB.
+</Callout>
+
+Thử thách bên dưới: ở 2.000 req/s đều đặn, so sánh giá trả theo request với giá trả theo giờ.

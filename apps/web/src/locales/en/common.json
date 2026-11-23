@@ -1,0 +1,67 @@
+{
+  "appName": "CloudLab",
+  "tagline": "Learn cloud by doing",
+  "actions": {
+    "start": "Start",
+    "continue": "Continue",
+    "back": "Back",
+    "backHome": "Back to home",
+    "retry": "Try again",
+    "viewAll": "View all"
+  },
+  "status": {
+    "available": "Available",
+    "in-progress": "In progress",
+    "planned": "Planned"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Change theme"
+  },
+  "language": {
+    "label": "Language",
+    "switch": "Change language",
+    "names": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    }
+  },
+  "api": {
+    "offlineTitle": "Can't reach the API",
+    "offlineBody": "Changes are only saved in this browser. Run `npm run dev` from the project root to start the API."
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation"
+  },
+  "practiceKinds": {
+    "scenario-quiz": "Scenario quiz",
+    "estimation": "Quick estimation",
+    "canvas-design": "Architecture design",
+    "canvas-fix": "Fix the architecture",
+    "cli-lab": "CLI lab",
+    "console-lab": "Console lab",
+    "iam-policy": "IAM policy lab",
+    "vpc-reachability": "VPC network lab",
+    "dynamo-model": "DynamoDB modeling",
+    "cost-detective": "Cost detective",
+    "incident": "Incident drill",
+    "iac": "Infrastructure as Code"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This link doesn't exist or has moved."
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "Part of this page crashed. Try reloading."
+  },
+  "search": {
+    "open": "Search…"
+  }
+}

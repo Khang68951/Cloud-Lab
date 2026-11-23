@@ -1,0 +1,33 @@
+Phần lớn sự cố bắt đầu từ một thay đổi. Chiến lược deploy quyết định **bao nhiêu người dùng** bị ảnh hưởng và **rollback nhanh tới đâu** khi thay đổi đó có lỗi.
+
+## Các chiến lược
+
+| Chiến lược | Cách làm | Rollback | Chi phí thêm |
+|---|---|---|---|
+| **All-at-once** | Thay tất cả cùng lúc | Chậm (deploy lại) | Không |
+| **Rolling** | Thay dần từng nhóm instance | Chậm hơn, có lúc chạy song song hai phiên bản | Thấp |
+| **Blue/green** | Dựng môi trường mới (green), rồi chuyển toàn bộ traffic sang | **Tức thì**: chuyển lại về blue | Tạm thời gấp đôi |
+| **Canary** | Đưa 1–10% traffic sang phiên bản mới, theo dõi, rồi tăng dần | Nhanh, ảnh hưởng nhỏ | Thấp |
+| **Feature flag** | Code đã ở production nhưng tính năng tắt, rồi bật dần theo nhóm người dùng | Tắt flag | Thêm độ phức tạp cho code |
+
+## Tự động rollback
+
+```
+deploy canary 10% ──► theo dõi 10 phút ──► alarm OK? ──yes──► 100%
+                                              │
+                                              no ──► tự động rollback
+```
+
+CodeDeploy (Lambda, ECS), ALB weighted target group và Lambda alias đều hỗ trợ chuyển traffic theo trọng số, kèm **alarm CloudWatch** để tự quay lại.
+
+## Thay đổi database không downtime: expand / contract
+
+1. **Expand**: thêm cột hoặc bảng mới; app ghi vào **cả hai**.
+2. **Migrate**: backfill dữ liệu cũ; chuyển việc đọc sang cột mới.
+3. **Contract**: ngừng ghi cột cũ, rồi xoá nó ở một lần deploy sau.
+
+Mỗi bước đều tương thích ngược, nên rollback app ở bất kỳ bước nào cũng an toàn.
+
+<Callout type="key">
+**Deploy khác release.** Hãy đưa code lên production thường xuyên ở trạng thái tắt bằng feature flag, rồi release cho người dùng khi đã sẵn sàng. Rủi ro kỹ thuật và rủi ro kinh doanh khi đó được tách riêng.
+</Callout>

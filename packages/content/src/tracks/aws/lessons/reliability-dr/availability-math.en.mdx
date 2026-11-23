@@ -1,0 +1,28 @@
+## Series multiplies; parallel multiplies the failure odds
+
+- **Series** (a request needs A **and then** B): `A × B` — always **worse** than the weakest link.
+- **Parallel** (any **one** of them is enough): `1 − (1−A) × (1−B)` — redundancy climbs fast.
+
+Play with the numbers:
+
+<AvailabilityCalculator />
+
+<Callout type="key">
+Redundancy (several instances across AZs) pushes a tier close to 100%, so **the weakest single component sets the ceiling of the whole system**. Two 99.95% services in a row give ~99.90%.
+</Callout>
+
+In the Lab, availability is computed from each service's SLA figure (e.g. ALB 99.99%, RDS Multi-AZ 99.95%, a single EC2 instance 99.5%) plus a small chance of an AZ outage. SLAs are **lower bounds** — real life is often better — but the reasoning is identical.
+
+## RTO, RPO and the 4 DR strategies
+
+- **RTO** (Recovery Time Objective): **how long** until you are back.
+- **RPO** (Recovery Point Objective): **how much data** (in time) you may lose.
+
+| Strategy | RTO / RPO | Cost | What it is |
+|---|---|---|---|
+| **Backup & restore** | Hours / hours | $ | Only backups in another Region |
+| **Pilot light** | Tens of minutes / minutes | $$ | Data replicated, servers off |
+| **Warm standby** | Minutes / seconds | $$$ | A scaled-down copy running in another Region |
+| **Multi-site active/active** | ~0 / ~0 | $$$$ | Full capacity in two Regions at once |
+
+Pick by **what downtime costs the business** — not by what is fanciest.

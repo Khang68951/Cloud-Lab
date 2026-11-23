@@ -1,0 +1,40 @@
+SQS, SNS and EventBridge all "move messages", but each solves a different problem. Knowing all three well is the foundation of every event-driven architecture.
+
+## Three tools, three roles
+
+| | **SQS** | **SNS** | **EventBridge** |
+|---|---|---|---|
+| Model | Queue: **one** consumer handles each message | Topic: pushed to **every** subscriber | Bus: routed by **rules on content** |
+| Storage | Up to 14 days | None | Archive and replay |
+| Filtering | None | Filter policies on attributes | Powerful rules on the whole JSON |
+| Price | $0.40 / million requests | $0.50 / million publishes | $1 / million events |
+| Use for | Work queues, load levelling | Simple, high-volume fan-out | Microservices, AWS service events, SaaS, schedules |
+
+## SQS: the details that matter
+
+- **Standard**: practically unlimited throughput, **at-least-once** delivery, best-effort ordering.
+- **FIFO**: strict order per *message group*, 5-minute deduplication; limited throughput (raised with *high throughput mode*).
+- **Visibility timeout**: how long a received message stays hidden. Set it to ~6× processing time.
+- **DLQ** with `maxReceiveCount`: failing messages move aside after N tries; always **alarm** on the DLQ.
+- **Long polling** (`WaitTimeSeconds=20`) and **batching** (10 messages) cut requests and cost.
+
+## SNS → SQS fan-out
+
+```
+            ┌──► SQS billing  ──► Lambda billing
+orders ──► SNS ──► SQS shipping ──► Lambda shipping
+            └──► SQS email    ──► Lambda email   (each queue has its own DLQ)
+```
+
+Each consumer gets **its own buffer**: a slow or broken service affects neither the others nor the user.
+
+## EventBridge: more than a topic
+
+- **Rules** match on any event field (`"detail.total": [{"numeric": [">", 1000]}]`).
+- **Archive and replay**: re-send events after fixing a bug.
+- **Pipes**: connect sources (SQS, Kinesis, DynamoDB Streams) to targets with filtering and enrichment, no glue code.
+- **Scheduler**: recurring or one-time schedules at the scale of millions.
+
+<Callout type="key">
+Messages can arrive **more than once**. Every consumer must be **idempotent**: processing the same message several times has the same effect as once.
+</Callout>

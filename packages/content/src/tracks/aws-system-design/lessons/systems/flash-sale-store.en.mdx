@@ -1,0 +1,45 @@
+At exactly 12:00, tens of thousands of people hit "Buy now". A **flash sale** is the classic overload problem: traffic jumps 20× for a few minutes, and stock is limited.
+
+## Requirements
+
+- 500 req/s normally; **20×** for a few minutes during the sale.
+- 90% product-page views; 10% orders.
+- **No lost orders**, **no overselling**, the database must not melt.
+- Do not pay for 20× capacity all day.
+
+## Split the two flows
+
+| Flow | Nature | Handling |
+|---|---|---|
+| **Views** | Huge, cacheable | CloudFront (cache pages and product APIs for a few seconds) |
+| **Orders** | Must be durable, can be processed seconds later | Accept into a **queue**, process at a steady pace |
+
+```
+Users ─► CloudFront ─► API Gateway (throttling) ─► Lambda intake ─► SQS
+                                                                   │ (load levelling)
+                                                                   ▼
+                                     Lambda workers (limited concurrency) ─► DynamoDB
+                                     (conditional write: stock > 0)
+```
+
+## Preventing overselling
+
+```
+UpdateItem  Key: { pk: "PRODUCT#42" }
+            UpdateExpression: SET stock = stock - :one
+            ConditionExpression: stock >= :one
+```
+
+The database enforces the invariant atomically — no "two people both read 1 left". For ultra-hot products, split stock into several "buckets" to avoid a hot key.
+
+## Protecting the system
+
+- A **virtual waiting room** admits users at a controlled, fair rate.
+- **Throttling** at API Gateway, with `429` and client retries with backoff.
+- An **idempotency key** per order, so a double click creates one order.
+- Users see "Order received" immediately and a confirmation once processed.
+- Rehearse with a **load test** at the real peak.
+
+<Callout type="tip">
+Lab challenge: survive 20× traffic with ≤ 1% errors, product pages cached at the edge, orders buffered through a queue, within budget.
+</Callout>

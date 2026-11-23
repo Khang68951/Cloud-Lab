@@ -1,0 +1,39 @@
+**Terraform** (và bản fork mã nguồn mở **OpenTofu**) là công cụ IaC phổ biến nhất cho môi trường đa cloud. Nó quản lý cả AWS lẫn các dịch vụ khác như Cloudflare, GitHub, Datadog… bằng cùng một ngôn ngữ.
+
+## Vòng làm việc
+
+```
+viết HCL ──► terraform init ──► terraform plan ──► review ──► terraform apply
+                                    │                              │
+                                    └──── so sánh với ─── state ◄──┘
+```
+
+```hcl
+resource "aws_s3_bucket" "logs" {
+  bucket = "acme-logs-prod"
+}
+
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+  cidr    = "10.0.0.0/16"
+}
+```
+
+## State: trái tim của Terraform
+
+- **State** ghi lại tài nguyên nào thuộc code nào. Mất state thì Terraform "quên" hạ tầng của bạn.
+- Hãy lưu trên **remote backend**: S3 có versioning và mã hoá, kèm khoá state (S3 native locking hoặc DynamoDB).
+- State có thể chứa **secret**, nên phải giới hạn quyền truy cập.
+- Tách state theo môi trường hoặc theo thành phần để giảm bán kính ảnh hưởng và giúp `plan` nhanh hơn.
+
+## Thực hành tốt
+
+- **Module** có phiên bản cho các khối dùng chung (VPC, service chuẩn).
+- Trong CI: `fmt`, `validate`, `plan` cho mỗi pull request, lưu plan lại rồi **apply đúng plan đã review**.
+- Kiểm tra policy bằng **tfsec/Checkov** hoặc OPA, và ước tính chi phí bằng **Infracost**.
+- Dùng `import` hoặc block `import` để đưa tài nguyên tạo tay vào quản lý; dùng `moved` khi refactor để tránh bị xoá và tạo lại.
+
+<Callout type="key">
+Đọc `plan` như đọc code review. Một dòng `-/+ (forces replacement)` trên database là dấu hiệu dừng lại ngay.
+</Callout>

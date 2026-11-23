@@ -1,0 +1,33 @@
+RDS and Aurora are both "managed PostgreSQL/MySQL", but their architectures differ — and that decides resilience, scaling and cost.
+
+## Different architectures
+
+| | **RDS** | **Aurora** |
+|---|---|---|
+| Storage | EBS attached to each instance | **One shared volume**, 6 copies across 3 AZs, grows to 128 TiB |
+| Multi-AZ | Synchronous standby (classic: not readable), or a Multi-AZ cluster with 2 readable standbys | Every replica is a failover target |
+| Read replicas | Up to 15, asynchronous (seconds of lag) | Up to 15, **milliseconds** of lag (shared storage) |
+| Failover | ~1–2 minutes | ~30 seconds (faster with RDS Proxy) |
+| Serverless | No | **Serverless v2**: scales in ACUs |
+| Multi-Region | Cross-Region read replicas | **Global Database**: ~1 s replication, promote in minutes |
+| Price | Cheaper at small sizes | Pricier instances, plus I/O (or the I/O-Optimized option) |
+
+## Tools to know
+
+- **RDS Proxy** — connection pooling (vital for Lambda), faster failovers, IAM auth.
+- **Automated backups + PITR** — restore to **any second** in the last 1–35 days, always into a **new** instance.
+- **Manual snapshots** — kept until you delete them; copy across Regions/accounts.
+- **Blue/Green Deployments** — engine upgrades with minimal downtime.
+- **Performance Insights** — find the queries that slow the database down.
+
+<Callout type="key">
+**Multi-AZ is not a backup.** The standby replicates every change — including an accidental `DELETE`. Recover from mistakes with PITR or snapshots.
+</Callout>
+
+## Quick choices
+
+- Dev/test, small workloads → **RDS** single-AZ on a t-family instance.
+- Typical production → **RDS Multi-AZ** or **Aurora** with 1 replica.
+- Very read-heavy, fast failover, high availability → **Aurora** with several replicas.
+- Spiky or sometimes idle → **Aurora Serverless v2**.
+- Cross-Region DR with ~1 s RPO → **Aurora Global Database**.

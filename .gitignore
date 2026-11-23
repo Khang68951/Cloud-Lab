@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+test-results/
+playwright-report/
+
+# Local database (your learning progress lives here — back it up by copying the file)
+data/*
+!data/.gitkeep
+# Throwaway databases created by e2e runs
+apps/api/data/
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,42 @@
+In payments, "almost right" is unacceptable. Every cent must be recorded **exactly once**, balanced, auditable — and the system must always be available.
+
+## Requirements
+
+- Record money movements: deposits, withdrawals, transfers; balances and history.
+- 200 req/s, 3× at peak, 70% writes.
+- **ACID**, **never charge twice**, ≥ 99.95% availability, survive an AZ outage.
+- Internet-facing API that must be protected; every change auditable.
+
+## The double-entry ledger
+
+| entry_id | transaction_id | account | amount |
+|---|---|---|---|
+| 1 | T100 | alice | −50.00 |
+| 2 | T100 | bob | +50.00 |
+
+- Every transaction sums to **0**. Entries are **append-only** — corrections are reversing entries.
+- Balances are **derived** from entries (optionally cached in a snapshot table updated in the same transaction).
+- Store money as **integers in the smallest unit** (cents), never floats.
+
+## Architecture
+
+```
+Clients ─► WAF ─► ALB ─► Payments service (Fargate, Multi-AZ)
+                            ├─► Aurora PostgreSQL (writer + replica, Multi-AZ): ledger, idempotency_keys, outbox
+                            └─► (outbox relay) ─► SQS ─► Lambda: receipts, webhooks, reporting ─► DynamoDB/S3
+```
+
+- **Idempotency keys**: clients send one per request; the server stores it with the result **in the same transaction** and returns the stored result on retries.
+- **Transactional outbox**: the "payment completed" event is written in the same transaction as the entries — events are never lost.
+- **Short synchronous path**: only WAF → ALB → service → Aurora. Everything else is asynchronous.
+
+## Security and audit
+
+- WAF, strong auth (OAuth, mTLS for partners), KMS encryption, Secrets Manager.
+- **CloudTrail** and application logs to S3 with **Object Lock** (immutable).
+- Daily **reconciliation** against banks or payment providers.
+- Need 99.99%+? See the multi-Region lesson in the Reliability course.
+
+<Callout type="tip">
+Lab challenge: a relational ledger behind a WAF that survives an AZ outage with ≥ 99.95% availability, no security errors in the review, and side effects handled asynchronously.
+</Callout>

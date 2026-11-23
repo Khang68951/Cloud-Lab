@@ -1,0 +1,28 @@
+API Gateway is the front door of most serverless apps. Choosing the right API type and configuring it well decides cost, security and the client experience.
+
+## Three API types
+
+| | **HTTP API** | **REST API** | **WebSocket API** |
+|---|---|---|---|
+| Price | ~$1 / million requests | ~$3.50 / million requests | $1 / million messages + connection-minutes |
+| Latency | Lowest | A bit higher | Long-lived connections |
+| Auth | JWT (Cognito, OIDC), Lambda authorizers, IAM | Cognito, Lambda authorizers, IAM, **API keys** | IAM, Lambda authorizer on `$connect` |
+| Extras | CORS, simple routes | **Usage plans**, request/response transformation, **caching**, **WAF**, private endpoints, request validation | `$connect`, `$disconnect`, `$default` routes |
+| Use for | **The default** for new APIs | When you truly need its extras | Chat, live notifications, games |
+
+## Protecting the API
+
+- **Throttling** works in layers: account (10,000 rps default), stage, route and per client (usage plans). Over the limit, clients get `429 Too Many Requests`.
+- **Auth**: prefer JWT authorizers with Cognito or your IdP; use Lambda authorizers for custom logic, and **cache** their results.
+- **WAF** (on REST APIs, or with CloudFront in front) blocks SQL injection, bots and per-IP floods.
+- **Validate requests** at the gateway so bad requests never cost a Lambda invocation.
+
+## Limits to remember
+
+- **~29-second integration timeout**: long work goes asynchronous (return `202` + a job ID, process via SQS or Step Functions).
+- **10 MB** max payload; big files go through **presigned S3 URLs**.
+- **Direct service integrations**: API Gateway can write straight to SQS, DynamoDB or Step Functions with no Lambda in between — cheaper and less code.
+
+<Callout type="key">
+Default to **HTTP API**. Use REST API only for a specific feature (usage plans, caching, WAF, transformations). For very high, steady traffic, consider an **ALB** — no per-request fee.
+</Callout>

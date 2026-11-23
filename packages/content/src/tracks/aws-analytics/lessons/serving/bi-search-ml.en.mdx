@@ -1,0 +1,33 @@
+Data is valuable only when it is **used**: dashboards for the business, search for users, models for the product. Here is a quick map of this layer.
+
+## BI and visualisation
+
+- **Amazon QuickSight**: serverless BI, per-user pricing; **SPICE** in-memory engine for fast dashboards; **Amazon Q** for natural-language questions; embeddable dashboards.
+- Sources: Athena, Redshift, RDS, S3…
+- **Managed Grafana** is for operational metrics more than business BI.
+
+## Search and log analytics
+
+- **Amazon OpenSearch Service** (or OpenSearch Serverless): full-text search, typo tolerance, relevance ranking, facets; log and trace analytics with OpenSearch Dashboards.
+- **UltraWarm** and **cold** tiers keep older logs affordable.
+- **Vector search (k-NN)** for semantic search and RAG.
+- OpenSearch is a **secondary index**: the source of truth lives elsewhere (DynamoDB, Aurora, S3).
+
+## Machine learning and generative AI
+
+| Need | Service |
+|---|---|
+| Use foundation models (chat, summaries, RAG, agents) | **Amazon Bedrock**: knowledge bases, guardrails, agents |
+| Build, train and deploy your own models | **Amazon SageMaker AI** |
+| Ready-made AI tasks | Rekognition (images), Textract (documents), Transcribe, Translate, Comprehend |
+
+## The RAG pattern (Retrieval-Augmented Generation)
+
+```
+documents (S3) ─► chunk + embed ─► vector store (OpenSearch, Aurora pgvector, S3 Vectors)
+question ─► retrieve relevant chunks ─► prompt + context ─► foundation model (Bedrock) ─► answer with citations
+```
+
+<Callout type="key">
+For AI, start with **managed services** (Bedrock, ready-made AI services) before training models. Clean, well-governed data from your lake is the real competitive advantage.
+</Callout>

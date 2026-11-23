@@ -1,0 +1,28 @@
+Multi-AZ protects you from losing a datacenter. **Disaster recovery (DR)** protects against bigger things: losing a Region, accidental deletes, ransomware.
+
+## Two numbers decide everything
+
+- **RPO** (Recovery Point Objective): how much **data** you can lose, measured in time. RPO 1 h means up to an hour of data may be lost.
+- **RTO** (Recovery Time Objective): how long you can be **down**.
+
+The smaller the RPO and RTO, the higher the cost.
+
+## Four strategies
+
+| Strategy | What runs in the DR Region | Typical RPO / RTO | Cost |
+|---|---|---|---|
+| **Backup & restore** | Backups only (AWS Backup, copied snapshots) | Hours / hours to a day | $ |
+| **Pilot light** | Data continuously replicated; compute **off**, launched from IaC when needed | Minutes / tens of minutes | $$ |
+| **Warm standby** | A **scaled-down but working** copy, scaled up on failover | Seconds / minutes | $$$ |
+| **Multi-site active-active** | A full copy serving real traffic | ~0 / near-instant | $$$$ |
+
+## AWS tools
+
+- **AWS Backup**: central backup policies, cross-Region and cross-account copies, **vault lock** against deletion (ransomware).
+- **Aurora Global Database**, **DynamoDB Global Tables**, **S3 Replication**: data replication.
+- **AWS Elastic Disaster Recovery**: continuous server replication (including on-premises) to AWS.
+- **Route 53 Application Recovery Controller**: readiness checks and safe failover control.
+
+<Callout type="key">
+A DR plan that was never **rehearsed** is just a document. Run regular game days: real restores, real failovers, measured RTO — and keep backups in **another account** in case an account is compromised.
+</Callout>

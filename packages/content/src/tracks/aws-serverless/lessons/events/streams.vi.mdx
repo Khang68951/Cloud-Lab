@@ -1,0 +1,34 @@
+Queue trả lời câu hỏi "ai làm việc này?". Còn **stream** trả lời câu hỏi "chuyện gì đã xảy ra, theo thứ tự nào?". Dữ liệu trong stream được **giữ lại**, nên nhiều consumer có thể đọc độc lập và phát lại khi cần.
+
+## Queue và stream
+
+| | Queue (SQS) | Stream (Kinesis / MSK) |
+|---|---|---|
+| Sau khi đọc | Message bị xoá | Dữ liệu vẫn còn (24 giờ – 365 ngày) |
+| Consumer | Các worker chia nhau xử lý | Mỗi consumer đọc **toàn bộ** stream một cách độc lập |
+| Thứ tự | Không đảm bảo (trừ FIFO) | Có thứ tự **trong mỗi shard hoặc partition** |
+| Phát lại | Không | Có, bằng cách tua lại vị trí đọc |
+
+## Kinesis Data Streams
+
+- **Shard**: mỗi shard nhận **1.000 record/s hoặc 1 MB/s** và cho đọc 2 MB/s.
+- **Partition key** quyết định record vào shard nào. Các record cùng key (vd `user_id`) giữ đúng thứ tự.
+- **On-demand mode** tự scale shard; **provisioned** rẻ hơn khi tải ổn định.
+- **Enhanced fan-out**: mỗi consumer có riêng 2 MB/s mỗi shard, độ trễ khoảng 70 ms.
+- Lambda đọc theo **batch**. Một record lỗi sẽ chặn cả shard, trừ khi bạn dùng *bisect on error*, *max retry* và gửi record lỗi sang đích on-failure.
+
+## MSK (Kafka được quản lý)
+
+Chọn **MSK** khi đội ngũ đã quen Kafka, cần hệ sinh thái Kafka (Connect, Streams) hoặc muốn chuyển hệ thống sẵn có lên cloud. **MSK Serverless** bỏ đi việc quản lý broker.
+
+## Các mẫu dùng phổ biến
+
+```
+App/IoT ──► Kinesis ──┬──► Lambda (cảnh báo realtime)
+                      ├──► Firehose ──► S3 (data lake)
+                      └──► Managed Flink (tổng hợp theo cửa sổ thời gian)
+```
+
+<Callout type="key">
+**Hot shard** xuất hiện khi một partition key quá phổ biến. Hãy chọn key có nhiều giá trị và phân bố đều. Nếu cần thứ tự toàn cục tuyệt đối, bạn chỉ có một shard, nghĩa là throughput bị giới hạn.
+</Callout>

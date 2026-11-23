@@ -1,0 +1,26 @@
+A NAT Gateway looks like a small networking detail, but it bills **twice**:
+
+| Item | Price (us-east-1) |
+|---|---|
+| Every hour it runs | ~$0.045/hour → ~$33/month per gateway |
+| **Every GB through it** | **~$0.045/GB** (plus data transfer if it goes to the internet) |
+
+## The trap
+
+Instances in private subnets read and write S3 or DynamoDB. If the route table only has `0.0.0.0/0 → NAT`, **all** of that S3 traffic flows through NAT — and every GB is charged.
+
+```
+App (private) ──► NAT Gateway ──► S3       $0.045 per GB 💸
+App (private) ──► Gateway Endpoint ──► S3  $0 ✅
+```
+
+<Callout type="key">
+A **Gateway VPC Endpoint** for S3 and DynamoDB is **free** and only needs a route in the private route tables. It is one of the biggest "one-line" savings on AWS.
+</Callout>
+
+## Also worth knowing
+
+- Production should have **one NAT per AZ**: a shared NAT means its AZ failing cuts egress for all AZs, and cross-AZ traffic costs extra.
+- For other AWS services (ECR, CloudWatch, Secrets Manager…), **Interface Endpoints** ($0.01/h per AZ + $0.01/GB) are often cheaper than NAT at volume.
+
+Below: estimate the cost, then remove the NAT trap in the Lab.

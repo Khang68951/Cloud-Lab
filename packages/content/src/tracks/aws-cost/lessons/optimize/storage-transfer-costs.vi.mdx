@@ -1,0 +1,29 @@
+Lưu trữ và truyền dữ liệu là những chi phí **âm thầm lớn dần**: mỗi GB thì rẻ, nhưng chúng cộng dồn theo thời gian và theo traffic.
+
+## Lưu trữ
+
+| Đòn bẩy | Chi tiết |
+|---|---|
+| **S3 lifecycle** | Standard → Standard-IA (30 ngày) → Glacier IR / Deep Archive → xoá. Deep Archive khoảng **$1/TB-tháng** |
+| **Intelligent-Tiering** | Khi không biết trước mẫu truy cập, S3 tự chuyển tầng, không mất phí truy xuất |
+| **Dọn phiên bản cũ** | Versioning kèm lifecycle cho *noncurrent versions*; xoá multipart upload chưa hoàn tất |
+| **EBS gp2 → gp3** | Rẻ hơn 20%, IOPS ổn định |
+| **Snapshot** | Data Lifecycle Manager giữ N bản; dùng snapshot archive cho bản lưu lâu |
+| **Log** | Đặt retention cho CloudWatch Logs; đưa log cũ sang S3 |
+
+## Truyền dữ liệu
+
+```
+Internet ◄── $0.09/GB ── origin       Internet ◄── ~$0.085/GB + cache ── CloudFront
+AZ-a ◄── $0.01 + $0.01/GB ──► AZ-b    VPC ── NAT $0.045/GB ──► S3   (dùng gateway endpoint: $0)
+Region A ── ~$0.02/GB ──► Region B
+```
+
+- **CloudFront** trước origin: giá egress thấp hơn, có cache hit, và dữ liệu từ origin AWS tới CloudFront **miễn phí**.
+- **VPC gateway endpoint** cho S3 và DynamoDB: miễn phí, bỏ được phí NAT.
+- **Giữ traffic trong cùng AZ** khi có thể (topology-aware routing trong EKS, đọc từ replica cùng AZ).
+- **Nén dữ liệu** (gzip, brotli, Parquet) giảm cả lưu trữ lẫn truyền tải.
+
+<Callout type="key">
+Hãy nhìn **mũi tên** trong kiến trúc chứ không chỉ các hộp: mỗi mũi tên đi qua NAT, qua AZ, qua Region hay ra internet đều có giá. Lab của CloudLab hiển thị đúng các dòng chi phí này.
+</Callout>

@@ -1,0 +1,33 @@
+Không phải dữ liệu nào cũng hợp với S3. Database tự quản lý, ổ hệ điều hành, hay thư mục dùng chung đều cần **block** hoặc **file** storage.
+
+## EBS: ổ đĩa của EC2
+
+| Loại | Kiểu | Hiệu năng | Dùng cho |
+|---|---|---|---|
+| **gp3** | SSD đa dụng | 3.000 IOPS và 125 MB/s cơ bản; trả thêm để tăng tới 16.000 IOPS | **Mặc định** cho mọi thứ |
+| gp2 | SSD (thế hệ cũ) | IOPS tăng theo dung lượng | Nên chuyển sang gp3 (rẻ hơn ~20%) |
+| **io2 Block Express** | SSD IOPS đặt trước | Tới 256.000 IOPS, độ bền 99,999% | Database quan trọng, cần độ trễ thấp |
+| st1 | HDD tối ưu throughput | Đọc tuần tự khối lớn | Big data, log |
+| sc1 | HDD lạnh | Rẻ nhất | Dữ liệu hiếm khi truy cập |
+
+- EBS nằm trong **một AZ** và gắn vào một instance (Multi-Attach chỉ có ở io2, giới hạn trong một AZ).
+- **Snapshot** lưu trên S3 dưới dạng incremental, sao chép được sang region khác; **Data Lifecycle Manager** tự chụp theo lịch.
+
+## File storage dùng chung
+
+| Dịch vụ | Giao thức | Dùng cho |
+|---|---|---|
+| **EFS** | NFS (Linux) | Thư mục dùng chung cho nhiều instance, nhiều AZ; co giãn tự động; có class IA rẻ hơn |
+| **FSx for Windows** | SMB | Ứng dụng Windows, Active Directory |
+| **FSx for Lustre** | Lustre | HPC, ML; liên kết được với S3 |
+| **FSx for NetApp ONTAP / OpenZFS** | NFS/SMB/iSCSI | Chuyển hệ thống NAS sẵn có lên cloud |
+
+<Callout type="key">
+Ứng dụng web hiện đại hiếm khi cần file storage dùng chung: hãy đưa file lên S3 và giữ server **không trạng thái**. Dùng EFS hoặc FSx khi phần mềm *bắt buộc* cần một hệ thống file POSIX dùng chung.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Ổ gp2 cũ chưa chuyển sang gp3, tức là mất 20% miễn phí mỗi tháng.
+- Ổ EBS không gắn vào đâu ("unattached") vẫn bị tính phí, và snapshot cũ không ai xoá.
+- Coi EBS như dữ liệu bền vững tuyệt đối mà không có snapshot.

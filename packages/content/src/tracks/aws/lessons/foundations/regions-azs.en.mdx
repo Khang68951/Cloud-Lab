@@ -1,0 +1,25 @@
+## Three layers of infrastructure
+
+| Concept | What it is | You use it to |
+|---|---|---|
+| **Region** | A geographic area (e.g. `ap-southeast-1` Singapore), fully independent of other Regions | Be close to users; meet data-residency rules |
+| **Availability Zone (AZ)** | One or more data centres with their own power, cooling and network. Every Region has **≥ 3 AZs**, kilometres apart | Tolerate failure: run in ≥ 2 AZs so one AZ going down doesn't take you down |
+| **Edge location** | Hundreds of small sites worldwide | CloudFront (CDN) and Route 53 (DNS) serve users from the nearest one |
+
+<Callout type="key">
+**Golden rule:** anything important runs in **at least 2 AZs**. An AZ outage is rare but real, and your design must survive it.
+</Callout>
+
+## Choosing a Region
+
+1. **Compliance** — must the data stay in a specific country? This rules Regions out first.
+2. **Latency** — closer is faster. Users in Vietnam are typically served from Singapore (`ap-southeast-1`).
+3. **Service availability** — new services usually launch in `us-east-1` first.
+4. **Price** — the same service costs different amounts per Region. Singapore is often 10–30% more than N. Virginia.
+
+## Who secures what? (Shared Responsibility)
+
+- **AWS secures *the* cloud**: data centres, hardware, network, hypervisor.
+- **You secure what's *in* the cloud**: your data, IAM, network configuration, encryption — and the operating system if you use EC2.
+
+The more "managed" a service is (RDS, Lambda, DynamoDB), the less you do. You don't patch RDS's OS, but you still decide who can connect to it.

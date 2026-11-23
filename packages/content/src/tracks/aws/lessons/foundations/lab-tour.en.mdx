@@ -1,0 +1,33 @@
+In CloudLab you learn by **designing systems and seeing what they cost, how fast they are and how they break**. Your main tool is the **Architecture Lab**: a draw.io-style canvas with an AWS simulator behind it.
+
+## The Lab has 3 areas
+
+| Area | What it's for |
+|---|---|
+| **Left — service palette** | Drag an AWS service (EC2, S3, RDS…) onto the canvas, or click to add it |
+| **Centre — canvas** | Place and **connect** services: hover a node and drag from a dot to another node |
+| **Right — pricing & review** | Monthly cost, latency, availability, bottlenecks and AWS Well-Architected warnings |
+
+Every time you add, connect or reconfigure something, all the numbers on the right **recalculate instantly**.
+
+## Reading a node
+
+- **Bottom left**: that service's monthly cost.
+- **Bottom right**: load at peak. <span className="text-success">Green</span> is fine, <span className="text-warning">amber</span> is running hot (≥ 80%), <span className="text-danger">red</span> is overloaded and failing requests. `∞` means the service scales automatically.
+- **Arrows** show requests/second. **Dashed** arrows are asynchronous (through a queue), off the user's request path.
+
+<Callout type="tip">
+With nothing selected, the **Scenario** tab lets you change traffic (requests/second), the peak multiplier, the read/write ratio and the region. Try doubling the traffic and see what breaks first.
+</Callout>
+
+## Chaos — break it on purpose
+
+The **Chaos** menu takes a whole Availability Zone offline, spikes traffic 10×, or kills individual nodes. A good design **survives** these.
+
+<Callout type="warning">
+Prices in the Lab are **reference prices** (On-Demand, no tax or free tier). They are accurate enough to compare options; use the AWS Pricing Calculator for real decisions.
+</Callout>
+
+<TryLab template="three-tier" label="Open the 3-tier example in the Lab" />
+
+Your turn: the exercise below asks you to build a static website **without any servers**.

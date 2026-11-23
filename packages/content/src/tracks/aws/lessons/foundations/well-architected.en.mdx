@@ -1,0 +1,30 @@
+The **AWS Well-Architected Framework** is the checklist AWS architects use to review any design. The Lab's **Review** tab is a small version of it.
+
+## The 6 pillars
+
+| Pillar | Core question | Typical practices |
+|---|---|---|
+| **Operational Excellence** | Can we deploy, monitor and improve safely? | IaC, small reversible changes, runbooks, post-incident learning |
+| **Security** | Are data and systems protected? | Least privilege, encryption, security at every layer, traceability |
+| **Reliability** | Do we recover from failure and handle load changes? | Multi-AZ, self-healing, tested backups, limited blast radius |
+| **Performance Efficiency** | Do we use resources efficiently as demand changes? | Right service types, caches, CDNs, measure before optimising |
+| **Cost Optimization** | Do we pay only for what we need? | Rightsizing, the right pricing model, cost visibility per team/product |
+| **Sustainability** | Do we minimise resources and energy? | High utilisation, managed services, deleting unused data |
+
+## The pillars trade off
+
+- Multi-AZ improves **reliability** but adds **cost**.
+- A cache improves **performance** but adds **operational** complexity (invalidation, stale data).
+- Encrypting everything improves **security** at a little latency and KMS cost.
+
+<Callout type="key">
+No design scores perfectly on all six. Make trade-offs **on purpose**, based on business impact: a payments system favours reliability; an internal prototype favours cost.
+</Callout>
+
+## Using it in practice
+
+- The **AWS Well-Architected Tool** (free, in the console) asks pillar-by-pillar questions and produces a list of risks to fix.
+- **Lenses** extend it for specific workloads: Serverless, SaaS, Analytics…
+- In the Lab, every Review finding is tagged with its pillar — use them as a checklist before you submit.
+
+<TryLab template="three-tier" label="Open the example and look at the Review tab" />

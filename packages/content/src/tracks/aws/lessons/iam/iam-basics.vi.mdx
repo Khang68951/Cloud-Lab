@@ -1,0 +1,36 @@
+IAM (Identity and Access Management) trả lời câu hỏi: **ai** được làm **gì** trên **tài nguyên nào**.
+
+## Các thành phần
+
+| Thành phần | Là gì | Dùng khi |
+|---|---|---|
+| **User** | Một danh tính lâu dài, có mật khẩu và/hoặc access key | Hạn chế dùng. Người nên đăng nhập qua IAM Identity Center (SSO) |
+| **Group** | Một nhóm user dùng chung policy | Quản lý quyền theo vai trò trong team |
+| **Role** | Danh tính **tạm thời**, được "khoác lên" (assume) | Dùng cho EC2, Lambda, ECS, truy cập chéo account, và người dùng qua SSO |
+| **Policy** | Tài liệu JSON gồm `Effect`, `Action`, `Resource`, `Condition` | Gắn vào user, group, role hoặc trực tiếp vào tài nguyên (bucket policy…) |
+
+```json
+{
+  "Effect": "Allow",
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::my-photos/*"
+}
+```
+
+## AWS quyết định cho phép hay từ chối thế nào
+
+1. Mặc định mọi thứ đều bị **từ chối** (implicit deny).
+2. Nếu có một **explicit Deny** khớp với request → **từ chối**. Deny luôn thắng.
+3. Nếu có một **Allow** khớp → **cho phép**.
+
+<Callout type="key">
+**Least privilege**: chỉ cấp đúng những action và resource cần dùng. Một Lambda chỉ ghi vào một bảng thì chỉ cần `dynamodb:PutItem` trên đúng bảng đó, không phải `dynamodb:*` trên `*`.
+</Callout>
+
+## Những thói quen nên có ngay từ đầu
+
+- **App chạy trên AWS dùng role, không dùng access key.** Credential tạm thời được cấp và xoay vòng tự động.
+- **Bật MFA cho root, và không dùng root cho công việc hằng ngày.**
+- Không bao giờ commit access key lên git. Bot dò key bị lộ trên GitHub chỉ trong vài phút.
+
+IAM Policy Lab (có giải thích từng bước vì sao Allow/Deny) sẽ có ở giai đoạn sau. Bây giờ hãy luyện bằng các câu tình huống bên dưới.

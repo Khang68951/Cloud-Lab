@@ -1,0 +1,41 @@
+Dữ liệu thô hiếm khi dùng được ngay. **ETL** (Extract, Transform, Load) hoặc **ELT** làm sạch, chuẩn hoá và tổng hợp dữ liệu để biến nó thành thứ có giá trị.
+
+## ETL hay ELT
+
+| | **ETL** | **ELT** |
+|---|---|---|
+| Thứ tự | Biến đổi **trước** khi nạp | Nạp dữ liệu thô **trước**, biến đổi sau trong lake hoặc warehouse |
+| Công cụ | Glue, EMR (Spark) | SQL trong Athena hoặc Redshift (dbt) |
+| Ưu | Dữ liệu vào kho đã sạch | Giữ lại dữ liệu thô, linh hoạt, dễ xử lý lại |
+
+## Công cụ trên AWS
+
+| Công cụ | Dùng cho |
+|---|---|
+| **AWS Glue** | Spark serverless, trả theo DPU-giây; crawler; Glue Data Quality |
+| **Glue DataBrew** | Làm sạch dữ liệu không cần code |
+| **Amazon EMR** | Spark, Hive, Presto lớn, cần tuỳ biến hoặc chạy lâu; có EMR Serverless và EMR trên EKS |
+| **Step Functions / MWAA (Airflow)** | Điều phối nhiều job phụ thuộc nhau |
+| **AWS DMS** | Chuyển dữ liệu từ database (full load + CDC) |
+| **Zero-ETL** | Aurora hoặc DynamoDB → Redshift, không cần pipeline |
+
+## Một pipeline batch điển hình
+
+```
+EventBridge Scheduler (02:00)
+   └─► Step Functions
+         ├─► Glue job: raw JSON → Parquet (partition theo dt)
+         ├─► Glue Data Quality: kiểm tra số dòng, null, giá trị hợp lệ
+         ├─► Athena / Redshift: dựng bảng tổng hợp (gold)
+         └─► SNS: báo thành công hoặc thất bại
+```
+
+## Thực hành tốt
+
+- Job phải **idempotent**: chạy lại cho cùng một ngày thì ghi đè partition, không nhân đôi dữ liệu.
+- **Kiểm tra chất lượng dữ liệu** như kiểm thử code: dữ liệu sai còn nguy hiểm hơn không có dữ liệu.
+- Dùng **job bookmark** hoặc watermark để chỉ xử lý dữ liệu mới.
+
+<Callout type="key">
+Chọn công cụ đơn giản nhất làm được việc: SQL (ELT) trước, Glue khi cần Spark, và EMR chỉ khi thật sự cần quy mô lớn hoặc tuỳ biến sâu.
+</Callout>

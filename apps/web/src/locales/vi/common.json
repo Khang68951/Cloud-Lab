@@ -1,0 +1,67 @@
+{
+  "appName": "CloudLab",
+  "tagline": "Học cloud bằng cách làm",
+  "actions": {
+    "start": "Bắt đầu",
+    "continue": "Tiếp tục",
+    "back": "Quay lại",
+    "backHome": "Về trang chủ",
+    "retry": "Thử lại",
+    "viewAll": "Xem tất cả"
+  },
+  "status": {
+    "available": "Sẵn sàng",
+    "in-progress": "Đang xây dựng",
+    "planned": "Dự kiến"
+  },
+  "theme": {
+    "label": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Theo hệ thống",
+    "toggle": "Đổi giao diện"
+  },
+  "language": {
+    "label": "Ngôn ngữ",
+    "switch": "Đổi ngôn ngữ",
+    "names": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    }
+  },
+  "api": {
+    "offlineTitle": "Không kết nối được API",
+    "offlineBody": "Thay đổi chỉ được lưu trên trình duyệt này. Hãy chạy `npm run dev` ở thư mục gốc để bật API."
+  },
+  "a11y": {
+    "skipToContent": "Chuyển tới nội dung chính",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "mainNav": "Điều hướng chính"
+  },
+  "practiceKinds": {
+    "scenario-quiz": "Quiz tình huống",
+    "estimation": "Ước tính nhanh",
+    "canvas-design": "Thiết kế kiến trúc",
+    "canvas-fix": "Sửa kiến trúc",
+    "cli-lab": "Lab CLI",
+    "console-lab": "Lab Console",
+    "iam-policy": "IAM Policy Lab",
+    "vpc-reachability": "VPC Network Lab",
+    "dynamo-model": "DynamoDB Modeling",
+    "cost-detective": "Cost Detective",
+    "incident": "Xử lý sự cố",
+    "iac": "Infrastructure as Code"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "body": "Đường dẫn này không tồn tại hoặc đã bị đổi."
+  },
+  "error": {
+    "title": "Đã có lỗi xảy ra",
+    "body": "Một phần của trang gặp sự cố. Thử tải lại nhé."
+  },
+  "search": {
+    "open": "Tìm kiếm…"
+  }
+}

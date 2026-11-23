@@ -1,0 +1,36 @@
+Mã hoá trên AWS có hai mặt: **khi lưu trữ** (at rest) và **khi truyền** (in transit). Trung tâm của cả hai là **AWS KMS**, dịch vụ quản lý khoá.
+
+## Khi truyền và khi lưu trữ
+
+| | Khi truyền (in transit) | Khi lưu trữ (at rest) |
+|---|---|---|
+| Bảo vệ khỏi | Nghe lén trên đường truyền | Ai đó đọc được ổ đĩa, snapshot, backup |
+| Công cụ | TLS (chứng chỉ miễn phí từ **ACM** cho ALB/CloudFront/API Gateway) | Mã hoá S3, EBS, RDS, DynamoDB… bằng KMS |
+| Bắt buộc | Condition `aws:SecureTransport`, chỉ cho phép HTTPS | Bật mặc định (S3 và DynamoDB đã mã hoá sẵn); dùng SCP/Config để kiểm tra |
+
+## Các loại KMS key
+
+| Loại | Ai quản lý | Khi nào dùng |
+|---|---|---|
+| **AWS owned** | AWS, bạn không nhìn thấy | Mặc định của nhiều dịch vụ, miễn phí |
+| **AWS managed** (`aws/s3`, `aws/rds`…) | AWS tạo trong account của bạn | Đơn giản, nhưng không chỉnh được key policy |
+| **Customer managed** | Bạn | Cần kiểm soát ai dùng key, chia sẻ chéo account, tự xoay vòng, audit riêng. $1/tháng mỗi key |
+
+## Envelope encryption
+
+KMS không mã hoá trực tiếp các file lớn. Thay vào đó:
+
+1. KMS sinh một **data key**.
+2. Dịch vụ dùng data key để mã hoá dữ liệu ngay tại chỗ.
+3. Data key **được mã hoá bằng KMS key** rồi lưu cạnh dữ liệu.
+4. Khi đọc: gọi KMS để giải mã data key, rồi dùng nó giải mã dữ liệu.
+
+<Callout type="key">
+Với KMS, **key policy là gốc của niềm tin**. IAM policy cho phép `kms:Decrypt` vẫn chưa đủ nếu key policy không cho phép, hoặc không uỷ quyền cho IAM của account.
+</Callout>
+
+## Chi phí và mẹo
+
+- $0.03 cho mỗi 10.000 request. S3 với SSE-KMS gọi KMS cho **mỗi object**, nên hãy bật **S3 Bucket Keys** để giảm tới ~99% số request.
+- Bật xoay vòng tự động cho key; dữ liệu cũ vẫn đọc được bình thường.
+- Muốn **xoá dữ liệu bằng cách tiêu huỷ key** (crypto-shredding) thì dùng customer managed key riêng cho mỗi khách hàng hoặc mỗi tenant.

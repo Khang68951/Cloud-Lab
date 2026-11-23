@@ -1,0 +1,45 @@
+System design has no single right answer, but there is a **method** that takes you from a vague prompt to an architecture with clear reasons. It works for interviews and real projects alike.
+
+## Six steps
+
+| # | Step | Questions to answer | Time (45-min interview) |
+|---|---|---|---|
+| 1 | **Requirements** | Core features? Who uses it? What is **out** of scope? | 5 min |
+| 2 | **Non-functional requirements** | Scale, latency, availability, consistency, cost | 3 min |
+| 3 | **Estimates** | Average and peak QPS, storage, bandwidth | 5 min |
+| 4 | **API and data model** | Key endpoints, entities, access patterns | 7 min |
+| 5 | **High-level architecture** | Boxes and arrows for the main flows | 10 min |
+| 6 | **Deep dives and trade-offs** | Bottlenecks, failures, 10× scale, cost | 15 min |
+
+## Quick estimates
+
+| Shortcut | Value |
+|---|---|
+| 1 day | ~86,400 s ≈ **10⁵ s** |
+| 1 M requests/day | ≈ **12 req/s** |
+| Peak | often **2–5×** the average |
+| 1 month | ~2.6 M seconds (~730 hours) |
+| RAM / SSD / same-AZ network / cross-Region read | ~100 ns / ~100 µs / ~0.5 ms / ~50–150 ms |
+
+Example: 10 M DAU × 20 requests = 200 M/day ≈ **2,300 req/s**, peak about **7,000 req/s**.
+
+## Common building blocks
+
+```
+Users ─► DNS ─► CDN ─► (WAF) ─► Load balancer / API Gateway ─► stateless compute
+                                                              ├─► cache
+                                                              ├─► database (chosen by access pattern)
+                                                              ├─► object storage
+                                                              └─► queue / stream ─► async workers
+```
+
+## How to deep-dive
+
+- **Bottlenecks**: which component hits its limit first at 10× load?
+- **Failures**: what if an AZ disappears, a dependency is slow, a queue backs up?
+- **Data**: what is the partition key, are there hot keys, where do you need strong consistency?
+- **Cost**: which line is biggest, and which lever reduces it?
+
+<Callout type="key">
+In the next module, each lesson is a classic system with a **Lab challenge**: you build the architecture yourself, and the simulator checks latency, availability, AZ-failure survival and cost. Always walk through the six steps before you start dragging boxes.
+</Callout>

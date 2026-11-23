@@ -1,0 +1,42 @@
+Với hệ thống thanh toán, "gần đúng" là không chấp nhận được. Mỗi đồng phải được ghi nhận **chính xác một lần**, cân bằng, kiểm toán được, và hệ thống phải luôn sẵn sàng.
+
+## Yêu cầu
+
+- Ghi nhận dòng tiền: nạp, rút, chuyển; xem số dư và lịch sử.
+- 200 req/s, gấp 3 lần lúc cao điểm, 70% là ghi.
+- **ACID**, **không trừ tiền hai lần**, availability ≥ 99,95%, chịu được sự cố AZ.
+- API mở ra internet nên phải được bảo vệ; mọi thay đổi đều phải kiểm toán được.
+
+## Sổ cái kép (double-entry)
+
+| entry_id | transaction_id | account | amount |
+|---|---|---|---|
+| 1 | T100 | alice | −50,00 |
+| 2 | T100 | bob | +50,00 |
+
+- Mỗi giao dịch có tổng bằng **0**. Bút toán **chỉ ghi thêm**, không bao giờ sửa; muốn sửa thì ghi bút toán đảo.
+- Số dư được **suy ra** từ các bút toán, có thể cache trong bảng snapshot và cập nhật trong cùng transaction.
+- Lưu tiền bằng **số nguyên đơn vị nhỏ nhất** (cent), không dùng số thực.
+
+## Kiến trúc
+
+```
+Clients ─► WAF ─► ALB ─► Payments service (Fargate, Multi-AZ)
+                            ├─► Aurora PostgreSQL (writer + replica, Multi-AZ): ledger, idempotency_keys, outbox
+                            └─► (outbox relay) ─► SQS ─► Lambda: biên lai, webhook, báo cáo ─► DynamoDB/S3
+```
+
+- **Idempotency key**: client gửi kèm mỗi request; server lưu key cùng kết quả **trong cùng transaction**. Khi bị retry, server trả lại kết quả cũ.
+- **Transactional outbox**: sự kiện "đã thanh toán" được ghi cùng transaction với bút toán, nên không bao giờ mất sự kiện.
+- **Đường đồng bộ ngắn**: chỉ WAF → ALB → service → Aurora. Mọi thứ khác đều bất đồng bộ.
+
+## Bảo mật và kiểm toán
+
+- WAF, xác thực mạnh (OAuth, mTLS cho đối tác), mã hoá KMS, Secrets Manager.
+- **CloudTrail** và log ứng dụng lưu vào S3 có **Object Lock**, tức là bất biến.
+- **Đối soát** (reconciliation) hằng ngày với ngân hàng hoặc nhà cung cấp thanh toán.
+- Cần 99,99% trở lên thì xem thêm bài multi-Region trong khoá Reliability.
+
+<Callout type="tip">
+Thử thách trong Lab: sổ cái quan hệ, có WAF, chịu được sự cố AZ, availability ≥ 99,95%, không có lỗi bảo mật nào trong phần review, và các tác vụ phụ chạy bất đồng bộ.
+</Callout>

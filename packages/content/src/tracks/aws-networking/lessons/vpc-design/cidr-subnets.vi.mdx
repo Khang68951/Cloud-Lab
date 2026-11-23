@@ -1,0 +1,36 @@
+Mọi VPC bắt đầu từ một **dải CIDR**. Chọn sai lúc đầu thì về sau rất khó sửa: không peering được, hết IP, phải chuyển hết sang VPC mới.
+
+## Đọc CIDR trong 30 giây
+
+- `10.0.0.0/16`: 16 bit đầu cố định, còn lại 32 − 16 = 16 bit → 2¹⁶ = **65.536** địa chỉ.
+- Mỗi lần tăng prefix lên 1 bit thì dải nhỏ đi một nửa: `/17` = 32.768, `/24` = 256, `/28` = 16.
+- Số subnet `/24` trong một `/16` = 2^(24 − 16) = **256**.
+
+| Prefix | Địa chỉ | Dùng được trên AWS |
+|---|---|---|
+| /16 | 65.536 | (kích thước VPC tối đa) |
+| /20 | 4.096 | 4.091 |
+| /24 | 256 | 251 |
+| /28 | 16 | 11 (subnet nhỏ nhất) |
+
+**AWS giữ lại 5 địa chỉ trong mọi subnet**: địa chỉ mạng, router của VPC, DNS, một địa chỉ dự phòng, và broadcast.
+
+## Bố cục gợi ý cho VPC /16
+
+```
+10.20.0.0/16
+├─ public   10.20.0.0/22   10.20.4.0/22   10.20.8.0/22     (3 AZ)
+├─ app      10.20.32.0/19  10.20.64.0/19  10.20.96.0/19    (rộng: container, pod)
+├─ data     10.20.128.0/22 10.20.132.0/22 10.20.136.0/22
+└─ còn trống để mở rộng
+```
+
+<Callout type="key">
+Lên **kế hoạch IP cho cả công ty**: mỗi VPC và mỗi mạng on-prem một dải **không chồng lên nhau**. CIDR chồng nhau sẽ không bao giờ peering hay định tuyến qua Transit Gateway được. **VPC IPAM** giúp cấp phát và theo dõi các dải này.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Mọi team đều dùng mặc định `10.0.0.0/16`.
+- Subnet cho EKS quá nhỏ: mỗi pod lấy một IP thật của VPC.
+- Quên IPv6: bạn có thể thêm dải IPv6 (/56 cho VPC, /64 cho mỗi subnet) song song với IPv4.

@@ -1,0 +1,33 @@
+A **route table** decides where packets leaving a subnet go. Every subnet is associated with exactly one route table.
+
+## How route tables work
+
+| Destination | Target | Meaning |
+|---|---|---|
+| `10.20.0.0/16` | `local` | Inside the VPC — always present, cannot be removed |
+| `0.0.0.0/0` | `igw-…` | To the internet — makes the subnet **public** |
+| `0.0.0.0/0` | `nat-…` | Outbound-only internet — a **private** subnet |
+| `10.30.0.0/16` | `pcx-…` / `tgw-…` | Another VPC via peering or Transit Gateway |
+| `pl-…` (S3) | `vpce-…` | S3 through a gateway endpoint |
+
+When several routes match, **the most specific wins** (longest prefix match): `/16` beats `/0`.
+
+## The ways out
+
+| Component | Direction | Notes |
+|---|---|---|
+| **Internet Gateway** | In and out | For resources with public IPs |
+| **NAT Gateway** | Out only (IPv4) | Sits in a public subnet, one per AZ; billed per hour and per GB |
+| **Egress-only IGW** | Out only (IPv6) | IPv6 needs no NAT, just block inbound |
+| **Gateway endpoint** | To S3, DynamoDB | **Free**, a route in the route table |
+| **Interface endpoint** (PrivateLink) | To most other AWS services | An ENI in your subnet; $0.01/h per AZ + $0.01/GB |
+
+<Callout type="key">
+A private subnet may need **no NAT at all**: if the app only calls AWS services (S3, DynamoDB, ECR, CloudWatch, Secrets Manager…), use endpoints — safer (no internet path) and often cheaper.
+</Callout>
+
+## Common mistakes
+
+- One route table for all private subnets pointing at **one** NAT in one AZ.
+- Creating an interface endpoint but forgetting *Private DNS* — the app still goes through NAT.
+- The interface endpoint's security group not allowing 443 from the app subnets.

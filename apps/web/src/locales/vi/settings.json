@@ -1,0 +1,39 @@
+{
+  "title": "Cài đặt",
+  "subtitle": "Mọi cài đặt được lưu trong database local trên máy bạn.",
+  "appearance": {
+    "title": "Giao diện & ngôn ngữ",
+    "themeHint": "\"Theo hệ thống\" sẽ tự đổi theo chế độ sáng/tối của Windows.",
+    "languageHint": "Thuật ngữ AWS luôn giữ nguyên tiếng Anh, có giải thích tiếng Việt."
+  },
+  "currency": {
+    "title": "Tiền tệ",
+    "showVnd": "Hiện giá quy đổi VND",
+    "showVndHint": "AWS tính tiền bằng USD. Bật lên để xem thêm số tiền VND ước tính.",
+    "rate": "Tỉ giá (VND cho 1 USD)",
+    "rateHint": "Tự nhập — CloudLab không gọi API tỉ giá nào.",
+    "preview": "Ví dụ"
+  },
+  "data": {
+    "title": "Dữ liệu",
+    "body": "Mọi tiến độ, bài làm, thiết kế và cài đặt nằm trong data/cloudlab.db trên máy bạn. Xuất ra một file JSON để sao lưu hoặc chuyển sang máy khác.",
+    "export": "Xuất dữ liệu (JSON)",
+    "import": "Nhập dữ liệu…",
+    "reset": "Đặt lại tiến độ",
+    "confirmImport": "Nhập file này sẽ THAY THẾ toàn bộ dữ liệu hiện tại (tiến độ, bài làm, thiết kế, cài đặt). Tiếp tục?",
+    "confirmReset": "Xoá toàn bộ tiến độ học và bài làm? Thiết kế đã lưu và cài đặt vẫn được giữ.",
+    "imported": "Đã nhập dữ liệu",
+    "importFailed": "File không hợp lệ hoặc API không chạy",
+    "exportFailed": "Không xuất được — API có đang chạy không?",
+    "resetDone": "Đã đặt lại tiến độ",
+    "resetFailed": "Không đặt lại được"
+  },
+  "saved": "Đã lưu",
+  "saving": "Đang lưu…",
+  "offline": "Mất kết nối API",
+  "profile": {
+    "title": "Hồ sơ",
+    "name": "Tên hiển thị",
+    "nameHint": "Dùng trên chứng nhận hoàn thành khoá học."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "hero": {
+    "eyebrow": "Thực hành trước, lý thuyết vừa đủ",
+    "title": "Học AWS bằng cách thiết kế, phá thử và sửa hệ thống",
+    "welcomeBack": "Chào mừng trở lại — học tiếp nào",
+    "subtitle": "Lộ trình 11 khoá từ nền tảng tới system design. Mỗi bài ngắn, có bài tập chấm ngay và thử thách thiết kế trong Lab — miễn phí, chạy hoàn toàn trên máy bạn.",
+    "primary": "Bắt đầu học",
+    "continue": "Học tiếp",
+    "roadmap": "Xem lộ trình",
+    "focus": "Khoá nên học"
+  },
+  "progress": {
+    "title": "Tiến độ của bạn",
+    "courses": "Khoá đã hoàn thành",
+    "lessons": "Bài học đã xong",
+    "exercises": "Bài tập đã đạt",
+    "challenges": "Thử thách trong Lab"
+  },
+  "focus": {
+    "inProgress": "Đang học",
+    "startHere": "Bắt đầu từ đây"
+  },
+  "roadmap": {
+    "title": "Lộ trình",
+    "subtitle": "Từ nền tảng tới system design — % là phần bài đã học của mỗi khoá.",
+    "open": "Mở lộ trình",
+    "stage": "Giai đoạn {{n}}"
+  },
+  "tools": {
+    "title": "Công cụ thực hành",
+    "lab": {
+      "title": "Lab kiến trúc",
+      "body": "Kéo thả dịch vụ AWS, nối dây, xem ngay bảng giá, độ trễ, availability và điểm nghẽn. Bật Chaos để phá thử."
+    },
+    "practice": {
+      "title": "Luyện tập",
+      "body": "Chỉ làm bài: quiz tình huống, ước tính và thử thách — lọc theo khoá học."
+    },
+    "explore": {
+      "title": "Service Explorer",
+      "body": "Tra cứu và so sánh dịch vụ AWS: khi nào dùng, khi nào không, giá."
+    },
+    "glossary": {
+      "title": "Glossary",
+      "body": "Thuật ngữ cloud song ngữ, tra nhanh khi đọc tài liệu."
+    }
+  }
+}

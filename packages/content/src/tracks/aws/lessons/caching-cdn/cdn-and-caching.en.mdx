@@ -1,0 +1,27 @@
+You can cache at **many layers** — the closer to the user, the faster and the more load it removes:
+
+```
+Browser → CloudFront (edge) → ALB → App → ElastiCache → Database
+ (Cache-Control)  (CDN)                    (in-memory)
+```
+
+<ServiceCompare ids="cloudfront,elasticache" />
+
+## What CloudFront is great at
+
+- **Latency** — served from one of 600+ edge locations near the user.
+- **Origin offload** — a 90% hit ratio means your servers see 10% of reads.
+- **Static and large content** — images, video, JS/CSS. Transfer from AWS origins to CloudFront is **free**.
+- **Protection** — absorbs spikes; pairs with WAF and Shield.
+
+<Callout type="warning">
+**A CDN is not automatically cheaper.** CloudFront charges ~$1 per million HTTPS requests. For APIs returning **billions of tiny responses**, request fees can outweigh bandwidth savings — always check the cost tab.
+</Callout>
+
+## Hit ratio is everything
+
+- Keep the **cache key** small: don't forward headers/cookies you don't need.
+- Set `Cache-Control` properly; use **versioned file names** (`app.3f9a.js`) so long TTLs are safe.
+- **Invalidations** are slow and manual — renaming files is better.
+
+In the Lab, CloudFront has a *hit ratio* setting. Move it from 0.5 to 0.95 and watch the load on everything behind it.

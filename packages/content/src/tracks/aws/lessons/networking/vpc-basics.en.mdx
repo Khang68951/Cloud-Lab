@@ -1,0 +1,34 @@
+A **VPC** (Virtual Private Cloud) is your private network in AWS. Every EC2 instance, RDS database, ElastiCache node… lives in one.
+
+## The standard layout
+
+```
+VPC 10.0.0.0/16
+├─ AZ-a: public subnet 10.0.1.0/24   ← ALB, NAT Gateway
+│        private subnet 10.0.11.0/24 ← EC2/Fargate (app)
+│        private subnet 10.0.21.0/24 ← RDS, ElastiCache
+└─ AZ-b: (same as AZ-a)
+```
+
+| Piece | Role |
+|---|---|
+| **Public subnet** | Its route table has `0.0.0.0/0 → Internet Gateway`. Load balancers and NAT live here |
+| **Private subnet** | No direct route to the internet. Apps and databases live here |
+| **Internet Gateway (IGW)** | The VPC's door to the internet |
+| **NAT Gateway** | Lets private subnets go **out** (e.g. updates) without anyone coming **in** |
+| **VPC Endpoint** | Private path to AWS services — Gateway type for S3/DynamoDB is **free** |
+
+## Security Groups vs NACLs
+
+| | Security Group | Network ACL |
+|---|---|---|
+| Attached to | ENI / instance | Subnet |
+| State | **Stateful** — replies are allowed automatically | **Stateless** — allow both directions |
+| Rules | Allow only | Allow and Deny, numbered order |
+| Use for | Your main fence: "only app-sg may reach db-sg on 5432" | Coarse subnet-level blocks, IP ranges |
+
+<Callout type="tip">
+Security Groups can reference **other Security Groups** as a source. "DB accepts only from app-sg" is far safer and easier to maintain than lists of IP addresses.
+</Callout>
+
+In the Lab, "databases belong in private subnets" is enforced by the **"exposed to the internet tier"** finding — connect Users/ALB straight into a database and the Review tab reports a security error.

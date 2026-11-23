@@ -1,0 +1,29 @@
+Anything public on the internet is scanned and attacked constantly. Your first defence should sit **at the edge**, before requests reach your application.
+
+## Three layers at the edge
+
+| Layer | Stops | Notes |
+|---|---|---|
+| **AWS Shield Standard** | Layer 3/4 DDoS (SYN floods, UDP reflection) | **Free and automatic** for every customer |
+| **AWS WAF** | Layer 7 attacks: SQL injection, XSS, bots, API abuse | Attach to CloudFront, ALB, API Gateway, AppSync, Cognito |
+| **Shield Advanced** | Large DDoS, with a response team (SRT) and cost protection | ~$3,000/month — for critical systems |
+
+## Common WAF rules
+
+- AWS **managed rule groups**: core rule set (OWASP), known bad inputs, SQL database, IP reputation, Bot Control.
+- **Rate-based rules**: block IPs sending more than N requests in 5 minutes — great for `/login` and `/api`.
+- **Geo match / IP sets**: block or allow by country or IP range.
+- Start rules in **Count** mode to see what they catch, then switch to **Block**.
+
+## Lock the origin: don't get bypassed
+
+WAF on CloudFront is useless if the origin is reachable directly.
+
+- **S3**: use **Origin Access Control (OAC)** and a bucket policy that only allows CloudFront; keep Block Public Access on.
+- **ALB**: allow only CloudFront's *managed prefix list* in the security group plus a secret header added by CloudFront — or use **VPC origins** so the ALB sits in a private subnet.
+
+<Callout type="key">
+Defence in depth: WAF at the edge, security groups in the network, IAM on APIs, encryption for data. No single layer is enough.
+</Callout>
+
+The challenge below: fix an API that exposes its database to the internet and has no WAF.

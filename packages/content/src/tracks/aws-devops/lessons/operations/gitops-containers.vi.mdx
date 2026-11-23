@@ -1,0 +1,33 @@
+Với container, "deploy" nghĩa là đưa một image đã biết rõ chạy lên ECS hoặc EKS. **GitOps** biến Git thành nơi duy nhất mô tả *điều gì đang chạy*.
+
+## Chuỗi cung ứng của container
+
+```
+code ─► build image ─► quét (Inspector) ─► ký ─► push ECR (tag bất biến)
+     ─► cập nhật manifest trong Git ─► Argo CD/Flux đồng bộ ─► EKS
+```
+
+| Bước | Thực hành tốt |
+|---|---|
+| **Base image** | Tối giản (distroless, Alpine, AL2023 minimal), cập nhật thường xuyên |
+| **Build** | Multi-stage build; không đưa secret vào image |
+| **ECR** | Bật **tag immutability**, scan on push và quét liên tục bằng Inspector, lifecycle policy xoá image cũ |
+| **Deploy** | Tham chiếu image bằng **digest** hoặc tag bất biến, không dùng `latest` |
+| **Runtime** | Chạy non-root, filesystem read-only, IAM theo từng task hoặc pod (task role, EKS Pod Identity) |
+
+## GitOps
+
+- **Push model** (CI chạy `kubectl apply` hoặc `aws ecs update-service`): đơn giản, nhưng CI phải giữ quyền vào cluster.
+- **Pull model** (GitOps): một agent **trong cluster** (Argo CD, Flux) liên tục so sánh Git với cluster và **tự sửa drift**.
+  - Mọi thay đổi đều qua pull request, nên được review và audit.
+  - Rollback chỉ là `git revert`.
+  - CI không cần quyền vào cluster.
+
+## ECS hay EKS cho GitOps?
+
+- **ECS**: thường dùng push model với CodeDeploy (blue/green) hoặc rolling update; IaC (CDK, Terraform) mô tả service.
+- **EKS**: Argo CD hoặc Flux là chuẩn phổ biến; kết hợp Helm hoặc Kustomize cho từng môi trường, và Argo Rollouts cho canary.
+
+<Callout type="key">
+Hãy trả lời được câu hỏi "**production đang chạy chính xác cái gì?**" chỉ bằng cách nhìn vào Git. Nếu không trả lời được, bạn đang có drift.
+</Callout>

@@ -1,0 +1,36 @@
+Instance names like `m6g.xlarge` are not random. Read the name and you can pick the right machine.
+
+## Decoding an instance name
+
+```
+m   6   g   .xlarge
+│   │   │    └─ size: nano … large, xlarge, 2xlarge … metal
+│   │   └────── variant: g = Graviton (ARM), i = Intel, a = AMD, d = NVMe disk, n = network boost
+│   └────────── generation (higher = newer, usually cheaper and faster)
+└────────────── family
+```
+
+## The main families
+
+| Family | Optimised for | Example workloads |
+|---|---|---|
+| **t** (burstable) | Low CPU with occasional bursts | Dev/test, small sites, light background jobs |
+| **m** (general purpose) | Balanced CPU/RAM | Web apps, APIs, most workloads |
+| **c** (compute optimised) | Lots of CPU | Video encoding, batch, game servers, CPU-heavy APIs |
+| **r / x** (memory optimised) | Lots of RAM | In-memory caches, large databases, analytics |
+| **i / d** (storage optimised) | Local NVMe, very high IOPS | Self-managed NoSQL, Kafka |
+| **p / g / inf / trn** (accelerated) | GPUs or AI chips | ML training and inference, graphics |
+
+## How burstable (t3, t4g) works
+
+Each instance has a **CPU baseline** (e.g. t3.medium = 20% per vCPU). Running below it earns **CPU credits**; bursting above spends them. Out of credits, the instance is throttled to the baseline (*standard* mode) or billed for the extra (*unlimited* mode).
+
+<Callout type="key">
+**Graviton** (ARM, the `g`) is typically ~20% cheaper for equal or better performance. Most modern runtimes (Java, Node.js, Python, Go, .NET) run fine on ARM — one of the easiest savings there is.
+</Callout>
+
+## How to choose
+
+1. Profile the workload: CPU-, memory- or I/O-bound?
+2. Pick the family, the latest generation, Graviton when possible.
+3. Start small, measure **p95 CPU and memory** under real load, then right-size. **Compute Optimizer** suggests sizes automatically.

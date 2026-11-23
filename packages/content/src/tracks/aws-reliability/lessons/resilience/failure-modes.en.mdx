@@ -1,0 +1,30 @@
+In distributed systems the question is not "will it fail?" but "what happens **when** it fails?". Most big outages start as a small failure that **spreads**.
+
+## Common failure modes
+
+| Failure mode | What it looks like |
+|---|---|
+| **Slow** (worse than dead) | A dependency answers after 30 s; threads and connections are held until they run out |
+| **Retry storm** | Every client retries at once, multiplying load when the system is weakest |
+| **Cascading failure** | One overloaded service drags down everything that calls it |
+| **Gray failure** | "Half alive": health checks pass while users see errors |
+| **Change-induced** | Most incidents start with a deploy or config change |
+
+## The defensive toolbox
+
+- **Timeouts** on every network call, shorter than your caller's timeout. No timeout means waiting forever.
+- **Retries with exponential backoff + jitter**: wait 100 ms, 200 ms, 400 ms… plus randomness; cap attempts, and **retry only idempotent operations**. AWS SDKs do this for you.
+- **Circuit breakers**: after N consecutive failures, "open" and fail fast for a while, then probe carefully.
+- **Bulkheads**: separate resource pools (connections, threads, services) per workload so one leak does not sink the ship.
+- **Load shedding / throttling**: reject some requests (`429`/`503`) when overloaded — better than being slow for everyone.
+- **Graceful degradation**: when a non-critical dependency fails, serve a fallback (cached value, default content).
+
+```
+Client ──timeout 2s──► API ──timeout 500ms + breaker──► Recommendations
+                         │                                  (down → "popular items")
+                         └──timeout 1s + retry/backoff──► Orders DB
+```
+
+<Callout type="key">
+Classify dependencies as **critical** or **non-critical**. A non-critical dependency must never take down the critical path — and prove it with **chaos tests** (AWS Fault Injection Service).
+</Callout>

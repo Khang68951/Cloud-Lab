@@ -1,0 +1,28 @@
+Data transfer is the hardest line on an AWS bill to predict, because it **depends on architecture**, not on how many servers you have. Here is the reference price map (us-east-1):
+
+| Flow | Reference price |
+|---|---|
+| From the internet into AWS | **Free** |
+| Within the same AZ (private IPs) | **Free** |
+| Between AZs in a Region | **$0.01/GB each way** (billed on both sides) |
+| To another Region | ~$0.02/GB (varies by pair) |
+| To the internet from EC2/ALB/S3 | ~$0.09/GB (first tier), cheaper in higher tiers |
+| To the internet via CloudFront | ~$0.085/GB (first tier); **AWS origin → CloudFront is free** |
+| Through a NAT Gateway | **+$0.045/GB** processing |
+| Through a Transit Gateway | +$0.02/GB |
+| Gateway endpoint (S3/DynamoDB) | **Free** |
+| Interface endpoint | +$0.01/GB |
+
+## Expensive patterns to look for
+
+- **Chatty microservices across AZs** — every call is billed both ways.
+- **S3/DynamoDB through NAT** instead of a gateway endpoint.
+- **One NAT shared by several AZs** — cross-AZ charges and a single point of failure.
+- **Serving large files to the internet** straight from S3/EC2 without a CDN.
+- **Cross-Region replication** nobody priced as a recurring monthly cost.
+
+<Callout type="key">
+Follow the data, not the servers. Draw each flow — **from where, to where, through what, how many GB per month** — and multiply by the table above. That is exactly how the Lab's engine computes its "Data transfer" lines.
+</Callout>
+
+The challenge below puts it together: private egress done right — cheap and AZ-resilient.

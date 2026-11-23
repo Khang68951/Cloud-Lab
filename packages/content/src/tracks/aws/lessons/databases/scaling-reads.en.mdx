@@ -1,0 +1,26 @@
+Most apps **read far more than they write**: viewing products, reading articles, opening profiles. When the database is overloaded by reads, you have three levers:
+
+| Lever | Effect | Cost | Trade-off |
+|---|---|---|---|
+| **Bigger instance** (scale up) | Linear, has a ceiling | Gets expensive fast | Simple; still one point of failure |
+| **Read replicas** | Each replica takes a share of reads | +1 instance each | Seconds of lag; app must route reads to replicas |
+| **Cache (ElastiCache)** | 90% hit ratio → DB sees 10% of reads | Often cheapest | Data can be stale; invalidation is your job |
+
+## Cache-aside, the most common pattern
+
+```
+read(key):
+  v = cache.get(key)
+  if v → return v              (hit, < 1 ms)
+  v = db.query(key)            (miss)
+  cache.set(key, v, ttl=300)
+  return v
+```
+
+<Callout type="key">
+Reads reaching the DB = **reads × (1 − hit ratio)**. A 90% hit ratio means the DB sees **one tenth** of the reads. Writes still all go to the DB.
+</Callout>
+
+Watch out for: **TTL** (how stale is acceptable?), **cache stampedes** (many misses at once after expiry), and **give the cache a replica** — losing an unreplicated cache node sends every read back to the DB at once.
+
+In the Lab: connect the app to **both** ElastiCache and the database; the engine sends reads to the cache and only misses to the DB.

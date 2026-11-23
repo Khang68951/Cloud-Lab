@@ -1,0 +1,30 @@
+## Every AWS bill has 4 parts
+
+| Part | Examples | Tip |
+|---|---|---|
+| **Compute** (per time) | EC2 hours, RDS hours, Lambda GB-seconds | Turn off what you don't use; right-size |
+| **Storage** (per GB-month) | S3, EBS volumes, database storage | Right storage class; delete old data |
+| **Requests** (per call) | API Gateway, S3 requests, DynamoDB writes | Batch; cache |
+| **Data transfer** (per GB) | Data **out** to the internet, between AZs, through NAT | Data **in** is free; data **out** is not |
+
+<Callout type="warning">
+**Data transfer** is what newcomers forget most. In us-east-1, every GB sent to the internet costs about $0.09 — serving 10 TB a month to users is ~$900.
+</Callout>
+
+## Ways to buy compute
+
+| Option | Saving vs On-Demand | When |
+|---|---|---|
+| **On-Demand** | 0% | Starting out, unpredictable, short-lived |
+| **Savings Plans / Reserved** (1–3 years) | ~28–72% | **Steady 24/7** usage you're sure about |
+| **Spot** | up to ~90% | **Interruptible** work: batch, CI, data processing |
+
+The right order: **remove waste → right-size → then commit**. Committing early just locks in waste.
+
+## Mental shortcuts
+
+- A month is **730 hours**.
+- Instance cost = price/hour × instances × 730.
+- 1 request/second, steadily ≈ **2.6 million requests/month**.
+
+<TryLab template="serverless-api" label="Try it: change the serverless API's RPS and watch the cost" />

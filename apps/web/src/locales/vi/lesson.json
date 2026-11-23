@@ -1,0 +1,51 @@
+{
+  "notFound": "Không tìm thấy bài học này.",
+  "breadcrumb": "Vị trí",
+  "minutes_one": "{{count}} phút",
+  "minutes_other": "{{count}} phút",
+  "exercisesPassed": "{{passed}}/{{total}} bài tập đạt",
+  "completed": "Đã học",
+  "fallback": "Bài này chưa có bản tiếng Việt — đang hiển thị bản tiếng Anh.",
+  "practiceTitle": "Thực hành",
+  "practiceHint": "Làm bài để ghi nhớ. Mỗi bài được chấm ngay và giải thích vì sao.",
+  "markDone": "Đánh dấu đã học xong",
+  "markUndone": "Bỏ đánh dấu đã học",
+  "navigation": "Bài trước và bài sau",
+  "prev": "Bài trước",
+  "next": "Bài tiếp theo",
+  "openLab": "Mở trong Lab",
+  "perMonth": "tháng",
+  "callout": {
+    "tip": "Mẹo",
+    "warning": "Lưu ý",
+    "info": "Thông tin",
+    "key": "Điều quan trọng"
+  },
+  "crossover": {
+    "title": "Chi phí mỗi tháng theo lưu lượng (compute + cửa trước)",
+    "traffic": "Lưu lượng trung bình",
+    "millionPerMonth": "triệu request/tháng",
+    "options": {
+      "serverless": "API Gateway + Lambda (512 MB, 100 ms)",
+      "fargate": "ALB + Fargate (Auto Scaling, 2 AZ)",
+      "ec2": "ALB + EC2 t3.medium (Savings Plan, 2 AZ)"
+    },
+    "cheapest": "rẻ nhất",
+    "note": "Với cấu hình này, serverless không còn rẻ nhất khi vượt khoảng {{rps}} request/giây đều đặn.",
+    "noCross": "Trong khoảng này, serverless luôn rẻ nhất."
+  },
+  "avail": {
+    "title": "Máy tính availability",
+    "component": "Thành phần",
+    "availability": "Availability",
+    "copies": "Số bản dự phòng",
+    "tier": "Của tầng",
+    "remove": "Xoá",
+    "add": "Thêm thành phần",
+    "total": "Availability tổng (nối tiếp)",
+    "downtime": "Downtime dự kiến mỗi tháng",
+    "minutes": "phút"
+  },
+  "writing": "Bài học này đang được soạn. Bạn có thể học các bài khác trong khoá trước.",
+  "outline": "Mục lục khoá học"
+}

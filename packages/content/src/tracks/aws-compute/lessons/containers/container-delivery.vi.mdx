@@ -1,0 +1,29 @@
+Đưa container lên production không chỉ là `docker push`. Cần có registry, phân quyền, khám phá service, và một quy trình cập nhật an toàn.
+
+## Các mảnh ghép
+
+| Mảnh | Dịch vụ / khái niệm | Ghi chú |
+|---|---|---|
+| Registry | **ECR** | Quét lỗ hổng (Inspector), lifecycle policy xoá image cũ, nhân bản sang region khác |
+| Tag | **Bất biến** (git SHA hoặc digest) | Không deploy `latest`: không biết chạy gì, rollback không tin cậy |
+| Quyền của code | **Task role** (ECS) / **IRSA, Pod Identity** (EKS) | Mỗi service một role, least privilege |
+| Quyền của nền tảng | **Task execution role** | Kéo image, ghi log, lấy secret lúc khởi động |
+| Secret | Secrets Manager hoặc Parameter Store, inject vào container | Không "nướng" secret vào image |
+| Khám phá service | **ECS Service Connect / Cloud Map**, Kubernetes Service | Gọi nhau bằng tên, không bằng IP |
+| Log | `awslogs` hoặc FireLens tới CloudWatch hay OpenSearch | Log ra stdout/stderr |
+| Sidecar | Proxy, agent thu thập telemetry | Chạy cạnh container chính trong cùng task/pod |
+
+## Image tốt
+
+- Base image nhỏ (distroless, alpine, hoặc `-slim`), dùng multi-stage build.
+- Chạy bằng **user không phải root**, root filesystem chỉ đọc nếu có thể.
+- Pin phiên bản dependency; rebuild định kỳ để nhận bản vá bảo mật.
+
+## Cập nhật an toàn
+
+- ECS: rolling update với *minimum healthy percent* và *circuit breaker* tự rollback khi deploy lỗi; hoặc blue/green qua CodeDeploy.
+- Luôn có **health check** đúng nghĩa (endpoint `/health` kiểm tra cả các dependency quan trọng).
+
+<Callout type="key">
+**Task role ≠ task execution role.** Code của bạn dùng task role. ECS dùng execution role để khởi chạy task. Cấp quyền S3 nhầm vào execution role là lỗi `AccessDenied` kinh điển.
+</Callout>

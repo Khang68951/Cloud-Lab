@@ -1,0 +1,34 @@
+AWS follows a **"purpose-built databases"** philosophy: each data shape and query style gets an engine optimised for it. Forcing everything into one database usually means slow, expensive or both.
+
+| Data / query shape | Service | Example |
+|---|---|---|
+| Relational, transactions | RDS, Aurora | Orders, accounting |
+| Key-value at huge scale | **DynamoDB** | Sessions, carts, user profiles |
+| In-memory | **ElastiCache**, **MemoryDB** (durable) | Caches, leaderboards, rate limiting |
+| Document (JSON, MongoDB-compatible) | **DocumentDB** | Flexible product catalogues |
+| Wide-column (Cassandra-compatible) | **Keyspaces** | Apps already written for Cassandra |
+| Graph | **Neptune** | Social networks, recommendations, fraud |
+| Time-series | **Timestream** | IoT, metrics, market data |
+| Full-text search, logs | **OpenSearch** | Product search, log analytics |
+| Analytics warehouse (OLAP) | **Redshift** | Reports over billions of rows |
+| Immutable ledger | QLDB is retired — use Aurora with audit tables or signatures | Verifiable transaction history |
+
+## Combining databases
+
+```
+App ──writes──► Aurora (source of truth)
+                  │ change data capture
+                  ├──► OpenSearch (search)
+                  ├──► ElastiCache (hot reads)
+                  └──► S3 / Redshift (analytics)
+```
+
+<Callout type="key">
+Each extra database is one more thing to operate, keep in sync and pay for. Start with **the fewest databases** that meet the requirements; add a purpose-built engine when a specific query truly needs it.
+</Callout>
+
+## Common mistakes
+
+- OpenSearch as the source of truth — indexes may need rebuilding, so the original data must live elsewhere.
+- Heavy analytics queries on the OLTP database that serves requests, slowing users down.
+- Picking a graph database for data that only has 1–2-hop relationships.

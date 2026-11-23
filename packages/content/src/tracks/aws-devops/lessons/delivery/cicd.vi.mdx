@@ -1,0 +1,36 @@
+**CI/CD** đưa mỗi commit qua một chuỗi bước tự động, từ build, test, quét bảo mật cho tới deploy, để việc release trở nên nhỏ, thường xuyên và nhàm chán. Nhàm chán ở đây là điều tốt.
+
+## Một pipeline điển hình
+
+```
+commit ─► build + unit test ─► quét (SAST, dependency, image) ─► artifact (image digest)
+       ─► deploy dev ─► integration test ─► deploy staging ─► (duyệt) ─► deploy prod (canary)
+```
+
+- **Build một lần, deploy nhiều nơi**: chính artifact đã được test (image digest, file zip) được đưa qua các môi trường.
+- **Cấu hình theo môi trường** nằm ngoài artifact: Parameter Store, Secrets Manager, AppConfig.
+- **Shift-left**: lỗi phát hiện càng sớm thì sửa càng rẻ.
+
+## Công cụ
+
+| Công cụ | Ghi chú |
+|---|---|
+| **GitHub Actions / GitLab CI** | Phổ biến nhất; dùng **OIDC** để nhận IAM role tạm thời |
+| **CodePipeline + CodeBuild** | Native trên AWS, chạy trong account của bạn, tích hợp IAM và VPC |
+| **CodeDeploy** | Canary hoặc linear cho Lambda và ECS, blue/green cho EC2 và ECS |
+| **ECR** | Registry cho image, có quét lỗ hổng |
+
+## Bảo mật pipeline
+
+- **Không dùng access key dài hạn**: GitHub OIDC → `AssumeRoleWithWebIdentity`, giới hạn theo repo và branch.
+- Mỗi môi trường một role với quyền tối thiểu; quyền deploy prod chỉ từ nhánh `main` đã được bảo vệ.
+- Ký artifact và pin phiên bản action hoặc dependency để chống tấn công chuỗi cung ứng.
+
+## Đo hiệu quả: DORA metrics
+
+| Chỉ số | Ý nghĩa | Đội ngũ xuất sắc |
+|---|---|---|
+| Deployment frequency | Deploy bao lâu một lần | Nhiều lần mỗi ngày |
+| Lead time for changes | Từ commit tới production | Dưới một ngày |
+| Change failure rate | Tỉ lệ deploy gây sự cố | Khoảng 0–15% |
+| Time to restore | Khôi phục sau sự cố | Dưới một giờ |

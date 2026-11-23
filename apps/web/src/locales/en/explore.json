@@ -1,0 +1,13 @@
+{
+  "title": "Service Explorer",
+  "subtitle": "Every AWS service: when to use it, when not to, pros and cons, and how it's priced. Pick a few to compare side by side.",
+  "search": "Search by name or description…",
+  "compareHint": "Pick up to {{max}} services to compare.",
+  "comparing_one": "Comparing {{count}} service",
+  "comparing_other": "Comparing {{count}} services",
+  "clear": "Clear",
+  "details": "Details",
+  "compare": "Compare",
+  "equivalents": "Equivalents",
+  "tryInLab": "Try it in the Lab"
+}

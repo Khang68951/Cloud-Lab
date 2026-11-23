@@ -1,0 +1,37 @@
+Khi công ty lớn lên, nhét mọi thứ vào **một account** sẽ biến một sai sót nhỏ thành sự cố lớn. Chuẩn hiện nay là **nhiều account**, được quản lý bằng **AWS Organizations**.
+
+## Vì sao nhiều account?
+
+| Lý do | Giải thích |
+|---|---|
+| **Giới hạn bán kính ảnh hưởng** | Account là ranh giới cô lập mạnh nhất: lỗi ở dev không chạm được prod |
+| **Tách hoá đơn** | Mỗi account có hoá đơn riêng, dễ biết team nào tiêu bao nhiêu |
+| **Quota riêng** | Giới hạn dịch vụ được tính theo account |
+| **Quyền đơn giản hơn** | "Ai được vào account prod" dễ quản lý hơn hàng trăm policy dựa trên tag |
+
+## Cấu trúc gợi ý
+
+```
+Organization (management account — chỉ dùng cho billing và quản trị)
+├─ OU Security:   Log Archive · Security Tooling
+├─ OU Workloads:  app-prod · app-staging · app-dev
+├─ OU Sandbox:    tài khoản thử nghiệm của từng kỹ sư (có budget)
+└─ OU Suspended:  account chờ đóng
+```
+
+## Các công cụ chính
+
+- **SCP (Service Control Policy)**: "lan can" cho cả OU, ví dụ chặn region ngoài danh sách cho phép, cấm tắt CloudTrail, cấm rời Organization.
+- **IAM Identity Center**: người đăng nhập **một lần** rồi chọn account và *permission set*; credential đều ngắn hạn.
+- **Role chéo account**: hệ thống CI/CD ở account "tooling" assume role vào account prod để deploy.
+- **Control Tower**: dựng sẵn landing zone theo best practice (account log, guardrail, Account Factory).
+
+<Callout type="key">
+**Management account** chỉ để quản trị và thanh toán. Không chạy workload ở đó, vì SCP không áp dụng lên management account.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Tạo IAM user cho người trong từng account thay vì dùng Identity Center.
+- Để log CloudTrail nằm ngay trong account workload: kẻ tấn công chiếm được account có thể xoá dấu vết.
+- Viết SCP chặn quá tay mà không thử trên một OU nhỏ trước.

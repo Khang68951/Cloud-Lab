@@ -1,0 +1,33 @@
+RDS và Aurora đều "là PostgreSQL hoặc MySQL được quản lý", nhưng kiến trúc bên dưới khác hẳn nhau, và chính điều đó quyết định khả năng chịu lỗi, scale và chi phí.
+
+## Kiến trúc khác nhau
+
+| | **RDS** | **Aurora** |
+|---|---|---|
+| Storage | EBS gắn vào từng instance | **Một volume dùng chung**, 6 bản sao trên 3 AZ, tự tăng tới 128 TiB |
+| Multi-AZ | Standby đồng bộ (bản cổ điển không phục vụ đọc); hoặc Multi-AZ cluster có 2 standby đọc được | Mọi replica đều là đích failover |
+| Read replica | Tối đa 15, bất đồng bộ (trễ vài giây) | Tối đa 15, trễ **vài mili giây** (dùng chung storage) |
+| Failover | ~1–2 phút | ~30 giây (nhanh hơn nữa nếu có RDS Proxy) |
+| Serverless | Không | **Serverless v2**: tự co giãn theo ACU |
+| Multi-region | Read replica sang region khác | **Global Database**: nhân bản ~1 giây, chuyển region chính trong vài phút |
+| Giá | Rẻ hơn ở cỡ nhỏ | Instance đắt hơn, cộng phí I/O (hoặc dùng gói I/O-Optimized) |
+
+## Các công cụ cần biết
+
+- **RDS Proxy**: gom kết nối (cực kỳ quan trọng với Lambda), giúp failover nhanh hơn, dùng được xác thực IAM.
+- **Backup tự động + PITR**: khôi phục tới **bất kỳ giây nào** trong khoảng 1–35 ngày gần nhất; luôn khôi phục sang **instance mới**.
+- **Snapshot thủ công**: giữ mãi cho tới khi bạn xoá; sao chép được sang region hoặc account khác.
+- **Blue/Green Deployments**: nâng cấp phiên bản engine với thời gian gián đoạn tối thiểu.
+- **Performance Insights**: tìm câu truy vấn đang làm chậm database.
+
+<Callout type="key">
+**Multi-AZ không phải là backup.** Standby nhân bản mọi thay đổi, kể cả lệnh `DELETE` nhầm. Khi lỡ tay xoá dữ liệu, hãy dùng PITR hoặc snapshot.
+</Callout>
+
+## Chọn nhanh
+
+- Dev/test, workload nhỏ → **RDS** single-AZ trên instance t-family.
+- Production thông thường → **RDS Multi-AZ** hoặc **Aurora** có 1 replica.
+- Đọc rất nhiều, cần failover nhanh, availability cao → **Aurora** có nhiều replica.
+- Tải không đều, có lúc gần như bằng 0 → **Aurora Serverless v2**.
+- DR liên region với RPO khoảng 1 giây → **Aurora Global Database**.

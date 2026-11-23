@@ -1,0 +1,33 @@
+**Route table** quyết định gói tin rời subnet đi đâu. Mỗi subnet gắn với đúng một route table.
+
+## Route table hoạt động thế nào
+
+| Đích (destination) | Target | Ý nghĩa |
+|---|---|---|
+| `10.20.0.0/16` | `local` | Trong VPC: luôn có sẵn, không xoá được |
+| `0.0.0.0/0` | `igw-…` | Ra internet: biến subnet thành **public** |
+| `0.0.0.0/0` | `nat-…` | Ra internet một chiều: subnet **private** |
+| `10.30.0.0/16` | `pcx-…` / `tgw-…` | Tới VPC khác qua peering hoặc Transit Gateway |
+| `pl-…` (S3) | `vpce-…` | Tới S3 qua gateway endpoint |
+
+Khi có nhiều route cùng khớp, **route cụ thể nhất thắng** (longest prefix match): `/16` thắng `/0`.
+
+## Các "cửa" ra ngoài
+
+| Thành phần | Chiều | Ghi chú |
+|---|---|---|
+| **Internet Gateway** | Vào và ra | Cho tài nguyên có IP public |
+| **NAT Gateway** | Chỉ ra (IPv4) | Đặt ở subnet public, mỗi AZ một cái; tính phí theo giờ và theo GB |
+| **Egress-only IGW** | Chỉ ra (IPv6) | IPv6 không cần NAT, chỉ cần chặn chiều vào |
+| **Gateway endpoint** | Tới S3, DynamoDB | **Miễn phí**, là một route trong route table |
+| **Interface endpoint** (PrivateLink) | Tới hầu hết dịch vụ AWS khác | Một ENI trong subnet; $0.01/giờ mỗi AZ + $0.01/GB |
+
+<Callout type="key">
+Private subnet có thể **không cần NAT**: nếu app chỉ gọi dịch vụ AWS (S3, DynamoDB, ECR, CloudWatch, Secrets Manager…) thì dùng endpoint. Vừa an toàn hơn (không có đường ra internet), vừa thường rẻ hơn.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Một route table dùng chung cho mọi private subnet, trỏ về **một** NAT ở một AZ.
+- Bật interface endpoint nhưng quên bật *Private DNS*, nên app vẫn đi qua NAT.
+- Security group của interface endpoint không cho phép cổng 443 từ subnet của app.

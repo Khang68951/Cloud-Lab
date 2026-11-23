@@ -1,0 +1,77 @@
+{
+  "tracksTitle": "Khoá học",
+  "tracksSubtitle": "11 khoá từ nền tảng tới chuyên sâu, xếp theo lộ trình. Khoá \"Học trước\" chỉ là khuyến nghị — bạn có thể mở mọi khoá.",
+  "trackNotFound": "Không tìm thấy track này.",
+  "modulesTitle": "Các module",
+  "practiceLabel": "Thực hành",
+  "lessons_one": "{{count}} bài",
+  "lessons_other": "{{count}} bài",
+  "noLessonsYet": "Nội dung đang được soạn",
+  "moduleNumber": "Module {{n}}",
+  "progress": "Tiến độ",
+  "done": "Đã học",
+  "exercises": "{{passed}}/{{total}} bài tập",
+  "writing": "Đang soạn",
+  "levels": {
+    "foundation": "Nền tảng",
+    "intermediate": "Trung cấp",
+    "advanced": "Nâng cao"
+  },
+  "stageLabel": "Giai đoạn {{n}}",
+  "stages": {
+    "1": {
+      "title": "Nền tảng",
+      "body": "Bắt đầu từ đây: các \"khối\" AWS dùng hằng ngày và cách nối chúng."
+    },
+    "2": {
+      "title": "Chuyên sâu theo mảng",
+      "body": "Đào sâu từng mảng: bảo mật, mạng, compute, dữ liệu."
+    },
+    "3": {
+      "title": "Kết hợp nhiều mảng",
+      "body": "Serverless, độ tin cậy và chi phí — cần kiến thức của nhiều mảng."
+    },
+    "4": {
+      "title": "Vận hành & dữ liệu",
+      "body": "Đưa hệ thống lên production an toàn và khai thác dữ liệu."
+    },
+    "5": {
+      "title": "Tổng hợp",
+      "body": "Thiết kế trọn vẹn những hệ thống thật."
+    }
+  },
+  "hours_one": "~{{count}} giờ",
+  "hours_other": "~{{count}} giờ",
+  "lessonsReady": "{{ready}}/{{total}} bài đã có",
+  "challenges_one": "{{count}} thử thách",
+  "challenges_other": "{{count}} thử thách",
+  "percentDone": "Đã học {{percent}}%",
+  "recommended": "Nên học tiếp",
+  "completed": "Hoàn thành",
+  "completedBanner": "Bạn đã hoàn thành khoá học này — mọi bài và mọi thử thách.",
+  "viewCertificate": "Xem chứng nhận",
+  "prereqWarning": "Nên học trước các khoá sau (không bắt buộc):",
+  "outcomesTitle": "Học xong bạn sẽ làm được",
+  "requires": "Học trước",
+  "viewRoadmap": "Xem lộ trình",
+  "roadmap": {
+    "title": "Lộ trình học",
+    "subtitle": "{{courses}} khoá · khoảng {{hours}} giờ · bạn đã hoàn thành {{completed}} khoá. Đi từ trái sang phải; khoá nào có viền sáng là khoá nên học tiếp.",
+    "continueWith": "Học tiếp: {{course}}",
+    "note": "Mỗi khoá được đánh dấu hoàn thành khi bạn học xong mọi bài và qua mọi thử thách trong Lab. Bài có nhãn \"Đang soạn\" sẽ được bổ sung dần."
+  },
+  "certificate": {
+    "notYet": "Chưa hoàn thành khoá học",
+    "notYetBody": "Để nhận chứng nhận \"{{course}}\", bạn cần:",
+    "reqLessons": "Học xong mọi bài ({{done}}/{{total}})",
+    "reqChallenges": "Qua mọi thử thách trong Lab ({{done}}/{{total}})",
+    "print": "In / lưu PDF",
+    "setName": "Chứng nhận đang dùng tên mặc định. Đặt tên của bạn trong",
+    "settings": "Cài đặt",
+    "heading": "Chứng nhận hoàn thành",
+    "awardedTo": "Chứng nhận",
+    "learner": "Học viên CloudLab",
+    "forCompleting": "đã hoàn thành khoá học",
+    "stats": "{{lessons}} bài học · {{exercises}} bài tập đạt · {{challenges}} thử thách thiết kế trong Lab"
+  }
+}

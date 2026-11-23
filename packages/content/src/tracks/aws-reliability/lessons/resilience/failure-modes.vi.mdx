@@ -1,0 +1,30 @@
+Trong hệ thống phân tán, câu hỏi không phải là "có lỗi không" mà là "**khi** lỗi thì chuyện gì xảy ra". Phần lớn sự cố lớn bắt đầu từ một lỗi nhỏ rồi **lan truyền**.
+
+## Các kiểu lỗi thường gặp
+
+| Kiểu lỗi | Biểu hiện |
+|---|---|
+| **Chậm** (tệ hơn chết) | Dependency trả lời sau 30 giây; thread và kết nối bị giữ, rồi cạn dần |
+| **Retry storm** | Mọi client retry cùng lúc, tải nhân lên khi hệ thống yếu nhất |
+| **Cascading failure** | Một service quá tải kéo theo những service gọi nó |
+| **Gray failure** | "Nửa sống nửa chết": health check vẫn xanh nhưng người dùng gặp lỗi |
+| **Lỗi do thay đổi** | Phần lớn sự cố bắt nguồn từ deploy hoặc thay đổi config |
+
+## Hộp đồ nghề phòng thủ
+
+- **Timeout** cho mọi lời gọi mạng, ngắn hơn timeout của bên gọi bạn. Không có timeout tức là chờ vô hạn.
+- **Retry với exponential backoff + jitter**: chờ 100 ms, 200 ms, 400 ms… cộng thêm một khoảng ngẫu nhiên; giới hạn số lần, và **chỉ retry thao tác idempotent**. Các AWS SDK đã làm sẵn việc này.
+- **Circuit breaker**: sau N lỗi liên tiếp thì "ngắt mạch", lỗi nhanh trong một khoảng thời gian, rồi thử lại từ từ.
+- **Bulkhead**: tách pool tài nguyên (kết nối, thread, service) theo loại workload để một phần hỏng không chìm cả tàu.
+- **Load shedding / throttling**: từ chối bớt request (`429`/`503`) khi quá tải, vẫn tốt hơn là chậm với tất cả.
+- **Graceful degradation**: dependency không quan trọng hỏng thì trả phương án dự phòng (giá trị trong cache, nội dung mặc định).
+
+```
+Client ──timeout 2s──► API ──timeout 500ms + breaker──► Recommendations
+                         │                                  (hỏng → "sản phẩm phổ biến")
+                         └──timeout 1s + retry/backoff──► Orders DB
+```
+
+<Callout type="key">
+Hãy phân loại dependency thành **quan trọng** và **không quan trọng**. Một dependency không quan trọng không bao giờ được phép làm sập đường xử lý chính. Hãy kiểm chứng điều đó bằng **chaos test** (AWS Fault Injection Service).
+</Callout>

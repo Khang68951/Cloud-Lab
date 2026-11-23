@@ -1,0 +1,26 @@
+Phần lớn ứng dụng **đọc nhiều hơn ghi rất nhiều**: xem sản phẩm, đọc bài viết, mở profile. Khi database quá tải vì lượt đọc, có ba hướng xử lý:
+
+| Cách | Hiệu quả | Chi phí | Đánh đổi |
+|---|---|---|---|
+| **Instance lớn hơn** (scale up) | Tuyến tính, có trần | Đắt dần theo cấp | Đơn giản, nhưng cũng là điểm lỗi duy nhất |
+| **Read replica** | Mỗi replica gánh thêm một phần lượt đọc | +1 instance mỗi replica | Dữ liệu có thể trễ vài giây; app phải gửi lượt đọc sang replica |
+| **Cache (ElastiCache)** | Hit ratio 90% → DB chỉ nhận 10% lượt đọc | Thường rẻ nhất | Dữ liệu có thể cũ; phải xử lý invalidation |
+
+## Cache-aside: mẫu phổ biến nhất
+
+```
+đọc(key):
+  v = cache.get(key)
+  nếu có v → trả về            (hit, < 1 ms)
+  v = db.query(key)             (miss)
+  cache.set(key, v, ttl=300)
+  trả về v
+```
+
+<Callout type="key">
+Lượt đọc tới DB = **lượt đọc × (1 − hit ratio)**. Hit ratio 90% nghĩa là DB chỉ còn thấy **1/10** lượt đọc. Lượt ghi thì vẫn tới DB đầy đủ.
+</Callout>
+
+Những điều cần cẩn thận: **TTL** (dữ liệu cũ tới mức nào thì chấp nhận được?), **cache stampede** (nhiều miss cùng lúc ngay sau khi hết hạn), và **cache phải có replica**. Nếu không, mất một node cache là toàn bộ lượt đọc dồn ngược về DB.
+
+Trong Lab: nối app tới **cả** ElastiCache lẫn database. Engine tự đưa lượt đọc vào cache và chỉ gửi phần miss xuống DB.

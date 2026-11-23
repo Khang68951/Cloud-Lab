@@ -1,0 +1,29 @@
+Running containers in production is more than `docker push`. You need a registry, permissions, service discovery and a safe update process.
+
+## The pieces
+
+| Piece | Service / concept | Notes |
+|---|---|---|
+| Registry | **ECR** | Vulnerability scanning (Inspector), lifecycle policies for old images, cross-Region replication |
+| Tags | **Immutable** (git SHA or digest) | Never deploy `latest` — you can't know what runs, rollbacks are unreliable |
+| Code permissions | **Task role** (ECS) / **IRSA, Pod Identity** (EKS) | One role per service, least privilege |
+| Platform permissions | **Task execution role** | Pull images, write logs, fetch secrets at start |
+| Secrets | Secrets Manager / Parameter Store, injected into the container | Never bake secrets into images |
+| Service discovery | **ECS Service Connect / Cloud Map**, Kubernetes Services | Call by name, not IP |
+| Logs | `awslogs` or FireLens to CloudWatch/OpenSearch | Log to stdout/stderr |
+| Sidecars | Proxies, telemetry agents | Run next to the main container in the same task/pod |
+
+## Good images
+
+- Small base images (distroless, alpine or `-slim`), multi-stage builds.
+- Run as a **non-root user**, read-only root filesystem where possible.
+- Pin dependency versions; rebuild regularly to pick up security patches.
+
+## Safe updates
+
+- ECS: rolling updates with *minimum healthy percent* and the *deployment circuit breaker* (auto-rollback on failed deploys), or blue/green via CodeDeploy.
+- Always have a **meaningful health check** (a `/health` endpoint that checks critical dependencies).
+
+<Callout type="key">
+**Task role ≠ task execution role.** Your code uses the task role; ECS uses the execution role to start the task. Putting the S3 permission on the execution role is a classic `AccessDenied`.
+</Callout>

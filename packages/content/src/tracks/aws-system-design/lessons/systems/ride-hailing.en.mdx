@@ -1,0 +1,41 @@
+A ride-hailing app must know **every driver's location in real time** and instantly answer "which drivers are closest to me?". It is a high-frequency write problem combined with spatial lookups.
+
+## Estimates
+
+- 100,000 drivers, each sending a position every 4 seconds → **25,000 updates/s**, 1.5× at rush hour.
+- ~200 bytes each; only the **latest position** matters for matching.
+- Analytics, surge pricing and fraud detection need **the whole stream**, possibly replayed.
+
+## Architecture
+
+```
+Drivers/Riders ─► NLB ─► Location service (Fargate, autoscaling)
+                            ├─► ElastiCache Redis: GEOADD drivers:{city} lon lat driver_id
+                            │                      GEOSEARCH … BYRADIUS 2 km
+                            └─► Kinesis (partition key = driver_id) ─┬─► Firehose ─► S3 (history, analytics)
+                                                                     ├─► Flink (surge pricing per area)
+                                                                     └─► Lambda (anomaly detection)
+```
+
+- **No API Gateway** here: 25,000 req/s exceeds its default limit, and per-request pricing would be expensive. A load balancer + containers is cheaper at this steady load.
+- **Partition by `driver_id`** keeps each driver's updates in order.
+- Kinesis needs ≥ 38 shards for the peak (37,500 records/s ÷ 1,000), or on-demand mode.
+
+## Geo indexing
+
+| Technique | Idea |
+|---|---|
+| **Redis GEO** | Built-in radius `GEOSEARCH`; data in memory |
+| **Geohash** | Encode lat/lon into a string; nearby cells share a prefix |
+| **H3 (hexagons)** | Uniform cells, handy for per-area pricing |
+
+Query **the current cell and its neighbours** instead of scanning every driver.
+
+## Durability by value
+
+- Per-second positions: **ephemeral** — kept in Redis, history to S3 via Firehose.
+- Trips and payments: **strongly durable** — DynamoDB or Aurora with Multi-AZ.
+
+<Callout type="tip">
+Lab challenge: ingest 25,000 updates/s with p95 ≤ 150 ms, in-memory lookups, a replayable Kinesis stream, surviving an AZ outage. Try API Gateway first to see how it hits limits and costs.
+</Callout>

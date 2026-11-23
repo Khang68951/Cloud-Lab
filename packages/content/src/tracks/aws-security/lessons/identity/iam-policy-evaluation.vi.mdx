@@ -1,0 +1,44 @@
+Ở Core bạn đã học quy tắc "Deny thắng Allow". Thực tế, một request có thể bị **nhiều loại policy** cùng đánh giá. Hiểu được chúng kết hợp với nhau thế nào là chìa khoá để gỡ mọi lỗi `AccessDenied`.
+
+## Các loại policy
+
+| Loại | Gắn vào | Vai trò |
+|---|---|---|
+| **Identity-based** | User, group, role | **Cấp** quyền cho danh tính |
+| **Resource-based** | Tài nguyên (bucket policy, key policy, queue policy…) | **Cấp** quyền cho ai đó truy cập tài nguyên này, kể cả từ account khác |
+| **Permissions boundary** | User, role | **Đặt trần**: quyền tối đa mà identity policy được phép cấp |
+| **SCP / RCP** (Organizations) | Account, OU | **Đặt trần** cho mọi danh tính/tài nguyên trong account (trừ management account) |
+| **Session policy** | Phiên assume-role | **Đặt trần** cho riêng phiên đó |
+
+Chỉ có identity policy và resource policy **cấp** quyền; boundary, SCP và session policy chỉ **giới hạn**.
+
+## Thứ tự đánh giá (trong cùng một account)
+
+1. Có **explicit Deny** ở bất kỳ policy nào? → **Từ chối**.
+2. SCP của account có cho phép không? Nếu không → từ chối.
+3. Resource policy **hoặc** identity policy có Allow không?
+4. Nếu có permissions boundary hoặc session policy, hành động cũng phải nằm trong đó.
+5. Không có gì cho phép → **implicit deny**.
+
+<Callout type="key">
+**Truy cập chéo account** cần Allow ở **cả hai phía**: identity policy ở account gọi, và resource policy (hoặc trust policy của role) ở account sở hữu tài nguyên.
+</Callout>
+
+## Condition: thêm ngữ cảnh
+
+```json
+{
+  "Effect": "Deny",
+  "Action": "*",
+  "Resource": "*",
+  "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "false" } }
+}
+```
+
+Các condition hay dùng: `aws:SourceIp`, `aws:MultiFactorAuthPresent`, `aws:RequestedRegion`, `aws:PrincipalTag/...` (phân quyền theo tag, còn gọi là ABAC), `aws:SecureTransport` (bắt buộc dùng HTTPS).
+
+## Gỡ lỗi AccessDenied
+
+- Đọc kỹ thông báo lỗi: AWS thường nói rõ policy loại nào đã chặn (vd *"explicit deny in a service control policy"*).
+- Dùng **IAM Policy Simulator** và **IAM Access Analyzer** để kiểm tra.
+- Kiểm tra theo thứ tự: Deny → SCP → resource/identity Allow → boundary.

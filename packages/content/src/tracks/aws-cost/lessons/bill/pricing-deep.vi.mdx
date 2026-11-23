@@ -1,0 +1,33 @@
+Muốn tối ưu chi phí thì trước hết phải **đọc được hoá đơn**. Gần như mọi dòng trong hoá đơn AWS đều là biến thể của vài chiều tính giá cơ bản.
+
+## Các chiều tính giá
+
+| Chiều | Ví dụ | Mẹo |
+|---|---|---|
+| **Thời gian compute** | EC2, RDS, Fargate theo giờ hoặc giây; Lambda theo GB-giây | Thứ chạy 24/7 thường là khoản lớn nhất |
+| **Lưu trữ** | S3, EBS theo GB-tháng; snapshot | Cái gì đã lưu thì cứ tính phí mãi tới khi bị xoá |
+| **Request** | API Gateway, S3 GET/PUT, DynamoDB on-demand, SQS | Nhỏ với từng request, nhưng lớn ở quy mô tỉ request |
+| **Truyền dữ liệu** | Ra internet ~$0.09/GB, liên Region ~$0.02/GB, cross-AZ $0.01/GB mỗi chiều | Chiều vào miễn phí; chiều ra thì không |
+| **Phí cố định** | NAT Gateway, ALB, IP public ($0.005/giờ), KMS key | Tính tiền cả khi không có traffic |
+
+## Công cụ
+
+| Công cụ | Dùng để |
+|---|---|
+| **Pricing Calculator** | Ước tính chi phí **trước** khi xây |
+| **Cost Explorer** | Xem chi tiêu thực tế theo dịch vụ, tag, account; dự báo; gợi ý rightsizing và Savings Plans |
+| **CUR / Data Exports** | Dữ liệu chi tiết theo giờ và theo tài nguyên, xuất ra S3 để truy vấn bằng Athena |
+| **AWS Budgets** | Cảnh báo khi chi tiêu thực tế hoặc dự báo vượt ngưỡng |
+| **Free Tier** | Một số dịch vụ miễn phí luôn luôn (Lambda 1 triệu request mỗi tháng…), một số có tín dụng hoặc thời hạn cho account mới |
+
+## Những bất ngờ thường gặp
+
+- **NAT Gateway**: $0.045/GB dữ liệu đi qua, kể cả khi đi tới S3 hay DynamoDB. Dùng VPC endpoint.
+- **Cross-AZ**: microservice gọi nhau qua nhiều AZ, mỗi GB tính hai chiều.
+- **IPv4 public**: mỗi IP $3,6 mỗi tháng.
+- **CloudWatch Logs**: $0.50/GB nạp vào.
+- **Tài nguyên mồ côi**: ổ EBS không gắn vào đâu, snapshot cũ, load balancer không có target.
+
+<Callout type="key">
+Hãy đặt **AWS Budgets** ngay từ ngày đầu tạo account, kể cả account học tập. Một cảnh báo $10 có thể cứu bạn khỏi một hoá đơn $1.000.
+</Callout>

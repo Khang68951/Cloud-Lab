@@ -1,0 +1,34 @@
+Many companies still have data centres or offices that must connect to AWS — a **hybrid** architecture.
+
+## Three options
+
+| | **Site-to-Site VPN** | **Direct Connect (DX)** | **Client VPN** |
+|---|---|---|---|
+| Runs over | The internet (encrypted IPsec) | A private link to a DX location | The internet, from laptops |
+| Setup | Minutes | Weeks (partner or colocation) | Minutes |
+| Bandwidth | ~1.25 Gbps per tunnel | 1, 10, 100 Gbps (or hosted 50 Mbps–25 Gbps) | Per user |
+| Latency | Varies with the internet | **Consistent** | Varies |
+| Cost | $0.05/h per connection | Port-hour fee + **cheaper** data out than internet | Per endpoint and connection |
+| For | Quick start, backup | Large steady traffic, compliance | Remote employees |
+
+## Designing for redundancy
+
+```
+Data centre ──DX (location 1)──┐
+            ──DX (location 2)──┼──► Direct Connect Gateway ──► Transit Gateway ──► VPCs
+            ──VPN (backup)─────┘
+```
+
+- **Critical**: two DX links at two different locations.
+- **Budget**: one DX link with a VPN as backup.
+- Every VPN connection already has **2 tunnels** (to different AWS endpoints) — configure both.
+
+<Callout type="key">
+DX is **not encrypted by default**. If you need encryption, run VPN over DX, use MACsec (on supported ports), or encrypt at the application layer (TLS).
+</Callout>
+
+## Common mistakes
+
+- Configuring only one of the two VPN tunnels.
+- On-prem IP ranges overlapping VPC CIDRs.
+- Not planning for DX lead time in the project schedule.

@@ -1,0 +1,36 @@
+**CI/CD** runs every commit through automated steps — build, test, security scans, deploy — so releases become small, frequent and boring. Boring is good.
+
+## A typical pipeline
+
+```
+commit ─► build + unit tests ─► scans (SAST, dependencies, image) ─► artifact (image digest)
+       ─► deploy dev ─► integration tests ─► deploy staging ─► (approval) ─► deploy prod (canary)
+```
+
+- **Build once, deploy many**: the same tested artifact (image digest, zip) moves through environments.
+- **Per-environment configuration** lives outside the artifact: Parameter Store, Secrets Manager, AppConfig.
+- **Shift left**: the earlier a problem is found, the cheaper it is to fix.
+
+## Tools
+
+| Tool | Notes |
+|---|---|
+| **GitHub Actions / GitLab CI** | Most popular; use **OIDC** to get temporary IAM roles |
+| **CodePipeline + CodeBuild** | AWS-native, runs in your account, IAM and VPC integrated |
+| **CodeDeploy** | Canary/linear for Lambda and ECS, blue/green for EC2 and ECS |
+| **ECR** | Image registry with vulnerability scanning |
+
+## Securing the pipeline
+
+- **No long-lived access keys**: GitHub OIDC → `AssumeRoleWithWebIdentity`, scoped to repo and branch.
+- One least-privilege role per environment; production deploys only from protected `main`.
+- Sign artifacts and pin action/dependency versions against supply-chain attacks.
+
+## Measuring it: DORA metrics
+
+| Metric | Meaning | Elite teams |
+|---|---|---|
+| Deployment frequency | How often you deploy | Many times a day |
+| Lead time for changes | Commit to production | Under a day |
+| Change failure rate | Deploys that cause incidents | Around 0–15% |
+| Time to restore | Recovering from incidents | Under an hour |

@@ -1,0 +1,33 @@
+Most incidents start with a change. Your deployment strategy decides **how many users** a bad change hits and **how fast** you can roll it back.
+
+## Strategies
+
+| Strategy | How | Rollback | Extra cost |
+|---|---|---|---|
+| **All-at-once** | Replace everything at once | Slow (redeploy) | None |
+| **Rolling** | Replace batches of instances | Slower; two versions run side by side for a while | Low |
+| **Blue/green** | Build a new environment (green), switch all traffic | **Instant**: switch back to blue | Temporarily double |
+| **Canary** | Send 1–10% of traffic to the new version, watch, then increase | Fast, small blast radius | Low |
+| **Feature flags** | Code is in production but off; enable per user group | Flip the flag | Code complexity |
+
+## Automatic rollback
+
+```
+deploy canary 10% ──► watch 10 min ──► alarms OK? ──yes──► 100%
+                                          │
+                                          no ──► automatic rollback
+```
+
+CodeDeploy (Lambda, ECS), ALB weighted target groups and Lambda aliases all shift traffic by weight, with **CloudWatch alarms** to roll back automatically.
+
+## Zero-downtime database changes: expand / contract
+
+1. **Expand**: add the new column or table; the app writes to **both**.
+2. **Migrate**: backfill old data; switch reads to the new column.
+3. **Contract**: stop writing the old column, then drop it in a later deploy.
+
+Every step stays backward compatible, so rolling back the app at any point is safe.
+
+<Callout type="key">
+**Deploy is not release.** Ship code to production often, dark behind feature flags, and release to users when ready — separating technical risk from business risk.
+</Callout>

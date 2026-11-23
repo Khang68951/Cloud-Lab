@@ -1,0 +1,77 @@
+{
+  "tracksTitle": "Courses",
+  "tracksSubtitle": "11 courses from foundations to deep dives, ordered as a roadmap. \"Take first\" is a recommendation — every course is open.",
+  "trackNotFound": "This track doesn't exist.",
+  "modulesTitle": "Modules",
+  "practiceLabel": "Practice",
+  "lessons_one": "{{count}} lesson",
+  "lessons_other": "{{count}} lessons",
+  "noLessonsYet": "Content in progress",
+  "moduleNumber": "Module {{n}}",
+  "progress": "Progress",
+  "done": "Done",
+  "exercises": "{{passed}}/{{total}} exercises",
+  "writing": "Being written",
+  "levels": {
+    "foundation": "Foundation",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "stageLabel": "Stage {{n}}",
+  "stages": {
+    "1": {
+      "title": "Foundations",
+      "body": "Start here: the AWS building blocks you use daily and how to connect them."
+    },
+    "2": {
+      "title": "Deep dives by area",
+      "body": "Go deep on one area at a time: security, networking, compute, data."
+    },
+    "3": {
+      "title": "Across areas",
+      "body": "Serverless, reliability and cost — they combine several areas."
+    },
+    "4": {
+      "title": "Operations & data",
+      "body": "Ship safely to production and get value from data."
+    },
+    "5": {
+      "title": "Capstone",
+      "body": "Design real systems end to end."
+    }
+  },
+  "hours_one": "~{{count}} hour",
+  "hours_other": "~{{count}} hours",
+  "lessonsReady": "{{ready}}/{{total}} lessons ready",
+  "challenges_one": "{{count}} challenge",
+  "challenges_other": "{{count}} challenges",
+  "percentDone": "{{percent}}% done",
+  "recommended": "Recommended next",
+  "completed": "Completed",
+  "completedBanner": "You have completed this course — every lesson and every challenge.",
+  "viewCertificate": "View certificate",
+  "prereqWarning": "Recommended to take these first (optional):",
+  "outcomesTitle": "After this course you can",
+  "requires": "Take first",
+  "viewRoadmap": "View roadmap",
+  "roadmap": {
+    "title": "Learning roadmap",
+    "subtitle": "{{courses}} courses · about {{hours}} hours · {{completed}} completed. Go left to right; the highlighted course is your recommended next step.",
+    "continueWith": "Continue: {{course}}",
+    "note": "A course is completed when you finish every lesson and pass every Lab challenge. Lessons marked \"Being written\" are added over time."
+  },
+  "certificate": {
+    "notYet": "Course not completed yet",
+    "notYetBody": "To earn the \"{{course}}\" certificate you need to:",
+    "reqLessons": "Finish every lesson ({{done}}/{{total}})",
+    "reqChallenges": "Pass every Lab challenge ({{done}}/{{total}})",
+    "print": "Print / save as PDF",
+    "setName": "The certificate uses a default name. Set yours in",
+    "settings": "Settings",
+    "heading": "Certificate of completion",
+    "awardedTo": "This certifies that",
+    "learner": "CloudLab learner",
+    "forCompleting": "has completed the course",
+    "stats": "{{lessons}} lessons · {{exercises}} exercises passed · {{challenges}} Lab design challenges"
+  }
+}

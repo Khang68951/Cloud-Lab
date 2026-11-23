@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "learn": "Learn",
+    "practice": "Practice",
+    "tools": "Tools"
+  },
+  "home": "Home",
+  "learn": "Courses",
+  "practice": "Practice",
+  "explore": "Service Explorer",
+  "settings": "Settings",
+  "lab": "Architecture Lab",
+  "roadmap": "Roadmap",
+  "glossary": "Glossary"
+}

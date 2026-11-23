@@ -1,0 +1,37 @@
+The same instance can cost up to 10× more or less depending on **how you buy it**. A good strategy **mixes** options instead of picking one.
+
+## The options
+
+| Option | Discount | Commitment | Risk |
+|---|---|---|---|
+| **On-Demand** | 0% | None | None |
+| **Compute Savings Plans** | up to ~66% | $/hour for 1–3 years; flexible across families, Regions, Fargate and Lambda | You pay even if unused |
+| **EC2 Instance Savings Plans** | up to ~72% | One instance family in one Region | Less flexible |
+| **Reserved Instances** | up to ~72% | A specific instance type | Older model; Savings Plans are usually easier |
+| **Spot** | up to ~90% | None | Reclaimed with **2 minutes notice** |
+
+## Mix them in layers
+
+```
+Instances
+ 30 ┤        ╭──╮              ← peak: On-Demand (+ Spot for stateless parts)
+    │      ╭─╯  ╰─╮
+ 10 ┼──────╯      ╰──────      ← always-on baseline: Savings Plan
+    └──────────────────── hour of day
+```
+
+1. **Baseline** (always running 24/7) → Savings Plan.
+2. **Variable part** → On-Demand with Auto Scaling.
+3. **Interruptible work** (batch, CI, workers behind a queue, data processing) → **Spot**.
+
+## Using Spot safely
+
+- **Diversify**: many instance types (e.g. m6i, m6a, m7g, c6i) and AZs; use the *price-capacity-optimized* strategy.
+- **Handle the 2-minute notice**: checkpoint, deregister from the load balancer, return messages to the queue.
+- Work must be **idempotent** and keep **no important state** on the machine.
+
+<Callout type="key">
+The right order: **right-size first, commit second**. Committing a Savings Plan to an oversized fleet locks in waste for 1–3 years.
+</Callout>
+
+The challenge below: combine rightsizing and Spot for a worker fleet.

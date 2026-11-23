@@ -1,0 +1,32 @@
+Clicking in the console is fast at first, but it is **not repeatable, not reviewable, and nobody knows who changed what**. **Infrastructure as Code (IaC)** describes infrastructure in text files that live in git like code.
+
+## Popular tools
+
+| Tool | Language | Strengths |
+|---|---|---|
+| **CloudFormation** | YAML/JSON | AWS-native, no state to manage, automatic rollback |
+| **AWS CDK** | TypeScript, Python… | Loops, functions, types; generates CloudFormation |
+| **Terraform / OpenTofu** | HCL | Multi-cloud, huge provider ecosystem, very clear `plan` |
+
+```yaml
+# CloudFormation: a versioned bucket
+Resources:
+  Photos:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+```
+
+## The workflow
+
+1. Edit the template.
+2. **Plan / change set** — preview what will be **created, changed, destroyed**.
+3. Review in a pull request.
+4. **Apply** (usually automatically in CI/CD).
+
+<Callout type="warning">
+**Drift** is when someone changes things by hand and reality no longer matches the code. The next apply may overwrite or break that change. Treat the console as **read-only** in production.
+</Callout>
+
+The IaC Lab (write templates, `plan`, `apply` into a mini AWS) arrives in a later phase. For now, you can **export the JSON** of any Lab diagram — architecture as data.

@@ -1,0 +1,36 @@
+Every VPC starts with a **CIDR block**. Get it wrong early and it is painful later: no peering, running out of IPs, migrating to a new VPC.
+
+## Reading CIDR in 30 seconds
+
+- `10.0.0.0/16`: the first 16 bits are fixed, 32 − 16 = 16 bits are free → 2¹⁶ = **65,536** addresses.
+- Each extra prefix bit halves the range: `/17` = 32,768, `/24` = 256, `/28` = 16.
+- Number of `/24` subnets in a `/16` = 2^(24 − 16) = **256**.
+
+| Prefix | Addresses | Usable on AWS |
+|---|---|---|
+| /16 | 65,536 | (largest VPC block) |
+| /20 | 4,096 | 4,091 |
+| /24 | 256 | 251 |
+| /28 | 16 | 11 (smallest subnet) |
+
+**AWS reserves 5 addresses in every subnet**: network address, VPC router, DNS, one reserved for future use, and broadcast.
+
+## A suggested /16 layout
+
+```
+10.20.0.0/16
+├─ public   10.20.0.0/22   10.20.4.0/22   10.20.8.0/22     (3 AZs)
+├─ app      10.20.32.0/19  10.20.64.0/19  10.20.96.0/19    (large: containers, pods)
+├─ data     10.20.128.0/22 10.20.132.0/22 10.20.136.0/22
+└─ free space for growth
+```
+
+<Callout type="key">
+Plan a **company-wide IP scheme**: every VPC and on-prem network gets a **non-overlapping** range. Overlapping CIDRs can never be peered or routed through a Transit Gateway. **VPC IPAM** helps allocate and track them.
+</Callout>
+
+## Common mistakes
+
+- Every team using the default `10.0.0.0/16`.
+- Subnets too small for EKS — every pod takes a real VPC IP.
+- Forgetting IPv6 — you can add an IPv6 block (/56 for the VPC, /64 per subnet) alongside IPv4.

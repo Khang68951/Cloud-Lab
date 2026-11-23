@@ -1,0 +1,41 @@
+Hệ thống event-driven linh hoạt và scale tốt, nhưng mang theo những bài toán mới: message trùng, mất sự kiện, sai thứ tự. Đây là các mẫu thiết kế để giải chúng.
+
+## Idempotency
+
+Message **sẽ** tới nhiều hơn một lần, nên consumer phải xử lý trùng mà không gây hậu quả.
+
+```
+nhận message (payment_id = P123)
+  → PutItem vào bảng "processed" với ConditionExpression: attribute_not_exists(pk)
+      thành công → trừ tiền
+      ConditionalCheckFailed → đã xử lý rồi, bỏ qua
+```
+
+**Powertools for AWS Lambda** có sẵn tiện ích idempotency dùng DynamoDB.
+
+## Transactional outbox
+
+Vấn đề: lưu vào DB **rồi** publish sự kiện. Nếu bước publish lỗi, sự kiện bị mất; còn nếu publish trước, DB có thể lỗi sau đó.
+
+Giải pháp: ghi sự kiện vào **bảng outbox trong cùng transaction** với dữ liệu, rồi một tiến trình (DynamoDB Streams, CDC qua DMS hoặc Debezium, hay một poller) chuyển nó lên bus. Thay đổi dữ liệu và sự kiện trở thành **nguyên tử**.
+
+## Choreography và orchestration
+
+| | **Choreography** | **Orchestration** |
+|---|---|---|
+| Cách làm | Mỗi service phát và nghe sự kiện, không có ai điều khiển trung tâm | Một workflow (Step Functions) gọi từng bước |
+| Ưu | Liên kết lỏng, dễ thêm consumer mới | Rõ ràng, dễ debug, dễ xử lý lỗi và bù trừ |
+| Nhược | Khó nhìn thấy toàn bộ quy trình | Workflow trở thành điểm phụ thuộc |
+| Hợp với | Thông báo "đã xảy ra" giữa các team | Quy trình nghiệp vụ có thứ tự và cần rollback |
+
+Trong thực tế, hai cách thường **kết hợp**: các domain giao tiếp với nhau bằng sự kiện, còn bên trong mỗi domain dùng orchestration.
+
+## Các mẫu khác nên biết
+
+- **Event-carried state transfer**: sự kiện mang đủ dữ liệu, nên consumer không phải gọi lại service gốc.
+- **CQRS**: tách mô hình ghi và đọc; view đọc được dựng từ sự kiện.
+- **Claim check**: payload lớn được lưu ở S3, còn sự kiện chỉ mang con trỏ tới nó.
+
+<Callout type="key">
+Thiết kế với giả định "mọi thứ có thể lặp lại, đến trễ hoặc sai thứ tự". Idempotency key, version hoặc timestamp trong sự kiện, cùng DLQ có alarm là ba thứ bắt buộc.
+</Callout>

@@ -1,0 +1,33 @@
+Not all data fits S3. Self-managed databases, OS disks and shared folders need **block** or **file** storage.
+
+## EBS: EC2's disks
+
+| Type | Kind | Performance | Use for |
+|---|---|---|---|
+| **gp3** | General-purpose SSD | 3,000 IOPS and 125 MB/s baseline; pay to raise up to 16,000 IOPS | **The default** for everything |
+| gp2 | SSD (older) | IOPS grows with size | Migrate to gp3 (~20% cheaper) |
+| **io2 Block Express** | Provisioned-IOPS SSD | Up to 256,000 IOPS, 99.999% durability | Critical, latency-sensitive databases |
+| st1 | Throughput HDD | Big sequential reads | Big data, logs |
+| sc1 | Cold HDD | Cheapest | Rarely accessed data |
+
+- EBS lives in **one AZ** and attaches to one instance (Multi-Attach only for io2, within an AZ).
+- **Snapshots** are incremental on S3, copyable across Regions; **Data Lifecycle Manager** schedules them.
+
+## Shared file storage
+
+| Service | Protocol | Use for |
+|---|---|---|
+| **EFS** | NFS (Linux) | Shared folders across instances and AZs; elastic; cheaper IA class |
+| **FSx for Windows** | SMB | Windows apps, Active Directory |
+| **FSx for Lustre** | Lustre | HPC, ML; links to S3 |
+| **FSx for NetApp ONTAP / OpenZFS** | NFS/SMB/iSCSI | Lifting existing NAS systems to the cloud |
+
+<Callout type="key">
+Modern web apps rarely need shared file storage: put files in S3 and keep servers **stateless**. Use EFS/FSx when software *requires* a shared POSIX file system.
+</Callout>
+
+## Common mistakes
+
+- Old gp2 volumes never migrated — 20% lost every month for free.
+- Unattached EBS volumes and old snapshots nobody deletes still bill.
+- Treating EBS as perfectly durable without snapshots.

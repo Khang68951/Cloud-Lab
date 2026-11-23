@@ -1,0 +1,39 @@
+Video is most of the internet's traffic. Designing a video platform really means designing **two pipelines**: getting video in (writes, asynchronous, CPU-heavy) and playing it (reads, enormous, bandwidth-heavy).
+
+## Upload and processing pipeline
+
+```
+Creator ─► API: get presigned URL ─► multipart upload straight to S3 (raw)
+                                         │ S3 event
+                                         ▼
+                      EventBridge / SQS ─► MediaConvert: transcode to many bitrates (HLS/DASH)
+                                         ▼
+                               S3 (segments + manifests) ─► DB update: "ready" ─► notify
+```
+
+- Transcoding takes minutes — it must be **asynchronous**.
+- **Adaptive bitrate**: each video has 240p … 4K renditions cut into 2–6 s segments; the player switches quality with bandwidth.
+
+## Playback pipeline
+
+```
+Viewer ─► CloudFront (segments cached at the edge, hit ratio > 95%) ─► S3 (origin, with Origin Shield)
+```
+
+- Segments are **immutable**, so they cache perfectly; the origin sees a few percent of requests.
+- **Signed URLs or cookies** restrict who can watch; DRM for paid content.
+- Live streams: MediaLive + MediaPackage, then CloudFront.
+
+## Cost: egress is everything
+
+| Component | Example: 1 M views/day × 300 MB |
+|---|---|
+| Data transfer | 9 PB/month — most of the bill |
+| Storage | Renditions × catalogue; lifecycle old videos to cheaper tiers |
+| Transcoding | Per video minute, once per video |
+
+Cost levers: better codecs (H.265, AV1: 30–50% smaller), CloudFront volume or contract pricing, and transcoding 4K only for genuinely popular videos.
+
+<Callout type="tip">
+Lab challenge: serve 200 segments/s of 1 MB each, with no server fleet, low latency and the bill within budget. Watch how the egress line changes with and without the CDN.
+</Callout>

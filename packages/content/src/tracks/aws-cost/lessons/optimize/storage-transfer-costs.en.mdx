@@ -1,0 +1,29 @@
+Storage and data transfer are **quietly growing** costs: cheap per GB, but they compound over time and with traffic.
+
+## Storage
+
+| Lever | Details |
+|---|---|
+| **S3 lifecycle** | Standard → Standard-IA (30 days) → Glacier IR / Deep Archive → expire. Deep Archive is about **$1/TB-month** |
+| **Intelligent-Tiering** | Unknown access patterns — S3 moves objects between tiers, no retrieval fees |
+| **Clean old versions** | Versioning plus lifecycle for *noncurrent versions*; abort incomplete multipart uploads |
+| **EBS gp2 → gp3** | 20% cheaper, predictable IOPS |
+| **Snapshots** | Data Lifecycle Manager keeps N copies; snapshot archive for long-term ones |
+| **Logs** | Set CloudWatch Logs retention; move old logs to S3 |
+
+## Data transfer
+
+```
+Internet ◄── $0.09/GB ── origin       Internet ◄── ~$0.085/GB + cache ── CloudFront
+AZ-a ◄── $0.01 + $0.01/GB ──► AZ-b    VPC ── NAT $0.045/GB ──► S3   (gateway endpoint: $0)
+Region A ── ~$0.02/GB ──► Region B
+```
+
+- **CloudFront** in front of origins: lower egress rates, cache hits, and origin-to-CloudFront transfer from AWS origins is **free**.
+- **Gateway VPC endpoints** for S3 and DynamoDB: free, and they remove NAT fees.
+- **Keep traffic in-AZ** where possible (topology-aware routing in EKS, same-AZ read replicas).
+- **Compress** (gzip, brotli, Parquet) to cut both storage and transfer.
+
+<Callout type="key">
+Look at the **arrows** in your architecture, not just the boxes: every arrow through a NAT, across AZs, across Regions or out to the internet has a price. CloudLab's lab shows exactly these lines.
+</Callout>

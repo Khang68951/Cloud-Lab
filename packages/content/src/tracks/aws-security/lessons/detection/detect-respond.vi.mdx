@@ -1,0 +1,32 @@
+Phòng thủ tốt đến đâu cũng có lúc thất bại. Điều quan trọng là **phát hiện sớm** và **phản ứng có quy trình**.
+
+## Các dịch vụ phát hiện
+
+| Dịch vụ | Trả lời câu hỏi | Ví dụ |
+|---|---|---|
+| **CloudTrail** | *Ai đã làm gì, lúc nào, từ đâu?* | Ai đã xoá security group lúc 2 giờ sáng |
+| **AWS Config** | *Cấu hình tài nguyên có đúng chuẩn không, và đã thay đổi thế nào?* | Bucket nào đang public? EBS nào chưa mã hoá? |
+| **GuardDuty** | *Có dấu hiệu bị tấn công không?* | Instance liên lạc với domain đào coin; credential dùng từ IP lạ |
+| **Inspector** | *Có lỗ hổng phần mềm không?* | Package có CVE trong EC2, image ECR hay Lambda |
+| **Security Hub** | *Tổng hợp mọi phát hiện ở một chỗ, chấm điểm theo chuẩn* | Bảng điểm CIS, AWS Foundational Best Practices |
+
+Bật **CloudTrail cấp Organization** gửi về account Log Archive, và bật **GuardDuty + Security Hub** cho mọi account và mọi region. Đây là mức tối thiểu.
+
+## Quy trình ứng phó sự cố (IR)
+
+1. **Chuẩn bị**: runbook, quyền "break-glass", liên hệ khẩn cấp, diễn tập định kỳ.
+2. **Phát hiện và phân tích**: finding từ GuardDuty, alarm, báo cáo từ người dùng.
+3. **Khoanh vùng**: chuyển instance sang security group cô lập, vô hiệu hoá access key, thu hồi session của role.
+4. **Giữ bằng chứng**: snapshot ổ đĩa và bộ nhớ, sao lưu log *trước khi* xoá bất cứ thứ gì.
+5. **Loại bỏ và phục hồi**: dựng lại từ image sạch (IaC), xoay vòng mọi secret có thể đã lộ.
+6. **Rút kinh nghiệm**: postmortem, bổ sung phần phát hiện còn thiếu.
+
+<Callout type="key">
+Tự động hoá phản ứng cho các tình huống quen thuộc, ví dụ EventBridge rule bắt finding của GuardDuty rồi gọi Lambda cô lập instance. Nhưng hãy giữ con người trong vòng lặp cho các quyết định lớn.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Chỉ bật CloudTrail ở một region, trong khi kẻ tấn công thích dùng region ít người để ý.
+- Có finding nhưng không ai đọc: hãy gửi finding nghiêm trọng tới kênh on-call.
+- Terminate instance bị xâm nhập ngay lập tức, làm mất bằng chứng.

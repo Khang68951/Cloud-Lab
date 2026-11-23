@@ -1,0 +1,42 @@
+Open any social app and the first thing you see is a **news feed**: the latest posts from people you follow. Reads vastly outnumber writes, and the feed must load almost instantly.
+
+## Requirements and estimates
+
+- Post, follow, view feed (newest first).
+- 20,000 req/s, 2× in the evening; **95% are feed reads**.
+- p95 ≤ 100 ms; posting must not wait for distribution.
+
+## The core problem: fan-out
+
+| | **Fan-out on write** (push) | **Fan-out on read** (pull) |
+|---|---|---|
+| How | On post, copy the post ID into every follower's timeline | On read, fetch recent posts from everyone you follow and merge |
+| Reads | **Very fast**: one cache lookup | Slow: N queries + merge |
+| Writes | Expensive: one post × followers | Cheap |
+| Weakness | Celebrities with millions of followers | Users following thousands |
+
+**Hybrid** (what real systems do): fan-out on write for normal accounts; merge celebrity posts at read time.
+
+## Architecture
+
+```
+Users ─► ALB ─► Feed service (Fargate, autoscaling)
+                   ├─► ElastiCache Redis: timeline:{user} = latest 500 post IDs (with replica)
+                   ├─► DynamoDB "posts": PK = post_id
+                   └─► SQS "new-posts" ─► Lambda fan-out ─► DynamoDB "timelines" + Redis update
+```
+
+- Read feed: get the ID list from Redis, then the post bodies (post cache or DynamoDB `BatchGetItem`).
+- Post: store it, enqueue the event, **return immediately**.
+- Media: stored in S3, served through CloudFront.
+
+## Deep dives
+
+- **Cache memory**: 20 M users × 500 IDs × 8 B = 80 GB → shard Redis (cluster mode).
+- **Inactive users**: do not build timelines for them; rebuild by pull when they return.
+- **Ranking**: beyond chronological, add a ranking step (ML) over a few hundred candidates.
+- **Egress** is the biggest cost line: compress responses, paginate, and serve media via a CDN.
+
+<Callout type="tip">
+Lab challenge: build a feed with p95 ≤ 100 ms that survives an AZ outage, with timelines in a cache and asynchronous fan-out.
+</Callout>

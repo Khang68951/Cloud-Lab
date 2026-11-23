@@ -1,0 +1,36 @@
+Tên instance như `m6g.xlarge` không phải ngẫu nhiên. Đọc được tên là chọn được đúng máy.
+
+## Giải mã tên instance
+
+```
+m   6   g   .xlarge
+│   │   │    └─ kích cỡ: nano … large, xlarge, 2xlarge … metal
+│   │   └────── biến thể: g = Graviton (ARM), i = Intel, a = AMD, d = ổ NVMe, n = mạng mạnh
+│   └────────── thế hệ (số càng cao càng mới, thường rẻ và nhanh hơn)
+└────────────── họ (family)
+```
+
+## Các họ chính
+
+| Họ | Tối ưu cho | Ví dụ workload |
+|---|---|---|
+| **t** (burstable) | CPU thấp, thỉnh thoảng bùng lên | Dev/test, site nhỏ, tác vụ nền nhẹ |
+| **m** (general purpose) | Cân bằng CPU/RAM | Web app, API, phần lớn workload |
+| **c** (compute optimised) | Nhiều CPU | Mã hoá video, batch, game server, API nặng CPU |
+| **r / x** (memory optimised) | Nhiều RAM | Cache in-memory, database lớn, phân tích dữ liệu |
+| **i / d** (storage optimised) | Ổ NVMe cục bộ, IOPS rất cao | Database NoSQL tự quản lý, Kafka |
+| **p / g / inf / trn** (accelerated) | GPU hoặc chip AI | Huấn luyện và chạy model ML, đồ hoạ |
+
+## Burstable (t3, t4g) hoạt động thế nào
+
+Mỗi instance có **mức CPU nền** (vd t3.medium = 20% mỗi vCPU). Thời gian chạy dưới mức nền sẽ tích **CPU credit**, và credit được tiêu khi chạy vượt mức nền. Hết credit thì instance bị bóp về mức nền (chế độ *standard*), hoặc bị tính phí phần vượt (chế độ *unlimited*).
+
+<Callout type="key">
+**Graviton** (ARM, chữ `g`) thường rẻ hơn ~20% với hiệu năng tương đương hoặc tốt hơn. Hầu hết runtime hiện đại (Java, Node.js, Python, Go, .NET) chạy tốt trên ARM, nên đây là một trong những cách tiết kiệm dễ nhất.
+</Callout>
+
+## Cách chọn
+
+1. Đo workload: thiên về CPU, bộ nhớ hay I/O?
+2. Chọn họ phù hợp, thế hệ mới nhất, ưu tiên Graviton.
+3. Bắt đầu nhỏ, đo **p95 CPU và bộ nhớ** dưới tải thật, rồi điều chỉnh (rightsizing). **Compute Optimizer** gợi ý tự động.

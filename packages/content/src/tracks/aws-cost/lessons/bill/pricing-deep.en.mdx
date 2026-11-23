@@ -1,0 +1,33 @@
+To optimise cost you must first **read the bill**. Almost every AWS line item is a variation of a few pricing dimensions.
+
+## Pricing dimensions
+
+| Dimension | Examples | Tip |
+|---|---|---|
+| **Compute time** | EC2, RDS, Fargate per hour or second; Lambda per GB-second | Things running 24/7 are usually the biggest line |
+| **Storage** | S3, EBS per GB-month; snapshots | What you store bills forever until deleted |
+| **Requests** | API Gateway, S3 GET/PUT, DynamoDB on-demand, SQS | Tiny per request, large at billions |
+| **Data transfer** | Out to internet ~$0.09/GB, inter-Region ~$0.02/GB, cross-AZ $0.01/GB each way | Inbound is free; outbound is not |
+| **Fixed fees** | NAT Gateway, ALB, public IPv4 ($0.005/h), KMS keys | Billed even with zero traffic |
+
+## Tools
+
+| Tool | Use it to |
+|---|---|
+| **Pricing Calculator** | Estimate costs **before** building |
+| **Cost Explorer** | See actual spend by service, tag, account; forecasts; rightsizing and Savings Plans recommendations |
+| **CUR / Data Exports** | Hourly, per-resource detail in S3, queried with Athena |
+| **AWS Budgets** | Alert when actual or forecast spend crosses a threshold |
+| **Free Tier** | Some services are always free (Lambda 1 M requests/month…), some offer credits or time-limited trials for new accounts |
+
+## Common surprises
+
+- **NAT Gateway**: $0.045/GB processed — even traffic to S3 or DynamoDB. Use VPC endpoints.
+- **Cross-AZ**: chatty microservices across AZs, billed both ways.
+- **Public IPv4**: $3.60/month per address.
+- **CloudWatch Logs**: $0.50/GB ingested.
+- **Orphans**: unattached EBS volumes, old snapshots, load balancers with no targets.
+
+<Callout type="key">
+Set up **AWS Budgets** on day one, even for learning accounts. A $10 alert can save you from a $1,000 bill.
+</Callout>

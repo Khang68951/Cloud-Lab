@@ -1,0 +1,27 @@
+Mọi hệ thống đều cần một "cửa trước". AWS có ba lựa chọn chính:
+
+<ServiceCompare ids="alb,nlb,apigw" />
+
+## Chọn nhanh
+
+| Nhu cầu | Chọn |
+|---|---|
+| Web/API HTTP chạy trên EC2/ECS/EKS, cần routing theo path hoặc host | **ALB** |
+| TCP/UDP, độ trễ cực thấp, cần **IP tĩnh** | **NLB** |
+| API serverless trước Lambda, cần auth/throttling/API key, traffic thấp hoặc theo đợt | **API Gateway** |
+
+<Callout type="tip">
+**Phí cố định so với phí theo request:** ALB tốn ~$16/tháng ngay cả khi không có ai dùng, còn API Gateway thì $0 khi rảnh nhưng ~$1 cho mỗi triệu request. Ở vài request/giây API Gateway rẻ hơn; ở hàng nghìn request/giây đều đặn thì ALB rẻ hơn rất nhiều.
+</Callout>
+
+## Route 53: DNS biết "suy nghĩ"
+
+Route 53 không chỉ trỏ tên miền về một IP. Nó còn có **routing policy**:
+
+- **Simple**: một đích.
+- **Weighted**: chia 90/10 để triển khai canary.
+- **Latency-based**: đưa người dùng tới region có độ trễ thấp nhất.
+- **Failover**: có health check; khi region chính sập thì chuyển sang region dự phòng.
+- **Geolocation**: định tuyến theo quốc gia (vd vì lý do pháp lý).
+
+Hãy nhớ: DNS bị **cache theo TTL**. Failover qua DNS chỉ nhanh ngang TTL của bạn.

@@ -1,0 +1,34 @@
+Incidents will happen. Great teams differ in that they **detect fast, mitigate fast, and learn every time**.
+
+## The incident lifecycle
+
+```
+Detect ─► Triage ─► Mitigate ─► Recover ─► Postmortem ─► Improve
+(alarm)  (severity) (rollback,   (normal    (blameless)   (owned
+                     shift traffic) service)               action items)
+```
+
+## Golden rules
+
+- **Mitigate first, find the cause later**: roll back, flip a feature flag, shift traffic. Debugging comes after.
+- **Clear severity levels**: SEV1 = broad customer impact, SEV3 = a minor feature broken. Severity decides who is paged and how fast.
+- **Clear roles**: the *incident commander* coordinates, the *communications lead* updates stakeholders and customers, engineers focus on the fix.
+- **Runbooks**: pre-written steps for known incidents — ideally automated (SSM Automation).
+- **One shared channel** and a **timeline**: record every decision with its time.
+
+## Blameless postmortems
+
+A good postmortem answers:
+1. What happened (timeline), and what was the impact (how many users, how long)?
+2. Why did the system **allow** it, and why was it not detected sooner? Use the "5 whys".
+3. Concrete action items, **with owners and due dates**.
+
+The right question is not "who caused it?" but "why could someone following the process still cause this?".
+
+## AWS tools
+
+**AWS Health Dashboard** (AWS-side events), **Systems Manager Incident Manager** (on-call, escalation, runbooks), **CloudWatch** (alarms and dashboards), **Fault Injection Service** (rehearsals).
+
+<Callout type="key">
+Every incident is tuition already paid. Without a postmortem and completed action items, you will pay it again.
+</Callout>

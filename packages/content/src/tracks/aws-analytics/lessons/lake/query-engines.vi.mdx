@@ -1,0 +1,32 @@
+Dữ liệu đã nằm trong lake. Giờ chọn **engine truy vấn**: trả theo lần truy vấn với **Athena**, hay dùng một data warehouse như **Redshift**?
+
+## So sánh
+
+| | **Athena** | **Redshift** |
+|---|---|---|
+| Mô hình | Serverless, truy vấn thẳng trên S3 | Data warehouse MPP (Serverless hoặc provisioned) |
+| Giá | **$5 / TB quét** (hoặc capacity đặt trước) | Theo giờ (RPU hoặc node), có thể đặt trước |
+| Khi rảnh | $0 | Serverless có thể về 0; provisioned vẫn tính tiền |
+| Hợp với | Ad-hoc, khám phá dữ liệu, tần suất thấp hoặc vừa | BI nặng, nhiều người dùng đồng thời, join phức tạp, cần dưới một giây |
+| Dữ liệu | Ngay trên S3 (Parquet, Iceberg…) | Lưu trong Redshift (managed storage), cộng **Spectrum** để đọc S3 |
+
+## Tính chi phí Athena
+
+```
+chi phí = TB quét × $5
+200 GB × 100 lần/ngày × 30 ngày = 600 TB → $3.000/tháng
+cùng dữ liệu đó ở dạng Parquet + partition, quét 10 GB → $150/tháng
+```
+
+Giảm lượng dữ liệu phải quét là đòn bẩy số một: dùng **Parquet**, **partition**, chọn đúng cột (tránh `SELECT *`), và cache kết quả cho dashboard.
+
+## Redshift: khi nào đáng tiền
+
+- Dashboard được hàng trăm người dùng mở **cả ngày**.
+- Join phức tạp trên các bảng lớn, cần **materialized view** và cache kết quả.
+- Cần **concurrency scaling** cho giờ cao điểm.
+- **Zero-ETL** từ Aurora hoặc DynamoDB sang Redshift giúp phân tích gần realtime mà không phải tự xây pipeline.
+
+<Callout type="key">
+Bắt đầu với **Athena** vì không tốn gì khi rảnh. Khi hoá đơn Athena hoặc yêu cầu về độ trễ và số người dùng đồng thời tăng lên, hãy tính lại; lúc đó Redshift Serverless thường trở nên rẻ hơn.
+</Callout>

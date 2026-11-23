@@ -1,0 +1,33 @@
+Trong CloudLab, bạn học bằng cách **thiết kế hệ thống rồi xem nó tốn bao nhiêu, chạy nhanh cỡ nào và sập ra sao**. Công cụ chính là **Lab kiến trúc**, một canvas kiểu draw.io có "bộ não" mô phỏng AWS phía sau.
+
+## Lab có 3 vùng
+
+| Vùng | Dùng để |
+|---|---|
+| **Bên trái — danh sách dịch vụ** | Kéo một dịch vụ AWS (EC2, S3, RDS…) thả vào canvas, hoặc bấm để thêm |
+| **Ở giữa — canvas** | Đặt và **nối** các dịch vụ: rê chuột vào node, kéo từ chấm tròn sang node khác |
+| **Bên phải — bảng giá & đánh giá** | Chi phí mỗi tháng, độ trễ, availability, điểm nghẽn, và các cảnh báo theo AWS Well-Architected |
+
+Mỗi khi bạn thêm, nối hay đổi cấu hình, mọi con số ở bên phải **tính lại ngay lập tức**.
+
+## Đọc một node
+
+- **Góc dưới trái**: chi phí của dịch vụ đó mỗi tháng.
+- **Góc dưới phải**: mức tải lúc cao điểm. <span className="text-success">Xanh</span> là ổn, <span className="text-warning">vàng</span> là đang căng (≥ 80%), <span className="text-danger">đỏ</span> là quá tải và bắt đầu lỗi. Ký hiệu `∞` nghĩa là dịch vụ tự scale.
+- **Mũi tên** cho biết request/giây đi qua đó. **Nét đứt** là xử lý bất đồng bộ (qua queue), không nằm trên đường request của người dùng.
+
+<Callout type="tip">
+Không chọn node nào thì tab **Kịch bản** cho phép đổi lưu lượng (request/giây), hệ số cao điểm, tỉ lệ đọc/ghi và region. Hãy thử nhân đôi traffic để xem cái gì hỏng trước.
+</Callout>
+
+## Chaos — phá thử hệ thống
+
+Menu **Chaos** cho phép tắt hẳn một Availability Zone, đẩy traffic lên gấp 10, hoặc tắt từng node riêng lẻ. Một thiết kế tốt phải **sống sót** qua những sự cố này.
+
+<Callout type="warning">
+Giá trong Lab là **giá tham khảo** (On-Demand, chưa gồm thuế và free tier). Nó đủ chính xác để so sánh các phương án. Khi cần ra quyết định thật, hãy dùng AWS Pricing Calculator.
+</Callout>
+
+<TryLab template="three-tier" label="Mở kiến trúc 3 tầng mẫu trong Lab" />
+
+Giờ đến lượt bạn: bài tập bên dưới yêu cầu dựng một website tĩnh **không dùng server nào**.

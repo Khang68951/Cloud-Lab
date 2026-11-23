@@ -1,0 +1,44 @@
+In Core you learned "Deny beats Allow". In practice a request can be evaluated by **several policy types** at once. Knowing how they combine is the key to fixing any `AccessDenied`.
+
+## Policy types
+
+| Type | Attached to | Role |
+|---|---|---|
+| **Identity-based** | Users, groups, roles | **Grants** permissions to the identity |
+| **Resource-based** | Resources (bucket, key, queue policies…) | **Grants** someone access to this resource, even from another account |
+| **Permissions boundary** | Users, roles | **Caps** what identity policies may grant |
+| **SCP / RCP** (Organizations) | Accounts, OUs | **Caps** every identity/resource in the account (except the management account) |
+| **Session policy** | An assumed-role session | **Caps** that session only |
+
+Only identity and resource policies **grant**; boundaries, SCPs and session policies only **limit**.
+
+## Evaluation order (same account)
+
+1. Any **explicit Deny** anywhere? → **Denied**.
+2. Does the account's SCP allow it? If not → denied.
+3. Does a resource policy **or** an identity policy allow it?
+4. If there is a permissions boundary or session policy, the action must be inside it too.
+5. Nothing allows it → **implicit deny**.
+
+<Callout type="key">
+**Cross-account access** needs an Allow on **both sides**: an identity policy in the calling account, and a resource policy (or the role's trust policy) in the owning account.
+</Callout>
+
+## Conditions add context
+
+```json
+{
+  "Effect": "Deny",
+  "Action": "*",
+  "Resource": "*",
+  "Condition": { "Bool": { "aws:MultiFactorAuthPresent": "false" } }
+}
+```
+
+Common conditions: `aws:SourceIp`, `aws:MultiFactorAuthPresent`, `aws:RequestedRegion`, `aws:PrincipalTag/...` (tag-based access, ABAC), `aws:SecureTransport` (require HTTPS).
+
+## Debugging AccessDenied
+
+- Read the error carefully — AWS often names the policy type that denied it (e.g. *"explicit deny in a service control policy"*).
+- Use the **IAM Policy Simulator** and **IAM Access Analyzer**.
+- Check in order: Deny → SCP → resource/identity Allow → boundary.

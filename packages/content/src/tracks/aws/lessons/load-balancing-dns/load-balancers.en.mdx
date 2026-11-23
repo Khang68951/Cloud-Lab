@@ -1,0 +1,27 @@
+Every system needs a front door. AWS has three main options:
+
+<ServiceCompare ids="alb,nlb,apigw" />
+
+## Quick pick
+
+| Need | Pick |
+|---|---|
+| HTTP web/API on EC2/ECS/EKS, path or host routing | **ALB** |
+| TCP/UDP, ultra-low latency, **static IPs** | **NLB** |
+| Serverless API in front of Lambda, auth/throttling/API keys, low or spiky traffic | **API Gateway** |
+
+<Callout type="tip">
+**Fixed fee vs per request:** an ALB costs ~$16/month even with zero users; API Gateway costs $0 when idle but ~$1 per million requests. At a few req/s API Gateway is cheaper; at thousands of steady req/s an ALB is far cheaper.
+</Callout>
+
+## Route 53: DNS that thinks
+
+Route 53 does more than point a name at an IP. It has **routing policies**:
+
+- **Simple** — one target.
+- **Weighted** — 90/10 splits for canary releases.
+- **Latency-based** — send users to the lowest-latency Region.
+- **Failover** — health-checked; switch to a standby Region when the primary fails.
+- **Geolocation** — route by country (e.g. for legal reasons).
+
+Remember: DNS is **cached for the TTL**. DNS failover is only as fast as your TTL.

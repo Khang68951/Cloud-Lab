@@ -1,0 +1,27 @@
+Synchronous calls mean a chain is as slow as its slowest link and fails with its weakest one. **Messaging** decouples the two sides: the sender does not wait for the receiver to finish.
+
+<ServiceCompare ids="sqs,sns,eventbridge,kinesis" />
+
+## Three patterns you will use constantly
+
+**1. Queue — load levelling**
+```
+API → SQS → Worker → Database
+```
+A flash sale spikes 10×; the queue absorbs it and the worker drains at a pace the database can handle. The database only needs to cope with the **average**, not the peak.
+
+**2. Fan-out — one event, many interested parties**
+```
+"Order placed" → SNS ─┬─► SQS → Billing
+                      ├─► SQS → Shipping
+                      └─► SQS → Email
+```
+Each service gets its own queue: independent retries, one slow service doesn't affect the others.
+
+**3. Stream — ordered, replayable event logs** (Kinesis/Kafka) for clickstreams, IoT, analytics.
+
+<Callout type="warning">
+SQS standard delivers **at least once** and **not necessarily in order**. Consumers must be **idempotent** (safe to process twice), and you always want a **dead-letter queue (DLQ)** for poison messages.
+</Callout>
+
+In the Lab, edges leaving a queue are **dashed**: they are off the user's request path (no latency added), and services behind a queue only need the average rate.

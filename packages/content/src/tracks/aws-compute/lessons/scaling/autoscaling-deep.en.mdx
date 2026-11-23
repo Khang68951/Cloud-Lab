@@ -1,0 +1,33 @@
+An Auto Scaling group (ASG) keeps the right number of instances: it **replaces failed ones** and **follows the load**.
+
+## Scaling policies
+
+| Policy | How it works | Use when |
+|---|---|---|
+| **Target tracking** | Keeps a metric near a target (CPU 60%, 1,000 requests per target) | The default; fits most cases |
+| **Step scaling** | Adds/removes in steps as alarms cross thresholds | You need stronger reactions to big spikes |
+| **Scheduled** | Sets min/max on a schedule | Known patterns: 8 a.m., weekends, sales |
+| **Predictive** | Learns history and launches capacity *before* the load arrives | Clear daily cycles |
+
+**Good metrics** reflect real load: *ALBRequestCountPerTarget*, queue depth per instance, CPU. Avoid "slow" metrics such as disk usage.
+
+## Making scale-out fast
+
+- **Baked AMIs**: install everything into the image instead of in user-data at boot.
+- **Warm pools**: keep initialised instances *stopped* (paying only for EBS) and start them in seconds.
+- **Lifecycle hooks**: run work on launch (fetch config) and on termination (drain connections, ship logs).
+
+## Health checks
+
+- By default an ASG uses **EC2 status checks** — they only see whether the VM is alive.
+- Enable **ELB health checks** so instances whose app returns 500s are replaced too.
+- Set a *health check grace period* long enough for the app to start.
+
+<Callout type="key">
+Set **min ≥ 2** across **≥ 2 AZs**. Treat **max** as a cost ceiling — high enough for the peak, low enough that a bug loop cannot burn the budget.
+</Callout>
+
+## Common mistakes
+
+- Scaling in too fast and then out again ("flapping") — use sensible cooldown/warm-up times.
+- Sessions stored on instance disks, so users get logged out on scale-in — keep sessions in ElastiCache or DynamoDB.

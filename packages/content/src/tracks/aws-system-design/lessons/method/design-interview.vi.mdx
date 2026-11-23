@@ -1,0 +1,45 @@
+Thiết kế hệ thống không có đáp án duy nhất, nhưng có một **phương pháp** giúp bạn đi từ đề bài mơ hồ tới một kiến trúc có lý do rõ ràng. Phương pháp này dùng được cho cả phỏng vấn lẫn công việc thật.
+
+## Sáu bước
+
+| # | Bước | Câu hỏi cần trả lời | Thời gian (phỏng vấn 45 phút) |
+|---|---|---|---|
+| 1 | **Yêu cầu** | Tính năng cốt lõi? Ai dùng? Cái gì **không** làm? | 5 phút |
+| 2 | **Yêu cầu phi chức năng** | Quy mô, độ trễ, availability, tính nhất quán, chi phí | 3 phút |
+| 3 | **Ước lượng** | QPS trung bình và cao điểm, dung lượng lưu trữ, băng thông | 5 phút |
+| 4 | **API và mô hình dữ liệu** | Các endpoint chính, các entity, mẫu truy cập | 7 phút |
+| 5 | **Kiến trúc tổng thể** | Các hộp và mũi tên cho luồng chính | 10 phút |
+| 6 | **Đào sâu và đánh đổi** | Điểm nghẽn, lỗi, scale gấp 10 lần, chi phí | 15 phút |
+
+## Ước lượng nhanh
+
+| Mẹo | Giá trị |
+|---|---|
+| 1 ngày | ~86.400 giây ≈ **10⁵ giây** |
+| 1 triệu request/ngày | ≈ **12 req/s** |
+| Cao điểm | thường gấp **2–5 lần** trung bình |
+| 1 tháng | ~2,6 triệu giây (~730 giờ) |
+| Đọc từ RAM / SSD / mạng cùng AZ / liên Region | ~100 ns / ~100 µs / ~0,5 ms / ~50–150 ms |
+
+Ví dụ: 10 triệu DAU × 20 request = 200 triệu/ngày ≈ **2.300 req/s**, và cao điểm khoảng **7.000 req/s**.
+
+## Các khối xây dựng hay dùng
+
+```
+Người dùng ─► DNS ─► CDN ─► (WAF) ─► Load balancer / API Gateway ─► compute không trạng thái
+                                                                   ├─► cache
+                                                                   ├─► database (chọn theo mẫu truy cập)
+                                                                   ├─► object storage
+                                                                   └─► queue / stream ─► worker bất đồng bộ
+```
+
+## Cách đào sâu
+
+- **Điểm nghẽn**: thành phần nào chạm giới hạn đầu tiên khi tải gấp 10 lần?
+- **Lỗi**: mất một AZ, một dependency chậm, một queue dồn ứ thì sao?
+- **Dữ liệu**: partition key là gì, có hot key không, cần nhất quán mạnh ở đâu?
+- **Chi phí**: dòng nào lớn nhất, đòn bẩy nào giảm được?
+
+<Callout type="key">
+Trong module tiếp theo, mỗi bài là một hệ thống kinh điển kèm một **thử thách trong Lab**: bạn tự kéo thả kiến trúc, bộ mô phỏng kiểm tra độ trễ, availability, khả năng chịu sự cố AZ và chi phí. Hãy luôn làm theo sáu bước trên trước khi bắt đầu kéo thả.
+</Callout>

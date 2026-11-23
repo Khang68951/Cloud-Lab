@@ -1,0 +1,28 @@
+Data transfer là dòng chi phí khó đoán nhất trên hoá đơn AWS, vì nó **phụ thuộc vào kiến trúc** chứ không phụ thuộc vào số server. Đây là bản đồ giá tham khảo (us-east-1):
+
+| Luồng dữ liệu | Giá tham khảo |
+|---|---|
+| Từ internet vào AWS | **Miễn phí** |
+| Trong cùng một AZ (qua IP private) | **Miễn phí** |
+| Giữa các AZ trong cùng region | **$0.01/GB mỗi chiều** (tính ở cả hai phía) |
+| Sang region khác | ~$0.02/GB (tuỳ cặp region) |
+| Ra internet từ EC2/ALB/S3 | ~$0.09/GB (bậc đầu), rẻ dần theo bậc |
+| Ra internet qua CloudFront | ~$0.085/GB (bậc đầu); **từ origin AWS sang CloudFront miễn phí** |
+| Qua NAT Gateway | **+$0.045/GB** phí xử lý |
+| Qua Transit Gateway | +$0.02/GB |
+| Gateway endpoint (S3/DynamoDB) | **Miễn phí** |
+| Interface endpoint | +$0.01/GB |
+
+## Các mẫu tốn tiền hay gặp
+
+- **Microservice "nói nhiều" giữa các AZ**: mỗi lời gọi qua lại đều tính phí hai chiều.
+- **S3/DynamoDB đi qua NAT** thay vì qua gateway endpoint.
+- **NAT dùng chung cho nhiều AZ**: vừa tốn phí cross-AZ, vừa là điểm lỗi duy nhất.
+- **Phục vụ file lớn ra internet** trực tiếp từ S3 hoặc EC2, không qua CDN.
+- **Nhân bản dữ liệu sang region khác** mà không ai tính chi phí lặp lại hằng tháng.
+
+<Callout type="key">
+Đi theo dòng dữ liệu, không phải theo danh sách server. Vẽ ra mỗi luồng **đi từ đâu tới đâu, qua những gì, bao nhiêu GB/tháng**, rồi nhân với bảng giá trên. Đó chính là cách engine trong Lab tính các dòng "Data transfer".
+</Callout>
+
+Thử thách bên dưới gộp lại mọi thứ: egress private đúng cách, vừa rẻ vừa chịu được sự cố AZ.

@@ -1,0 +1,28 @@
+"The system must always be up" is not an engineering goal. An **SLO** is.
+
+| Term | Meaning | Example |
+|---|---|---|
+| **SLI** (indicator) | What you **measure**, as a ratio | % of requests succeeding within 300 ms |
+| **SLO** (objective) | Your **internal target** for the SLI | 99.9% over 30 days |
+| **SLA** (agreement) | A **customer promise** with penalties | 99.5%, or credits are refunded |
+| **Error budget** | Allowed "badness" = 100% − SLO | 0.1% ≈ 43 minutes/month |
+
+## The nines table
+
+| Availability | Downtime / 30-day month | Downtime / year |
+|---|---|---|
+| 99% | 7.2 hours | 3.65 days |
+| 99.9% | 43.2 minutes | 8.8 hours |
+| 99.95% | 21.6 minutes | 4.4 hours |
+| 99.99% | 4.3 minutes | 53 minutes |
+| 99.999% | 26 seconds | 5.3 minutes |
+
+<Callout type="key">
+**Error budgets are meant to be spent.** Budget left → ship features. Budget gone → stop and invest in reliability. Each extra nine is ~10× harder, and usually far more expensive.
+</Callout>
+
+## On AWS
+
+- **CloudWatch Metrics** — measure SLIs (ALB 5xx ratio, p99 latency).
+- **CloudWatch Alarms** — alert when the budget **burns too fast** (burn rate), not on every CPU blip.
+- **CloudWatch Logs & X-Ray** — find the cause during incidents.

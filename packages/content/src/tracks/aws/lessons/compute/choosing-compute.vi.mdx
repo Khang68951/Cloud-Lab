@@ -1,0 +1,20 @@
+AWS có ba cách chính để chạy code. Cách nào cũng tốt, **tuỳ theo hình dạng traffic và người vận hành**.
+
+<ServiceCompare ids="ec2,fargate,lambda" />
+
+## Câu hỏi để chọn nhanh
+
+1. **Có chạy quá 15 phút không?** Có → loại Lambda.
+2. **Traffic đều 24/7 hay theo đợt, có lúc gần bằng 0?** Theo đợt hoặc thấp → Lambda/Fargate. Đều và cao → EC2/Fargate, rồi cân nhắc Savings Plan.
+3. **Team có muốn vá OS, lo AMI, lo dung lượng không?** Không → Fargate hoặc Lambda.
+4. **Có cần GPU, quyền truy cập host, phần mềm đặc biệt không?** Có → EC2.
+
+## Điểm hoà vốn chi phí
+
+Lambda tính tiền **theo từng request**, còn EC2/Fargate tính **theo giờ dù có request hay không**. Nên khi traffic thấp Lambda rẻ hơn, và khi traffic cao, đều đặn thì thứ tự đảo ngược. Kéo thanh trượt để thấy điểm giao nhau:
+
+<CostCrossover />
+
+<Callout type="tip">
+Con số chính xác phụ thuộc vào thời gian chạy và bộ nhớ của mỗi request. Hãy đổi chúng trong Lab: chọn node Lambda, sửa *Avg duration*, và xem đường chi phí dịch chuyển.
+</Callout>

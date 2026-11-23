@@ -1,0 +1,28 @@
+Users far from your Region suffer high latency. AWS has two ways to bring them onto the AWS backbone at the nearest location.
+
+| | **CloudFront** | **Global Accelerator** |
+|---|---|---|
+| Protocols | HTTP/HTTPS, WebSocket | **Any TCP and UDP** |
+| Caching | **Yes** | No |
+| Addresses | Domain name, changing IPs | **2 static anycast IPs** |
+| Cross-Region failover | Origin groups / failover origins | **In seconds**, health-check based |
+| Edge features | WAF, Functions, Lambda@Edge, compression, signed URLs | No content processing |
+| Price | Per GB out + requests | $0.025/hour + per-GB premium |
+
+## CloudFront helps even without caching
+
+- **TLS terminates near the user** — the handshake happens a few ms away instead of hundreds.
+- **Connection reuse** — the edge keeps warm connections to your origin over the AWS backbone.
+- **Protection** — WAF and Shield at the edge.
+
+## Logic at the edge
+
+| | CloudFront Functions | Lambda@Edge |
+|---|---|---|
+| Runs at | Every edge location | Regional edge caches |
+| Duration | Sub-millisecond | Up to seconds |
+| For | URL rewrites, headers, redirects, simple token checks | Heavier logic, network calls, generating content |
+
+<Callout type="key">
+**Cacheable** content → **CloudFront**. **Non-HTTP** traffic (games, VoIP, IoT), or **static IPs** and very fast multi-Region failover → **Global Accelerator**. They can be combined.
+</Callout>

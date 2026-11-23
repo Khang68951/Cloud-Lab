@@ -1,0 +1,28 @@
+Multi-AZ bảo vệ bạn khỏi sự cố một datacenter. **Disaster Recovery (DR)** bảo vệ khỏi những thứ lớn hơn: mất cả một Region, xoá nhầm dữ liệu, ransomware.
+
+## Hai con số quyết định mọi thứ
+
+- **RPO** (Recovery Point Objective): chấp nhận **mất bao nhiêu dữ liệu**, tính bằng thời gian. Ví dụ RPO 1 giờ nghĩa là có thể mất tối đa 1 giờ dữ liệu.
+- **RTO** (Recovery Time Objective): chấp nhận **ngừng hoạt động bao lâu**.
+
+RPO và RTO càng nhỏ thì càng đắt.
+
+## Bốn chiến lược
+
+| Chiến lược | Ở Region DR có gì | RPO / RTO điển hình | Chi phí |
+|---|---|---|---|
+| **Backup & restore** | Chỉ có backup (AWS Backup, snapshot sao chép sang) | Vài giờ / vài giờ tới một ngày | $ |
+| **Pilot light** | Dữ liệu được nhân bản liên tục; compute **tắt**, dựng lên từ IaC khi cần | Vài phút / vài chục phút | $$ |
+| **Warm standby** | Một bản **thu nhỏ nhưng chạy được**; scale lên khi failover | Vài giây / vài phút | $$$ |
+| **Multi-site active-active** | Bản đầy đủ, phục vụ traffic thật | ~0 / gần như tức thì | $$$$ |
+
+## Công cụ trên AWS
+
+- **AWS Backup**: chính sách backup tập trung, sao chép sang Region hoặc account khác, kèm **vault lock** chống xoá (ransomware).
+- **Aurora Global Database**, **DynamoDB Global Tables**, **S3 Replication**: nhân bản dữ liệu.
+- **AWS Elastic Disaster Recovery**: nhân bản liên tục server (cả on-premises) sang AWS.
+- **Route 53 Application Recovery Controller**: kiểm tra mức sẵn sàng và điều khiển failover an toàn.
+
+<Callout type="key">
+Kế hoạch DR chưa được **diễn tập** thì chỉ là tài liệu. Hãy tổ chức game day định kỳ: khôi phục thật từ backup, failover thật, đo RTO thật. Đồng thời giữ backup ở **account khác** để chống trường hợp account bị chiếm quyền.
+</Callout>

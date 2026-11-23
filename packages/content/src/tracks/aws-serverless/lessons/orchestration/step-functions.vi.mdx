@@ -1,0 +1,33 @@
+Khi một quy trình có nhiều bước, cần retry, rẽ nhánh, chờ đợi hoặc huỷ bỏ, viết tất cả trong một Lambda sẽ nhanh chóng thành mớ bòng bong. **Step Functions** biến quy trình đó thành một state machine có thể nhìn thấy, theo dõi và sửa được.
+
+## Standard và Express
+
+| | **Standard** | **Express** |
+|---|---|---|
+| Thời gian chạy tối đa | **1 năm** | 5 phút |
+| Ngữ nghĩa | Exactly-once cho mỗi bước | At-least-once (async) hoặc at-most-once (sync) |
+| Giá | $0.025 / 1.000 lần chuyển trạng thái | $1 / triệu lượt chạy + thời gian chạy |
+| Lịch sử | Đầy đủ, xem trực quan trên console | Ghi vào CloudWatch Logs |
+| Dùng cho | Quy trình nghiệp vụ, chờ người duyệt, saga | Xử lý stream hoặc IoT khối lượng lớn, flow ngắn |
+
+## Những khối xây dựng
+
+- **Task**: gọi Lambda hoặc **gọi thẳng hơn 200 dịch vụ AWS** (DynamoDB, SQS, ECS, Bedrock…) mà không cần Lambda làm cầu nối.
+- **Choice**: rẽ nhánh. **Parallel**: chạy song song. **Map**: lặp trên danh sách, bản *distributed* xử lý được hàng triệu mục từ S3.
+- **Wait**: chờ một khoảng thời gian, **miễn phí**. **Callback** (`.waitForTaskToken`): chờ một hệ thống ngoài hoặc người duyệt.
+- **Retry** (có backoff, jitter) và **Catch**: khai báo trực tiếp trong định nghĩa, không cần code.
+
+## Saga: transaction trên nhiều dịch vụ
+
+```
+ReserveFlight ──► ReserveHotel ──► ReserveCar ──► Done
+      ▲                ▲               │ lỗi (Catch)
+      │                └── CancelHotel ◄┘
+      └── CancelFlight ◄───────┘
+```
+
+Mỗi bước có một **bước bù trừ** (compensation). Khi một bước lỗi, workflow chạy ngược các bước bù trừ để đưa hệ thống về trạng thái nhất quán.
+
+<Callout type="key">
+Dùng Standard cho flow dài và quan trọng, Express cho flow ngắn mà khối lượng lớn. Một flow 10 bước chạy 1 triệu lần mỗi tháng tốn **$250** với Standard, nhưng chỉ vài đô với Express.
+</Callout>

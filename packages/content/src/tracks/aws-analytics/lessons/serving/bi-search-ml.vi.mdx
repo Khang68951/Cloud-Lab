@@ -1,0 +1,33 @@
+Dữ liệu chỉ có giá trị khi được **dùng**: dashboard cho đội kinh doanh, tìm kiếm cho người dùng, và mô hình ML cho sản phẩm. Đây là bản đồ nhanh các dịch vụ ở tầng này.
+
+## BI và trực quan hoá
+
+- **Amazon QuickSight**: BI serverless, giá theo người dùng; bộ nhớ đệm **SPICE** cho dashboard nhanh; **Amazon Q** để hỏi bằng ngôn ngữ tự nhiên; nhúng được dashboard vào ứng dụng.
+- Nguồn dữ liệu: Athena, Redshift, RDS, S3…
+- **Managed Grafana** dành cho metric vận hành hơn là BI nghiệp vụ.
+
+## Tìm kiếm và phân tích log
+
+- **Amazon OpenSearch Service** (hoặc OpenSearch Serverless): tìm kiếm toàn văn, cho phép gõ sai, xếp hạng theo mức liên quan, facet; phân tích log và trace bằng OpenSearch Dashboards.
+- Có tầng **UltraWarm** và **cold** giúp giữ log cũ với chi phí thấp.
+- Có **tìm kiếm vector (k-NN)** cho tìm kiếm ngữ nghĩa và RAG.
+- OpenSearch là **index phụ**: nguồn dữ liệu gốc phải nằm ở nơi khác (DynamoDB, Aurora, S3).
+
+## Machine learning và AI tạo sinh
+
+| Nhu cầu | Dịch vụ |
+|---|---|
+| Dùng foundation model (chat, tóm tắt, RAG, agent) | **Amazon Bedrock**: knowledge base, guardrail, agent |
+| Xây, huấn luyện và triển khai model của riêng bạn | **Amazon SageMaker AI** |
+| Tác vụ AI dựng sẵn | Rekognition (ảnh), Textract (tài liệu), Transcribe, Translate, Comprehend |
+
+## Mẫu RAG (Retrieval-Augmented Generation)
+
+```
+tài liệu (S3) ─► chia đoạn + tạo embedding ─► vector store (OpenSearch, Aurora pgvector, S3 Vectors)
+câu hỏi ─► tìm các đoạn liên quan ─► prompt + ngữ cảnh ─► foundation model (Bedrock) ─► câu trả lời có trích dẫn
+```
+
+<Callout type="key">
+Với AI, hãy bắt đầu bằng **dịch vụ được quản lý** (Bedrock, các AI service dựng sẵn) trước khi tự huấn luyện model. Dữ liệu sạch và được quản trị tốt từ data lake mới là lợi thế cạnh tranh thật sự.
+</Callout>

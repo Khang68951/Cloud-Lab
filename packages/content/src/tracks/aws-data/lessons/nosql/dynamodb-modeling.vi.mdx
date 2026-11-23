@@ -1,0 +1,36 @@
+Với SQL, bạn thiết kế bảng trước rồi viết truy vấn sau. Với DynamoDB thì **ngược lại**: liệt kê truy vấn trước, rồi mới thiết kế key để phục vụ chúng.
+
+## Khái niệm cốt lõi
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| **Partition key (PK)** | Quyết định item nằm ở partition nào; truy vấn luôn phải có PK |
+| **Sort key (SK)** | Sắp xếp các item trong cùng một PK; hỗ trợ `begins_with`, `between`, `>`… |
+| **GSI** | Một "bảng phụ" có key khác, nhân bản bất đồng bộ; có throughput riêng |
+| **LSI** | Cùng PK nhưng SK khác; phải tạo lúc tạo bảng |
+| **Query** | Lấy theo PK (và điều kiện trên SK): rẻ và nhanh |
+| **Scan** | Đọc **toàn bộ bảng**: chậm và đắt, tránh trên đường xử lý request |
+
+## Ví dụ single-table design
+
+| PK | SK | Thuộc tính |
+|---|---|---|
+| `USER#42` | `PROFILE` | tên, email |
+| `USER#42` | `ORDER#2026-11-01#A1` | tổng tiền, trạng thái |
+| `USER#42` | `ORDER#2026-11-19#B7` | … |
+| `ORDER#B7` | `ITEM#1` | sản phẩm, số lượng |
+
+- "Hồ sơ và đơn hàng gần đây của user 42" → `Query PK = USER#42` (1 request).
+- "Đơn hàng tháng 11" → `Query PK = USER#42 AND begins_with(SK, "ORDER#2026-11")`.
+
+## Tính capacity
+
+- **RCU**: 1 lượt đọc strongly consistent mỗi giây cho item tới **4 KB** (eventually consistent tốn một nửa).
+- **WCU**: 1 lượt ghi mỗi giây cho item tới **1 KB**. Item 2,5 KB tốn 3 WCU.
+- **On-demand**: trả theo request, hợp với tải mới hoặc khó đoán. **Provisioned** (có auto scaling): rẻ hơn nhiều với tải đều.
+
+<Callout type="key">
+**Hot partition**: một key nhận quá nhiều traffic sẽ bị throttle dù tổng capacity còn thừa. Hãy chọn PK có **nhiều giá trị và phân bố đều**, hoặc chia key ra (`game#42#0..9`).
+</Callout>
+
+Các tính năng nên biết: **TTL** (tự xoá item hết hạn, miễn phí), **Streams** (bắt thay đổi để kích hoạt Lambda), **DAX** (cache trong bộ nhớ, độ trễ cỡ micro giây), **Global Tables** (multi-region active-active), **transaction** (tối đa 100 item).

@@ -1,0 +1,48 @@
+{
+  "title": "Practice",
+  "subtitle": "Exercises only, no theory. You've passed {{passed}}/{{total}}.",
+  "empty": "Nothing left in this filter. 🎉",
+  "fromLesson": "From: {{lesson}}",
+  "check": "Check",
+  "retry": "Try again",
+  "hint": "Hint {{n}}/{{total}}",
+  "status": {
+    "passed": "Passed",
+    "tried_one": "Tried {{count}} time",
+    "tried_other": "Tried {{count}} times"
+  },
+  "quiz": {
+    "multi": "More than one answer may be correct.",
+    "correct": "Correct answer",
+    "wrong": "Wrong answer",
+    "passed": "Correct!",
+    "failed": "Not quite — read the explanations above and try again."
+  },
+  "estimate": {
+    "passed": "Correct (within tolerance)!",
+    "close": "Close — but not within tolerance yet.",
+    "failed": "Quite far off.",
+    "answer": "Answer"
+  },
+  "challenge": {
+    "requirements": "Requirements",
+    "open": "Open in the Lab"
+  },
+  "filters": {
+    "kind": "Exercise type",
+    "kinds": {
+      "all": "All",
+      "quiz": "Quiz",
+      "estimation": "Estimation",
+      "challenge": "Design (Lab)"
+    },
+    "status": "Status",
+    "statuses": {
+      "todo": "Not passed",
+      "all": "All",
+      "passed": "Passed"
+    },
+    "course": "Course",
+    "allCourses": "All courses"
+  }
+}

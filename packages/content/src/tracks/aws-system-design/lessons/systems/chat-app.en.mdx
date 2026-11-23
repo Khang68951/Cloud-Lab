@@ -1,0 +1,41 @@
+A chat app must **push** messages to recipients the moment they are sent, not wait for clients to ask. That is the biggest difference from a normal API.
+
+## Requirements
+
+- 1:1 and group chat; message history; online presence.
+- 100,000 concurrent connections at all times; 3,000 messages/s (2× at peak).
+- Delivery in < 200 ms; no lost messages.
+
+## Real-time connections
+
+| Approach | Pros | Cons |
+|---|---|---|
+| Polling | Simple | Wasteful, high latency |
+| Long polling / SSE | Less wasteful | One-way (SSE) |
+| **WebSockets** | Two-way, low latency | Connections to manage |
+
+## A serverless architecture
+
+```
+Clients ═══ WebSocket ═══ API Gateway (WebSocket API)
+                             │ $connect / $disconnect / sendMessage
+                             ▼
+                          Lambda ─┬─► DynamoDB "connections": user_id → connection_id
+                                  ├─► DynamoDB "messages": PK = conversation_id, SK = timestamp#msg_id
+                                  └─► @connections API: push to the recipients' connections
+```
+
+- **History**: one `Query` by `conversation_id`, sorted by SK, paginated.
+- **Offline**: the message is stored; on reconnect the client syncs from its last-seen ID, plus a push notification (SNS or Pinpoint).
+- **Ordering**: server-assigned IDs per conversation — never trust client clocks.
+- **Idempotency**: clients send a `client_msg_id` so resends do not duplicate.
+
+## When you need something else
+
+- **Very large groups** (thousands of members): fan out via SNS/SQS or dedicated workers.
+- **Millions of connections, ultra-low latency**: a container fleet holding WebSockets with Redis Pub/Sub — cheaper at large, steady scale.
+- **Presence**: heartbeats refresh a TTL in Redis or DynamoDB.
+
+<Callout type="tip">
+Lab challenge: set API Gateway to WebSocket with 100,000 connections, store messages in DynamoDB, survive an AZ outage — and watch the "connection minutes" line appear in the pricing panel.
+</Callout>

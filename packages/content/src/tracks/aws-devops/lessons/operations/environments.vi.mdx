@@ -1,0 +1,36 @@
+Khi công ty lớn lên, một account AWS duy nhất cho mọi thứ sẽ trở thành rủi ro: một lệnh sai ở dev có thể xoá dữ liệu production. Lời giải là **nhiều account** được quản lý tập trung.
+
+## Account là ranh giới mạnh nhất
+
+| Lợi ích | Vì sao |
+|---|---|
+| **Cô lập bảo mật** | IAM của account này không chạm được tài nguyên của account khác, trừ khi cho phép rõ ràng |
+| **Quota riêng** | Một môi trường load test không ăn hết giới hạn Lambda của production |
+| **Chi phí rõ ràng** | Mỗi account là một dòng trong hoá đơn |
+| **Bán kính ảnh hưởng nhỏ** | Sự cố hoặc bị xâm nhập chỉ gói gọn trong một account |
+
+## Cấu trúc điển hình (AWS Organizations)
+
+```
+Management account (chỉ billing và Organizations — không chạy workload)
+├── Security OU:        Log Archive, Security Tooling (GuardDuty, Security Hub)
+├── Infrastructure OU:  Network (Transit Gateway), Shared Services
+├── Workloads OU
+│   ├── Prod OU:        app-a-prod, app-b-prod
+│   └── NonProd OU:     app-a-dev, app-a-staging...
+└── Sandbox OU:         account thử nghiệm của từng kỹ sư (có budget giới hạn)
+```
+
+- **AWS Control Tower** dựng sẵn landing zone này, kèm **guardrail** (SCP và Config rule), log tập trung và **Account Factory** để tạo account mới theo chuẩn.
+- **IAM Identity Center** cho đăng nhập một lần (SSO) vào mọi account, với permission set theo vai trò.
+- **SCP** chặn những việc không ai được làm: tắt CloudTrail, dùng Region không cho phép, rời khỏi Organization.
+
+## Các môi trường
+
+- **Giống nhau về cấu trúc** (cùng IaC), chỉ khác về **quy mô** và cấu hình.
+- Dữ liệu production **không** được copy xuống dev; nếu cần thì phải ẩn danh hoá.
+- Môi trường tạm cho mỗi pull request (*ephemeral environments*) giúp test sớm, và nhớ tự xoá khi đóng PR.
+
+<Callout type="key">
+Bắt đầu từ sớm với ít nhất **ba account**: management (không chạy gì), một cho non-prod, một cho prod. Tách account về sau khó hơn rất nhiều so với tách ngay từ đầu.
+</Callout>

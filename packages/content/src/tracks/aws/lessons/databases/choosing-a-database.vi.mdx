@@ -1,0 +1,27 @@
+Chọn database bắt đầu từ **dữ liệu trông thế nào** và **bạn sẽ hỏi nó những gì**, chứ không phải từ việc database nào đang "hot".
+
+<ServiceCompare ids="rds,aurora,dynamodb" />
+
+## Cây quyết định nhanh
+
+1. Cần **join, transaction nhiều bảng, truy vấn tuỳ ý, báo cáo**? → **RDS** (PostgreSQL/MySQL).
+   - Cần availability và khả năng scale đọc cao hơn, failover nhanh hơn? → **Aurora**.
+2. Truy cập luôn theo **key** (user id, session id, order id), lưu lượng cực lớn hoặc khó đoán? → **DynamoDB**.
+3. Chỉ cần đọc cực nhanh dữ liệu lặp lại? → Đặt **ElastiCache** phía trước, nó không phải database chính.
+
+## Multi-AZ khác Read replica
+
+| | Multi-AZ (standby) | Read replica |
+|---|---|---|
+| Mục đích | **Sẵn sàng cao**: tự failover | **Scale việc đọc** |
+| Nhân bản | Đồng bộ | Bất đồng bộ (có thể hơi trễ) |
+| Phục vụ đọc? | Không (bản cổ điển) | Có |
+| Chi phí | ×2 instance | +1 instance mỗi replica |
+
+<Callout type="key">
+Production thì bật **Multi-AZ**. Đó là phí bảo hiểm cho database, vì một AZ sập sẽ kéo sập cả app chạy trên database single-AZ.
+</Callout>
+
+<Callout type="tip">
+DynamoDB đòi bạn biết trước **access pattern**. Hãy liệt kê mọi câu hỏi app sẽ đặt ra trước khi thiết kế key. Nếu danh sách câu hỏi còn thay đổi liên tục, SQL thường an toàn hơn.
+</Callout>

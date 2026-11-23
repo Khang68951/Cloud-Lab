@@ -1,0 +1,25 @@
+Once you have many VPCs (per account, team or environment), you need to connect them. There are three main ways, each for a different problem.
+
+| | **VPC Peering** | **Transit Gateway** | **PrivateLink** |
+|---|---|---|---|
+| Model | 1-to-1 links | Hub-and-spoke | Expose **one service**, one-way |
+| Transitive (A → B → C) | **No** | Yes (via route tables) | n/a |
+| Overlapping CIDRs | Not allowed | Not allowed | **Allowed** |
+| Cost | No hourly fee; normal cross-AZ/Region transfer | $0.05/h per attachment + $0.02/GB | Endpoint $0.01/h/AZ + $0.01/GB (plus the provider's NLB) |
+| Fits | A few VPCs with heavy pairwise traffic | Many VPCs + VPN/Direct Connect, central control | SaaS, internal services for many consumers |
+
+## When to pick what
+
+- **2–5 VPCs** with lots of data between them → peering (no per-GB processing fee).
+- **Dozens of VPCs**, on-prem links, central inspection or egress VPC → **Transit Gateway**.
+- Offering **one API** to many VPCs/accounts without opening whole networks → **PrivateLink** (service behind an NLB, consumers create interface endpoints).
+
+<Callout type="key">
+Peering is **not transitive**: A↔B and B↔C does not give A↔C. Fully meshing N VPCs with peering needs N(N−1)/2 connections — 45 for 10 VPCs, 435 for 30.
+</Callout>
+
+## Common mistakes
+
+- Sending all east-west traffic through Transit Gateway without pricing the $0.02/GB — at hundreds of TB/month, peering the heavy pairs is much cheaper.
+- Using peering to share one service, exposing whole networks instead of a single endpoint.
+- Forgetting routes on **both sides** after creating a peering connection.

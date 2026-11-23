@@ -1,0 +1,35 @@
+Lambda looks simple, but using it well at scale means understanding what happens underneath.
+
+## Life of an execution environment
+
+1. **Init** (cold start): download code, start the runtime, run code *outside* the handler (DB connections, config).
+2. **Invoke**: run the handler. The environment is **kept** for the next request (warm).
+3. After some idle time the environment is reclaimed.
+
+→ Put expensive initialisation **outside the handler** so warm invocations reuse it.
+
+## Concurrency
+
+**Concurrency ≈ requests/second × duration (seconds)**. E.g. 500 req/s × 0.2 s = 100 environments at once.
+
+| Concept | Meaning |
+|---|---|
+| Account limit | 1,000 per Region by default (can be raised) |
+| **Reserved concurrency** | A ceiling and a reservation for one function; protects downstream databases |
+| **Provisioned concurrency** | N pre-initialised environments, no cold starts; billed per hour |
+| **SnapStart** | Restore from a post-init snapshot (Java, Python, .NET) |
+
+## Memory = CPU
+
+CPU scales with memory. For CPU-bound code, doubling memory often halves duration — **same cost, twice as fast**. Use *Lambda Power Tuning* to find the sweet spot.
+
+## Limits to remember
+
+- **15 minutes** max duration; **6 MB** synchronous payload; up to 10 GB `/tmp`.
+- Behind API Gateway you are also bound by API Gateway's integration timeout.
+
+<Callout type="key">
+Lambda talking to RDS: hundreds of concurrent environments mean hundreds of DB connections. Use **RDS Proxy**, reserved concurrency, or DynamoDB.
+</Callout>
+
+The challenge below: at a steady 2,000 req/s, compare per-request pricing with per-hour pricing.

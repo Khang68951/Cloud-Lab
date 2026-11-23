@@ -1,0 +1,32 @@
+The data is in the lake. Now pick a **query engine**: pay per query with **Athena**, or run a warehouse like **Redshift**?
+
+## Comparison
+
+| | **Athena** | **Redshift** |
+|---|---|---|
+| Model | Serverless, queries S3 directly | MPP data warehouse (Serverless or provisioned) |
+| Price | **$5 / TB scanned** (or reserved capacity) | Per hour (RPUs or nodes), reservations available |
+| Idle | $0 | Serverless can scale to zero; provisioned still bills |
+| Fits | Ad-hoc, exploration, low or medium frequency | Heavy BI, many concurrent users, complex joins, sub-second targets |
+| Data | Stays in S3 (Parquet, Iceberg…) | Stored in Redshift (managed storage), plus **Spectrum** to read S3 |
+
+## Athena cost maths
+
+```
+cost = TB scanned × $5
+200 GB × 100 queries/day × 30 days = 600 TB → $3,000/month
+the same data as Parquet + partitions, scanning 10 GB → $150/month
+```
+
+Scanning less is lever number one: **Parquet**, **partitions**, select only needed columns (no `SELECT *`), and cache dashboard results.
+
+## Redshift: when it pays off
+
+- Dashboards opened by hundreds of users **all day**.
+- Complex joins on big tables, with **materialised views** and result caching.
+- **Concurrency scaling** for peak hours.
+- **Zero-ETL** from Aurora or DynamoDB into Redshift for near-real-time analytics without building pipelines.
+
+<Callout type="key">
+Start with **Athena** — it costs nothing when idle. When the Athena bill or the latency and concurrency demands grow, redo the maths; that is often when Redshift Serverless becomes cheaper.
+</Callout>

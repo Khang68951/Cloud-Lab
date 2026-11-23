@@ -1,0 +1,34 @@
+**VPC** (Virtual Private Cloud) là mạng riêng của bạn trong AWS. Mọi EC2, RDS, ElastiCache… đều nằm trong một VPC.
+
+## Bố cục chuẩn
+
+```
+VPC 10.0.0.0/16
+├─ AZ-a: public subnet 10.0.1.0/24   ← ALB, NAT Gateway
+│        private subnet 10.0.11.0/24 ← EC2/Fargate (app)
+│        private subnet 10.0.21.0/24 ← RDS, ElastiCache
+└─ AZ-b: (giống hệt AZ-a)
+```
+
+| Thành phần | Vai trò |
+|---|---|
+| **Subnet public** | Route table có đường `0.0.0.0/0 → Internet Gateway`. Đặt load balancer và NAT ở đây |
+| **Subnet private** | Không có đường thẳng ra internet. Đặt app và database ở đây |
+| **Internet Gateway (IGW)** | Cửa ra/vào internet cho VPC |
+| **NAT Gateway** | Cho private subnet **đi ra** internet (vd tải bản cập nhật) mà không ai **vào** được |
+| **VPC Endpoint** | Đường private tới các dịch vụ AWS. Loại Gateway cho S3 và DynamoDB **miễn phí** |
+
+## Security Group và NACL
+
+| | Security Group | Network ACL |
+|---|---|---|
+| Gắn vào | ENI / instance | Subnet |
+| Trạng thái | **Stateful**: traffic phản hồi tự được cho qua | **Stateless**: phải mở cả hai chiều |
+| Rule | Chỉ có Allow | Allow và Deny, đánh số theo thứ tự |
+| Dùng cho | Hàng rào chính, kiểu "chỉ app-sg mới vào được db-sg cổng 5432" | Hàng rào thô ở cấp subnet, chặn dải IP |
+
+<Callout type="tip">
+Security Group có thể tham chiếu **Security Group khác** làm nguồn. "DB chỉ nhận kết nối từ app-sg" an toàn và dễ bảo trì hơn nhiều so với liệt kê địa chỉ IP.
+</Callout>
+
+Trong Lab, quy tắc "database phải nằm trong private subnet" được kiểm tra qua cảnh báo **"bị phơi ra phía internet"**: nếu bạn nối thẳng Users/ALB vào database, phần Đánh giá sẽ báo lỗi bảo mật.

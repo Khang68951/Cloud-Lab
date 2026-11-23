@@ -1,0 +1,41 @@
+Ứng dụng gọi xe phải biết **vị trí của mọi tài xế theo thời gian thực** và trả lời ngay câu hỏi "tài xế nào gần tôi nhất?". Đây là bài toán ghi tần suất cao kết hợp tra cứu theo không gian.
+
+## Ước lượng
+
+- 100.000 tài xế, mỗi tài xế gửi vị trí mỗi 4 giây → **25.000 cập nhật/giây**, gấp 1,5 lần giờ cao điểm.
+- Mỗi cập nhật ~200 byte; chỉ **vị trí mới nhất** quan trọng cho việc ghép chuyến.
+- Phân tích, tính giá động và chống gian lận cần **cả luồng**, và có thể cần phát lại.
+
+## Kiến trúc
+
+```
+Drivers/Riders ─► NLB ─► Location service (Fargate, autoscaling)
+                            ├─► ElastiCache Redis: GEOADD drivers:{city} lon lat driver_id
+                            │                      GEOSEARCH … BYRADIUS 2 km
+                            └─► Kinesis (partition key = driver_id) ─┬─► Firehose ─► S3 (lịch sử, phân tích)
+                                                                     ├─► Flink (giá động theo khu vực)
+                                                                     └─► Lambda (phát hiện bất thường)
+```
+
+- **Không dùng API Gateway** ở đây: 25.000 req/s vượt giới hạn mặc định, và trả theo request sẽ rất đắt. Load balancer kết hợp container rẻ hơn ở mức tải đều này.
+- **Partition theo `driver_id`** giữ đúng thứ tự cập nhật của mỗi tài xế.
+- Kinesis cần ≥ 38 shard cho cao điểm (37.500 record/giây ÷ 1.000), hoặc dùng on-demand mode.
+
+## Geo index
+
+| Kỹ thuật | Ý tưởng |
+|---|---|
+| **Redis GEO** | Dùng sẵn `GEOSEARCH` theo bán kính; dữ liệu trong bộ nhớ |
+| **Geohash** | Mã hoá lat/lon thành chuỗi; các ô gần nhau có tiền tố chung |
+| **H3 (lục giác)** | Các ô đều nhau, tiện cho tính giá theo khu vực |
+
+Chỉ truy vấn **ô hiện tại và các ô lân cận** thay vì quét mọi tài xế.
+
+## Độ bền theo giá trị dữ liệu
+
+- Vị trí từng giây: **tạm thời**, giữ trong Redis, ghi lịch sử vào S3 qua Firehose.
+- Chuyến đi và thanh toán: **bền vững tuyệt đối**, lưu trong DynamoDB hoặc Aurora với Multi-AZ.
+
+<Callout type="tip">
+Thử thách trong Lab: nạp 25.000 cập nhật/giây với p95 ≤ 150 ms, tra cứu từ bộ nhớ, luồng phát lại được qua Kinesis, chịu được sự cố AZ. Thử dùng API Gateway trước để thấy nó chạm giới hạn và tốn kém thế nào.
+</Callout>

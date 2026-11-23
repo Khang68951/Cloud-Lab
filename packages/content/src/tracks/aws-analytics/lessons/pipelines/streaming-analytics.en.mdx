@@ -1,0 +1,35 @@
+Batch answers questions about **yesterday**. Streaming analytics answers questions about **the last second**: fraud, monitoring, real-time recommendations.
+
+## The building blocks
+
+| Service | Role |
+|---|---|
+| **Kinesis Data Streams** | Ordered, replayable buffer; many independent consumers |
+| **Amazon MSK** | Managed Kafka, when you need the Kafka ecosystem |
+| **Amazon Data Firehose** | Batches (by size or time), converts to Parquet, dynamic partitioning, delivers to S3, Redshift, OpenSearch… **no code** |
+| **Managed Service for Apache Flink** | Stateful processing: time windows, stream joins, pattern detection, exactly-once |
+| **Lambda** | Simple per-batch processing |
+
+## A clickstream architecture
+
+```
+Web/App ──► API Gateway ──► Kinesis Data Streams ──┬──► Firehose ──► S3 (Parquet, dt=…) ──► Athena
+                                                   ├──► Flink (anomaly detection) ──► SNS
+                                                   └──► Lambda (real-time counters)
+```
+
+- **Size for the peak**: each shard takes 1,000 records/s or 1 MB/s — or use **on-demand mode**.
+- Clients should **batch** (PutRecords, up to 500 records) to cut requests.
+- Firehose buffers up to 5 minutes or a few MB to write **few large files** instead of millions of tiny ones.
+
+## Time windows
+
+| Window | Example |
+|---|---|
+| **Tumbling** (non-overlapping) | Clicks per minute |
+| **Sliding** (overlapping) | 5-minute average, updated every 10 s |
+| **Session** (gap-based) | A visit ends after 30 minutes of inactivity |
+
+<Callout type="key">
+Distinguish **event time** (when it happened) from **processing time** (when the system saw it). Mobile events can arrive minutes late; Flink uses *watermarks* to put them in the right window.
+</Callout>

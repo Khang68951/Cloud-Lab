@@ -1,0 +1,36 @@
+In Core you met storage classes and lifecycle rules. This lesson covers the features real systems rely on.
+
+## What to know about S3
+
+| Topic | Remember |
+|---|---|
+| **Consistency** | **Strong** read-after-write consistency for PUT, DELETE and LIST (since 2020) |
+| **Performance** | ≥ 3,500 PUT and 5,500 GET per second **per prefix**; more prefixes multiply it. Multipart upload above ~100 MB |
+| **Presigned URLs** | Signed, time-limited URLs to upload/download without AWS credentials |
+| **Versioning** | Keeps every version — protects against deletes and overwrites; pair with lifecycle to clean old versions |
+| **Replication** | CRR (cross-Region) / SRR (same Region), can change storage class; RTC gives a 15-minute SLA |
+| **Object Lock** | WORM: *governance* (special permission can remove) or *compliance* (nobody can, not even root) |
+| **Events** | Notify Lambda, SQS, SNS or EventBridge when objects are created or deleted |
+| **Security** | Block Public Access, bucket policies, SSE-S3/SSE-KMS, *Object Ownership = bucket owner enforced* (ACLs off) |
+
+## The browser upload pattern
+
+```
+Browser ──(1) ask for URL──► API (Lambda) ──signs presigned URL──┐
+   │                                                              │
+   └──(2) PUT the file straight to S3 ◄───────────────────────────┘
+                     │
+                     └──(3) S3 event ──► SQS ──► thumbnail worker
+```
+
+Servers only **sign**; the bytes flow browser → S3, costing your servers no bandwidth or CPU.
+
+<Callout type="key">
+S3 is not a file system: no partial updates, "rename" is copy + delete, and LIST over millions of objects is slow. Keep **metadata in a database** and use S3 for the content.
+</Callout>
+
+## Common mistakes
+
+- Versioning without lifecycle — old versions pile up forever.
+- A single prefix for tens of thousands of requests per second.
+- Public ACLs instead of serving through CloudFront with OAC.

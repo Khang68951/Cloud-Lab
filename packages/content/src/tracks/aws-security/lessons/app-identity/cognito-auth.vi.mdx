@@ -1,0 +1,28 @@
+IAM là quyền cho **người vận hành và service** trên AWS. Còn **người dùng của ứng dụng** (khách hàng đăng nhập app) thì cần một hệ thống khác: **Amazon Cognito**, hoặc một nhà cung cấp danh tính như Auth0 hay Okta.
+
+## Hai phần của Cognito
+
+| Phần | Làm gì | Đầu ra |
+|---|---|---|
+| **User pool** | Đăng ký, đăng nhập, MFA, quên mật khẩu, đăng nhập Google/Apple (OIDC/SAML) | **JWT**: ID token, access token, refresh token |
+| **Identity pool** | Đổi token (từ user pool hay Google…) lấy **credential AWS tạm thời** gắn với một IAM role | Access key ngắn hạn để gọi S3, DynamoDB… trực tiếp |
+
+## Bảo vệ API
+
+| Cách | Khi nào dùng |
+|---|---|
+| **JWT authorizer** (HTTP API) / **Cognito authorizer** (REST API) | Có token từ Cognito hoặc nhà cung cấp OIDC: không cần viết code |
+| **Lambda authorizer** | Logic tuỳ chỉnh: API key riêng, header đặc biệt, kiểm tra trong database |
+| **IAM (SigV4)** | Lời gọi giữa các service, hoặc client có credential từ identity pool |
+
+Luồng chuẩn cho web/mobile: **Authorization Code + PKCE**. App chuyển người dùng sang trang đăng nhập, nhận code, rồi đổi code lấy token. Không bao giờ để client secret trong app.
+
+<Callout type="key">
+**Access token** dùng để gọi API, sống ngắn (vd 1 giờ). **Refresh token** dùng để lấy token mới, sống lâu hơn và phải được bảo vệ kỹ. Đừng bao giờ coi ID token là "giấy phép" gọi API.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Gắn IAM role quá rộng cho người dùng của identity pool, ví dụ cả app dùng chung một role ghi được vào *mọi* object S3. Hãy giới hạn theo `${cognito-identity.amazonaws.com:sub}` để mỗi người chỉ đụng được thư mục của mình.
+- Tự viết hệ thống đăng nhập và lưu mật khẩu: rất dễ sai và không đáng công.
+- Quên rằng Cognito tính tiền theo **MAU**: 10.000 MAU đầu miễn phí, sau đó tính theo từng người dùng.

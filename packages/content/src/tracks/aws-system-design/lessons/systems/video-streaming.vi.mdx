@@ -1,0 +1,39 @@
+Video chiếm phần lớn traffic của internet. Thiết kế một nền tảng video thực chất là thiết kế **hai pipeline**: đưa video lên (ghi, bất đồng bộ, nặng CPU) và phát video (đọc, khổng lồ, nặng băng thông).
+
+## Pipeline upload và xử lý
+
+```
+Creator ─► API: xin presigned URL ─► multipart upload thẳng lên S3 (raw)
+                                          │ S3 event
+                                          ▼
+                       EventBridge / SQS ─► MediaConvert: chuyển mã sang nhiều bitrate (HLS/DASH)
+                                          ▼
+                                S3 (segment + manifest) ─► cập nhật DB: "sẵn sàng" ─► thông báo
+```
+
+- Chuyển mã mất vài phút, nên phải **bất đồng bộ**.
+- **Adaptive bitrate**: mỗi video có các bản 240p … 4K, cắt thành segment 2–6 giây; trình phát tự đổi chất lượng theo băng thông.
+
+## Pipeline phát
+
+```
+Viewer ─► CloudFront (cache segment ở edge, hit ratio > 95%) ─► S3 (origin, có Origin Shield)
+```
+
+- Segment là **bất biến**, nên cache rất tốt; origin chỉ nhận vài phần trăm request.
+- **Signed URL hoặc cookie** để giới hạn ai được xem; DRM cho nội dung trả phí.
+- Livestream: MediaLive kết hợp MediaPackage, rồi phân phối qua CloudFront.
+
+## Chi phí: egress là tất cả
+
+| Thành phần | Ví dụ 1 triệu lượt xem/ngày × 300 MB |
+|---|---|
+| Truyền dữ liệu | 9 PB/tháng, chiếm phần lớn hoá đơn |
+| Lưu trữ | Nhiều phiên bản bitrate × catalog; dùng lifecycle chuyển video cũ sang tầng rẻ |
+| Chuyển mã | Trả theo phút video, một lần cho mỗi video |
+
+Các đòn bẩy giảm chi phí: codec hiệu quả hơn (H.265, AV1, giảm 30–50% dung lượng), giá CloudFront theo khối lượng hoặc hợp đồng, và chỉ chuyển mã bản 4K cho video thật sự phổ biến.
+
+<Callout type="tip">
+Thử thách trong Lab: phục vụ 200 segment/giây, mỗi segment 1 MB, không dùng fleet server, độ trễ thấp và hoá đơn trong ngân sách. Hãy xem dòng egress thay đổi thế nào khi có và không có CDN.
+</Callout>

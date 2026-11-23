@@ -1,0 +1,31 @@
+A **data lake** stores all of an organisation's data — structured and unstructured — in a **cheap, durable and queryable** way. On AWS its foundation is **S3**.
+
+## Zones
+
+```
+sources ─► raw / bronze ─► cleaned / silver ─► curated / gold ─► BI, ML, reports
+           (original,       (normalised,        (business
+            immutable)       Parquet, filtered)   aggregates)
+```
+
+Always keep the **raw** zone immutable: when processing logic changes, you can **reprocess** from scratch.
+
+## Formats and layout
+
+| Technique | Why |
+|---|---|
+| **Parquet / ORC** (columnar, compressed) | Queries read only needed columns — often 10× less scanned |
+| **Partitions** (`dt=2026-11-21/`) | Skip irrelevant data entirely |
+| **128 MB – 1 GB files** | Many tiny files slow queries — compact them regularly |
+| **Table formats** (Apache Iceberg) | Safe updates, deletes, time travel and schema evolution on S3; **S3 Tables** offers it managed |
+
+## Catalog and governance
+
+- **Glue Data Catalog**: table schemas and partitions, shared by Athena, Redshift Spectrum and EMR.
+- **Glue crawlers** or **partition projection** keep the catalog current.
+- **Lake Formation**: fine-grained **table, column and row** permissions and cross-account sharing.
+- **Encryption** (SSE-KMS), **Block Public Access**, and **CloudTrail data events** to know who read what.
+
+<Callout type="warning">
+Without a catalog and governance, a data lake becomes a **data swamp**: nobody knows which data is correct, who owns it, or whether it may be used. Tag every table with an owner, a description and a sensitivity level from day one.
+</Callout>

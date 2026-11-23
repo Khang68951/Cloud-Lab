@@ -1,0 +1,38 @@
+Serverless có thể rẻ tới mức gần như **miễn phí**, hoặc đắt gấp 10 lần container. Điều quyết định là **hình dạng của traffic**.
+
+## Công thức chi phí của Lambda
+
+```
+Chi phí = số request × $0.20/triệu
+        + số request × thời gian (giây) × bộ nhớ (GB) × $0.0000167
+```
+
+Ví dụ: 100 triệu lượt gọi × 0,2 giây × 0,5 GB = 10 triệu GB-giây ≈ **$167** + $20 phí request.
+
+## Điểm hoà vốn
+
+| Traffic | Lựa chọn rẻ hơn | Vì sao |
+|---|---|---|
+| Thấp, hoặc rảnh phần lớn thời gian | **Serverless** | Không tốn tiền khi rảnh |
+| Theo đợt khó đoán | **Serverless** | Không phải trả cho capacity dự phòng |
+| Cao và đều 24/7 | **Container / EC2** (có Savings Plans) | Capacity theo giờ rẻ hơn giá theo request |
+
+Khi traffic **đều ở mức khoảng vài chục request mỗi giây trở lên**, hãy làm phép tính. Riêng API Gateway REST ở 2.000 rps đã tốn hơn **$18.000** mỗi tháng.
+
+## Chi phí ẩn
+
+- **CloudWatch Logs**: $0.50/GB nạp vào. Log quá nhiều thường làm hoá đơn log vượt cả compute. Hãy đặt log level và retention.
+- **Trả tiền cho việc chờ**: thời gian chạy của Lambda tính cả lúc chờ một API chậm. Dùng Step Functions để gọi trực tiếp hoặc chờ, và tăng song song hoá.
+- **NAT Gateway**: Lambda trong VPC gọi ra internet hay tới dịch vụ AWS sẽ tốn phí xử lý dữ liệu. Dùng VPC endpoint.
+- **Lambda gọi Lambda**: trả tiền hai lần cho cùng một khoảng thời gian chờ.
+
+## Tối ưu
+
+- **Tune bộ nhớ** (AWS Lambda Power Tuning): nhiều bộ nhớ hơn đồng nghĩa với nhiều CPU hơn, thời gian ngắn lại, nên đôi khi tổng chi phí còn **rẻ hơn**.
+- **Arm64 (Graviton)**: rẻ hơn khoảng 20% cho mỗi GB-giây.
+- **Batch** message từ SQS hay Kinesis giúp giảm số lượt gọi.
+- **Compute Savings Plans** áp dụng được cho cả Lambda.
+
+<Callout type="key">
+Bắt đầu với serverless để đi nhanh và không tốn tiền khi rảnh. Khi một endpoint trở nên **nóng và đều**, chuyển nó sang container phía sau ALB. Đó là tiến hoá tự nhiên chứ không phải thất bại.
+</Callout>

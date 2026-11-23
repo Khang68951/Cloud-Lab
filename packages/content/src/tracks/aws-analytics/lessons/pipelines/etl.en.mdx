@@ -1,0 +1,41 @@
+Raw data is rarely usable as is. **ETL** (Extract, Transform, Load) or **ELT** cleans, standardises and aggregates it into something valuable.
+
+## ETL or ELT
+
+| | **ETL** | **ELT** |
+|---|---|---|
+| Order | Transform **before** loading | Load raw data **first**, transform later in the lake or warehouse |
+| Tools | Glue, EMR (Spark) | SQL in Athena or Redshift (dbt) |
+| Pros | Clean data lands in the store | Keeps raw data, flexible, easy to reprocess |
+
+## AWS tools
+
+| Tool | Use for |
+|---|---|
+| **AWS Glue** | Serverless Spark, billed per DPU-second; crawlers; Glue Data Quality |
+| **Glue DataBrew** | No-code data cleaning |
+| **Amazon EMR** | Large, custom or long-running Spark, Hive, Presto; EMR Serverless and EMR on EKS |
+| **Step Functions / MWAA (Airflow)** | Orchestrating dependent jobs |
+| **AWS DMS** | Moving data out of databases (full load + CDC) |
+| **Zero-ETL** | Aurora or DynamoDB → Redshift with no pipeline |
+
+## A typical batch pipeline
+
+```
+EventBridge Scheduler (02:00)
+   └─► Step Functions
+         ├─► Glue job: raw JSON → Parquet (partitioned by dt)
+         ├─► Glue Data Quality: row counts, nulls, valid values
+         ├─► Athena / Redshift: build aggregate (gold) tables
+         └─► SNS: success or failure notification
+```
+
+## Good practice
+
+- Jobs must be **idempotent**: re-running a day overwrites its partition instead of duplicating data.
+- **Test data quality** like code — wrong data is worse than no data.
+- Use **job bookmarks** or watermarks to process only new data.
+
+<Callout type="key">
+Pick the simplest tool that works: SQL (ELT) first, Glue when you need Spark, EMR only for real scale or deep customisation.
+</Callout>

@@ -1,0 +1,48 @@
+{
+  "title": "Luyện tập",
+  "subtitle": "Chỉ có bài tập, không có lý thuyết. Bạn đã đạt {{passed}}/{{total}} bài.",
+  "empty": "Không còn bài nào trong bộ lọc này. 🎉",
+  "fromLesson": "Từ bài: {{lesson}}",
+  "check": "Kiểm tra",
+  "retry": "Làm lại",
+  "hint": "Gợi ý {{n}}/{{total}}",
+  "status": {
+    "passed": "Đã đạt",
+    "tried_one": "Đã thử {{count}} lần",
+    "tried_other": "Đã thử {{count}} lần"
+  },
+  "quiz": {
+    "multi": "Có thể chọn nhiều đáp án.",
+    "correct": "Đáp án đúng",
+    "wrong": "Đáp án sai",
+    "passed": "Chính xác!",
+    "failed": "Chưa đúng — đọc giải thích bên trên rồi thử lại."
+  },
+  "estimate": {
+    "passed": "Chính xác (trong sai số cho phép)!",
+    "close": "Gần đúng rồi — nhưng chưa nằm trong sai số cho phép.",
+    "failed": "Còn xa đáp án.",
+    "answer": "Đáp án"
+  },
+  "challenge": {
+    "requirements": "Yêu cầu",
+    "open": "Mở trong Lab"
+  },
+  "filters": {
+    "kind": "Loại bài",
+    "kinds": {
+      "all": "Tất cả",
+      "quiz": "Quiz",
+      "estimation": "Ước tính",
+      "challenge": "Thiết kế (Lab)"
+    },
+    "status": "Trạng thái",
+    "statuses": {
+      "todo": "Chưa đạt",
+      "all": "Tất cả",
+      "passed": "Đã đạt"
+    },
+    "course": "Khoá học",
+    "allCourses": "Mọi khoá học"
+  }
+}

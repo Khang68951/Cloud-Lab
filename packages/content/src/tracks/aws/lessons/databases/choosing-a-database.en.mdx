@@ -1,0 +1,27 @@
+Choosing a database starts from **what your data looks like** and **what questions you will ask it** — not from what is fashionable.
+
+<ServiceCompare ids="rds,aurora,dynamodb" />
+
+## Quick decision tree
+
+1. Need **joins, multi-table transactions, ad-hoc queries, reports**? → **RDS** (PostgreSQL/MySQL).
+   - Need higher availability, more read scaling, faster failover? → **Aurora**.
+2. Always accessed **by key** (user id, session id, order id) at huge or unpredictable scale? → **DynamoDB**.
+3. Just need very fast repeated reads? → Put **ElastiCache** in front — it is not the system of record.
+
+## Multi-AZ vs read replicas
+
+| | Multi-AZ (standby) | Read replica |
+|---|---|---|
+| Purpose | **High availability** — automatic failover | **Scale reads** |
+| Replication | Synchronous | Asynchronous (may lag) |
+| Serves reads? | No (classic) | Yes |
+| Cost | ×2 instance | +1 instance each |
+
+<Callout type="key">
+In production, turn on **Multi-AZ**. It is the insurance premium for your database — an AZ outage takes a single-AZ database (and your app) down.
+</Callout>
+
+<Callout type="tip">
+DynamoDB needs your **access patterns** up front. List every question the app will ask before designing keys; if that list keeps changing, SQL is usually safer.
+</Callout>

@@ -1,0 +1,28 @@
+"Hệ thống phải luôn chạy" không phải là một mục tiêu kỹ thuật. **SLO** mới là mục tiêu kỹ thuật.
+
+| Thuật ngữ | Nghĩa | Ví dụ |
+|---|---|---|
+| **SLI** (indicator) | Thứ bạn **đo**, dưới dạng tỉ lệ | % request thành công trong vòng 300 ms |
+| **SLO** (objective) | Mục tiêu **nội bộ** cho SLI | 99,9% trong 30 ngày |
+| **SLA** (agreement) | **Cam kết với khách hàng**, có phạt | 99,5%, vi phạm thì hoàn tiền |
+| **Error budget** | Phần được phép "hỏng" = 100% − SLO | 0,1% ≈ 43 phút/tháng |
+
+## Bảng số 9
+
+| Availability | Downtime/tháng (30 ngày) | Downtime/năm |
+|---|---|---|
+| 99% | 7,2 giờ | 3,65 ngày |
+| 99,9% | 43,2 phút | 8,8 giờ |
+| 99,95% | 21,6 phút | 4,4 giờ |
+| 99,99% | 4,3 phút | 53 phút |
+| 99,999% | 26 giây | 5,3 phút |
+
+<Callout type="key">
+**Error budget là để tiêu.** Còn budget thì cứ ra tính năng mới. Hết budget thì dừng lại, tập trung vào độ ổn định. Mỗi số 9 thêm vào khó hơn khoảng 10 lần và thường đắt hơn rất nhiều.
+</Callout>
+
+## Trên AWS
+
+- **CloudWatch Metrics**: đo SLI (tỉ lệ lỗi 5xx của ALB, độ trễ p99).
+- **CloudWatch Alarms**: cảnh báo khi budget bị **đốt quá nhanh** (burn rate), thay vì cảnh báo mỗi khi CPU cao.
+- **CloudWatch Logs và X-Ray**: tìm nguyên nhân khi có sự cố.

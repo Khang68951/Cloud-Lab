@@ -1,0 +1,23 @@
+Đây là bài thiết kế hệ thống kinh điển trong phỏng vấn, và giờ bạn có thể **chạy thử** thiết kế của mình.
+
+## Đề bài
+
+- **1.000 request/giây** trung bình, **3.000** lúc cao điểm.
+- **95% là redirect**: `GET /abc123` → `301` tới URL dài.
+- 5% là tạo link mới: `POST /links`.
+- Response rất nhỏ (~1 KB).
+
+## Cách tiếp cận (như trong phỏng vấn)
+
+1. **Làm rõ yêu cầu**: đọc nhiều hay ghi nhiều? cần nhất quán tới mức nào? link có hết hạn không?
+2. **Ước lượng**: 1.000 rps ≈ 2,6 tỉ request/tháng, ~130 triệu link mới/tháng. Mỗi link ~500 byte → ~65 GB/tháng.
+3. **Mô hình dữ liệu**: `code → longUrl`. Đây là tra cứu key-value thuần.
+4. **Đường đọc nóng**: redirect phải cực nhanh và rẻ. Cache có đáng không?
+5. **Độ bền vững**: chuyện gì xảy ra khi mất một AZ? khi traffic tăng gấp 3?
+6. **Chi phí**: thành phần nào chiếm nhiều tiền nhất? Có đổi được không?
+
+<Callout type="tip">
+Không có một đáp án duy nhất. Hãy thử **ít nhất hai phương án** (vd container + DynamoDB, và serverless) trong Lab tự do rồi so sánh bảng giá trước khi nộp.
+</Callout>
+
+Sau khi qua bài, hãy tự hỏi: *nếu traffic tăng gấp 100 lần thì cái gì hỏng trước, và bạn sẽ đổi gì?*

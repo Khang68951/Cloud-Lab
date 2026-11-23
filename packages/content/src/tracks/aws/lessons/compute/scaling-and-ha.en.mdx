@@ -1,0 +1,27 @@
+## Two things people mix up
+
+| | Scalability | High availability |
+|---|---|---|
+| Question | Can it handle the **peak**? | Does it survive **something breaking**? |
+| Tools | Auto Scaling, bigger instances, caches | Several instances across **several AZs**, Multi-AZ databases, health checks |
+
+## The standard web tier
+
+```
+Users → ALB (multi-AZ) → Auto Scaling group (AZ-a + AZ-b) → RDS Multi-AZ
+```
+
+- **ALB** spreads traffic and drops instances that fail health checks.
+- **Auto Scaling group**: set `min` (always on), `max` (cost ceiling) and a target such as *keep CPU at 60–70%*. It adds instances at peak and removes them when quiet.
+- **Spread over ≥ 2 AZs** — two instances in one AZ protect against an instance failure, **not** an AZ failure.
+
+<Callout type="key">
+Design for the **peak**, not the average. In the Lab, the Scenario's *peak multiplier* is used to check capacity, while cost uses the average (thanks to Auto Scaling).
+</Callout>
+
+## When an AZ fails
+
+- A fleet **without** Auto Scaling loses half its capacity — the rest may not handle the peak.
+- A fleet **with** Auto Scaling launches replacements in the healthy AZ (in reality after a few minutes). Critical systems also keep spare headroom so they don't depend on scaling in time ("static stability").
+
+Try it: open the exercise below and use **Chaos → AZ-a down** before and after your fix.

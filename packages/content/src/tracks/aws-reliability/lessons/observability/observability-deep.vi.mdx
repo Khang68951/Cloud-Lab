@@ -1,0 +1,33 @@
+Monitoring cho bạn biết **có** chuyện xảy ra. **Observability** giúp bạn hiểu **vì sao**, kể cả với những vấn đề chưa từng gặp.
+
+## Ba trụ cột
+
+| Tín hiệu | Trả lời câu hỏi | Trên AWS |
+|---|---|---|
+| **Metrics** | Có chuyện gì không? Xu hướng ra sao? | CloudWatch Metrics, Managed Prometheus |
+| **Logs** | Chính xác chuyện gì đã xảy ra? | CloudWatch Logs + Logs Insights |
+| **Traces** | Thời gian bị tiêu ở đâu, qua những service nào? | X-Ray, OpenTelemetry (ADOT) |
+
+Hãy ghi **log có cấu trúc** (JSON) kèm `request_id` và `trace_id`, để nhảy từ một metric bất thường sang trace rồi sang đúng dòng log.
+
+## Đo những gì
+
+- **Golden signals**: *latency* (p50, p99), *traffic*, *errors*, *saturation*.
+- Đo **percentile** chứ không chỉ trung bình: trung bình 100 ms có thể che giấu p99 là 3 giây.
+- **Metric nghiệp vụ**: số đơn mỗi phút, tỉ lệ thanh toán thành công. Đây thường là tín hiệu nhạy nhất.
+
+## SLI, SLO và error budget
+
+- **SLI**: thước đo, ví dụ tỉ lệ request thành công và nhanh hơn 300 ms.
+- **SLO**: mục tiêu, ví dụ 99,9% trong 30 ngày.
+- **Error budget**: phần còn lại, ở đây 0,1%, tức ~43 phút mỗi tháng. Còn budget thì cứ ship tính năng; hết budget thì ưu tiên độ ổn định.
+
+## Alarm đúng cách
+
+- Alarm theo **burn rate**: error budget đang cháy nhanh gấp bao nhiêu lần bình thường. Dùng hai cửa sổ (vd 1 giờ và 5 phút) để vừa nhạy vừa ít báo động giả.
+- **Composite alarm** gộp nhiều điều kiện, giảm nhiễu.
+- **Synthetics canary** mô phỏng người dùng thật, kiểm tra từ bên ngoài.
+
+<Callout type="key">
+Alarm chỉ nên gọi người dậy khi **người dùng bị ảnh hưởng** và cần con người hành động. Mọi thứ khác nên vào dashboard hoặc ticket. Bị báo động quá nhiều khiến cảnh báo thật bị bỏ qua.
+</Callout>

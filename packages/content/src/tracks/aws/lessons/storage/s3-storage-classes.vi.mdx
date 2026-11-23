@@ -1,0 +1,36 @@
+S3 lưu **object** (file + metadata) trong **bucket**. Độ bền 99,999999999% (11 số 9): dữ liệu được nhân bản tự động trên nhiều AZ.
+
+## Ba kiểu lưu trữ trên AWS
+
+| Kiểu | Dịch vụ | Dùng cho |
+|---|---|---|
+| **Object** | S3 | File, ảnh, video, backup, data lake, website tĩnh |
+| **Block** | EBS | Ổ đĩa của một instance EC2 (hệ điều hành, database tự quản) |
+| **File** | EFS / FSx | Thư mục dùng chung cho nhiều instance (NFS/SMB) |
+
+## Storage class: trả tiền theo độ "nóng" của dữ liệu
+
+| Class | Lưu trữ ($/GB-tháng) | Truy xuất | Dùng khi |
+|---|---|---|---|
+| **Standard** | ~0.023 | Miễn phí | Dữ liệu dùng thường xuyên |
+| **Intelligent-Tiering** | ~0.023 → tự rẻ dần | Miễn phí | Không đoán được mẫu truy cập |
+| **Standard-IA** | ~0.0125 | ~$0.01/GB | Đọc ít hơn khoảng 1 lần/tháng |
+| **Glacier Instant Retrieval** | ~0.004 | ~$0.03/GB | Lưu trữ lâu, thỉnh thoảng cần ngay |
+| **Glacier Deep Archive** | ~0.001 | Mất hàng giờ | Lưu trữ tuân thủ, gần như không bao giờ đọc |
+
+<Callout type="warning">
+Class rẻ để **lưu** lại đắt khi **đọc**. Đưa dữ liệu nóng vào IA/Glacier có thể làm hoá đơn **tăng**.
+</Callout>
+
+## Lifecycle rule: tự động hoá
+
+Ví dụ cho log:
+
+```
+0–30 ngày   → Standard
+30–90 ngày  → Standard-IA
+90–365 ngày → Glacier Instant Retrieval
+> 365 ngày  → Xoá
+```
+
+Mẹo khác: bật **versioning** để chống xoá nhầm (kèm lifecycle để dọn các version cũ), luôn bật **Block Public Access**, và phục vụ file ra internet qua **CloudFront** thay vì cho truy cập thẳng vào S3.

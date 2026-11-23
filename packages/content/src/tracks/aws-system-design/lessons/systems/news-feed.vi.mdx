@@ -1,0 +1,42 @@
+Mở app mạng xã hội là thấy ngay một **news feed**: các bài mới nhất từ những người bạn theo dõi. Đọc nhiều hơn ghi rất nhiều, và feed phải tải gần như tức thì.
+
+## Yêu cầu và ước lượng
+
+- Đăng bài, theo dõi người khác, xem feed (mới nhất trước).
+- 20.000 req/s, gấp đôi buổi tối; **95% là đọc feed**.
+- p95 ≤ 100 ms; đăng bài không phải chờ phân phối xong.
+
+## Bài toán cốt lõi: fan-out
+
+| | **Fan-out khi ghi** (push) | **Fan-out khi đọc** (pull) |
+|---|---|---|
+| Cách làm | Khi đăng bài, chép ID bài vào timeline của từng người theo dõi | Khi đọc, lấy bài mới của mọi người mình theo dõi rồi trộn lại |
+| Đọc | **Rất nhanh**: một lần tra cache | Chậm: N truy vấn rồi trộn |
+| Ghi | Tốn: một bài × số người theo dõi | Rẻ |
+| Điểm yếu | Người nổi tiếng có hàng triệu người theo dõi | Người theo dõi hàng nghìn tài khoản |
+
+**Cách lai** (thực tế hay dùng): fan-out khi ghi cho tài khoản bình thường, còn bài của người nổi tiếng thì được trộn vào lúc đọc.
+
+## Kiến trúc
+
+```
+Users ─► ALB ─► Feed service (Fargate, autoscaling)
+                   ├─► ElastiCache Redis: timeline:{user} = 500 ID bài mới nhất (có replica)
+                   ├─► DynamoDB "posts": PK = post_id
+                   └─► SQS "new-posts" ─► Lambda fan-out ─► DynamoDB "timelines" + cập nhật Redis
+```
+
+- Đọc feed: lấy danh sách ID từ Redis, rồi lấy nội dung bài (từ cache bài hoặc `BatchGetItem` DynamoDB).
+- Đăng bài: lưu bài, đẩy sự kiện vào queue, rồi **trả về ngay**.
+- Ảnh và video: lưu trên S3, phục vụ qua CloudFront.
+
+## Đào sâu
+
+- **Bộ nhớ cache**: 20 triệu user × 500 ID × 8 byte = 80 GB, nên phải chia nhiều shard Redis (cluster mode).
+- **Người dùng không hoạt động**: không cần dựng timeline cho họ; khi họ quay lại thì dựng lại theo kiểu pull.
+- **Xếp hạng**: thay vì chỉ theo thời gian, thêm một bước ranking (ML) trên vài trăm ứng viên.
+- **Egress** là dòng chi phí lớn nhất: nén response, phân trang, và đưa ảnh qua CDN.
+
+<Callout type="tip">
+Thử thách trong Lab: dựng feed đạt p95 ≤ 100 ms, chịu được sự cố mất một AZ, với timeline nằm trong cache và fan-out chạy bất đồng bộ.
+</Callout>

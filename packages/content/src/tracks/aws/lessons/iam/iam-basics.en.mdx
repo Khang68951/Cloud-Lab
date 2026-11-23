@@ -1,0 +1,36 @@
+IAM (Identity and Access Management) answers: **who** can do **what** on **which resources**.
+
+## The pieces
+
+| Piece | What it is | Use it for |
+|---|---|---|
+| **User** | A long-lived identity with a password and/or access keys | Sparingly — people should sign in via IAM Identity Center (SSO) |
+| **Group** | A set of users sharing policies | Managing permissions by job role |
+| **Role** | A **temporary** identity you assume | EC2, Lambda, ECS, cross-account access, SSO users |
+| **Policy** | A JSON document: `Effect`, `Action`, `Resource`, `Condition` | Attached to users, groups, roles — or to resources (bucket policies…) |
+
+```json
+{
+  "Effect": "Allow",
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::my-photos/*"
+}
+```
+
+## How AWS decides
+
+1. Everything is **denied** by default (implicit deny).
+2. If any **explicit Deny** matches → **denied**. Deny always wins.
+3. If an **Allow** matches → **allowed**.
+
+<Callout type="key">
+**Least privilege**: grant exactly the actions and resources needed. A Lambda that writes to one table needs `dynamodb:PutItem` on that table — not `dynamodb:*` on `*`.
+</Callout>
+
+## Habits to build from day one
+
+- **Apps on AWS use roles, not access keys.** Temporary credentials are issued and rotated automatically.
+- **MFA on root, and never use root for daily work.**
+- Never commit access keys to git — bots scan GitHub for leaked keys within minutes.
+
+The IAM Policy Lab (step-by-step Allow/Deny explanations) arrives in a later phase. For now, practise with the scenarios below.

@@ -1,0 +1,25 @@
+Khi đã có nhiều VPC (theo account, team hay môi trường), bạn cần nối chúng lại. Có ba cách chính, và mỗi cách giải một bài toán khác nhau.
+
+| | **VPC Peering** | **Transit Gateway** | **PrivateLink** |
+|---|---|---|---|
+| Mô hình | Nối 1–1 | Hub-and-spoke | Phơi **một service**, kết nối một chiều |
+| Bắc cầu (A → B → C) | **Không** | Có (theo route table) | Không áp dụng |
+| CIDR chồng nhau | Không được | Không được | **Được** |
+| Chi phí | Không có phí giờ; data cross-AZ/region tính bình thường | $0.05/giờ mỗi attachment + $0.02/GB | Endpoint $0.01/giờ/AZ + $0.01/GB (cộng NLB phía cung cấp) |
+| Phù hợp | Vài VPC, traffic lớn giữa từng cặp | Nhiều VPC + VPN/Direct Connect, kiểm soát tập trung | SaaS, service nội bộ cho nhiều consumer |
+
+## Khi nào chọn gì
+
+- **2–5 VPC** trao đổi nhiều dữ liệu → peering (không có phí xử lý theo GB).
+- **Hàng chục VPC**, có on-prem, cần một VPC kiểm tra hoặc egress tập trung → **Transit Gateway**.
+- Cung cấp **một API** cho nhiều VPC hoặc nhiều account mà không muốn mở cả mạng → **PrivateLink** (service đứng sau NLB, phía dùng tạo interface endpoint).
+
+<Callout type="key">
+Peering **không bắc cầu**: A↔B và B↔C không có nghĩa là A↔C. Với N VPC muốn nối đủ với nhau bằng peering cần N(N−1)/2 kết nối: 10 VPC là 45 kết nối, 30 VPC là 435.
+</Callout>
+
+## Sai lầm thường gặp
+
+- Cho mọi traffic giữa các VPC đi qua Transit Gateway mà không tính phí $0.02/GB: với hàng trăm TB mỗi tháng, peering cho cặp lưu lượng lớn rẻ hơn nhiều.
+- Dùng peering để chia sẻ một service duy nhất, khiến cả mạng bị phơi ra thay vì chỉ một endpoint.
+- Quên thêm route ở **cả hai phía** sau khi tạo peering.

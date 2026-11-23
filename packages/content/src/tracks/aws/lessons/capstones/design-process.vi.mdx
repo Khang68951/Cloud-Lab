@@ -1,0 +1,32 @@
+Bài nào về thiết kế hệ thống cũng có thể đi theo cùng một quy trình. Quy trình này giúp bạn không quên bước quan trọng, và biết mình đang ở đâu khi thảo luận.
+
+## 6 bước
+
+| # | Bước | Bạn cần ra được |
+|---|---|---|
+| 1 | **Làm rõ yêu cầu** | Tính năng chính; yêu cầu phi chức năng: quy mô, độ trễ, availability, nhất quán, ngân sách |
+| 2 | **Ước lượng nhanh** | Request/giây (trung bình và đỉnh), dung lượng lưu trữ mỗi năm, băng thông, tỉ lệ đọc/ghi |
+| 3 | **API và dữ liệu** | Vài endpoint chính; dữ liệu trông thế nào và được truy vấn ra sao (access pattern) |
+| 4 | **Kiến trúc tổng thể** | Sơ đồ đơn giản nhất đáp ứng được bước 1–3 |
+| 5 | **Đào sâu** | Điểm nghẽn, điểm nóng, sự cố (AZ, dependency), chi phí; sửa và vẽ lại |
+| 6 | **Đánh đổi và tiến hoá** | Vì sao chọn thế này, cái gì hỏng khi quy mô ×10, ×100, bạn sẽ đổi gì |
+
+## Ước lượng: vài con số nên thuộc
+
+- Một ngày ≈ **86.400 giây** (tính nhẩm là 10⁵). Một tháng ≈ **2,6 triệu giây**.
+- 1 request/giây đều đặn ≈ **2,6 triệu request/tháng**.
+- Đỉnh thường gấp **2–5 lần** trung bình, còn sự kiện đặc biệt có thể gấp ×10.
+- Request/giây ≈ người dùng hoạt động/ngày × request/người ÷ 86.400.
+
+<Callout type="key">
+**Bắt đầu đơn giản rồi mới thêm**: thêm cache, queue hay multi-region chỉ khi một yêu cầu cụ thể đòi hỏi. Mỗi thành phần thêm vào đều có giá: chi phí, độ trễ, và thêm một thứ có thể hỏng.
+</Callout>
+
+## Dùng Lab cho bước 4–6
+
+1. Đặt **Kịch bản** đúng với con số ở bước 2.
+2. Dựng kiến trúc đơn giản nhất, xem node nào chuyển đỏ.
+3. Dùng **Chaos** (sập AZ, traffic ×10) để tìm điểm yếu.
+4. Đọc tab **Chi phí**: dòng nào lớn nhất, có thay được không?
+
+Bài tập bên dưới luyện bước 1–2. Bài tiếp theo là dự án tổng hợp đầu tiên của bạn.

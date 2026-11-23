@@ -1,0 +1,27 @@
+Cache được ở **nhiều tầng**, và tầng càng gần người dùng thì càng nhanh, càng giảm tải nhiều:
+
+```
+Trình duyệt → CloudFront (edge) → ALB → App → ElastiCache → Database
+  (Cache-Control)  (CDN)                     (in-memory)
+```
+
+<ServiceCompare ids="cloudfront,elasticache" />
+
+## CloudFront giỏi ở đâu
+
+- **Độ trễ**: phục vụ từ một trong hơn 600 điểm edge gần người dùng nhất.
+- **Giảm tải cho origin**: hit ratio 90% nghĩa là server chỉ thấy 10% lượt đọc.
+- **Nội dung tĩnh và lớn**: ảnh, video, JS/CSS. Data transfer từ origin AWS sang CloudFront **miễn phí**.
+- **Chống đỡ**: hấp thụ các đợt tăng vọt, kết hợp với WAF và Shield.
+
+<Callout type="warning">
+**CDN không tự động rẻ hơn.** CloudFront tính khoảng $1 cho mỗi triệu request HTTPS. Với API trả **hàng tỉ response nhỏ**, phí request có thể còn lớn hơn số tiền tiết kiệm được từ băng thông. Hãy luôn mở tab Chi phí để kiểm tra.
+</Callout>
+
+## Hit ratio quyết định tất cả
+
+- **Cache key** càng gọn càng tốt: đừng đưa header hay cookie không cần thiết vào key.
+- Đặt `Cache-Control` đúng, và đặt **tên file có version** (`app.3f9a.js`) để TTL dài vẫn an toàn.
+- **Invalidation** tốn công và chậm. Đổi tên file thường tốt hơn.
+
+Trong Lab, CloudFront có tham số *hit ratio*. Thử kéo nó từ 0,5 lên 0,95 và xem tải trên các node phía sau giảm bao nhiêu.

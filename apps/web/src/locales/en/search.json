@@ -1,0 +1,13 @@
+{
+  "title": "Search",
+  "placeholder": "Search courses, lessons, services, terms…",
+  "hint": "Type to search. Use ↑ ↓ to move, Enter to open.",
+  "empty": "No results.",
+  "kinds": {
+    "course": "Courses",
+    "lesson": "Lessons",
+    "challenge": "Challenges",
+    "service": "AWS services",
+    "term": "Terms"
+  }
+}

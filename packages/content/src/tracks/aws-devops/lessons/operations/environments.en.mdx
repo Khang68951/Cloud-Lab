@@ -1,0 +1,36 @@
+As a company grows, one AWS account for everything becomes a risk: a wrong command in dev can delete production data. The answer is **many accounts**, managed centrally.
+
+## Accounts are the strongest boundary
+
+| Benefit | Why |
+|---|---|
+| **Security isolation** | IAM in one account cannot touch another's resources unless explicitly allowed |
+| **Separate quotas** | A load-test environment cannot exhaust production's Lambda limits |
+| **Clear costs** | Each account is a line on the bill |
+| **Small blast radius** | Incidents and compromises stay inside one account |
+
+## A typical structure (AWS Organizations)
+
+```
+Management account (billing and Organizations only — no workloads)
+├── Security OU:        Log Archive, Security Tooling (GuardDuty, Security Hub)
+├── Infrastructure OU:  Network (Transit Gateway), Shared Services
+├── Workloads OU
+│   ├── Prod OU:        app-a-prod, app-b-prod
+│   └── NonProd OU:     app-a-dev, app-a-staging...
+└── Sandbox OU:         per-engineer experiment accounts (with budget limits)
+```
+
+- **AWS Control Tower** builds this landing zone with **guardrails** (SCPs and Config rules), central logging and an **Account Factory** for standard new accounts.
+- **IAM Identity Center** provides single sign-on to every account, with role-based permission sets.
+- **SCPs** block what nobody should do: disable CloudTrail, use unapproved Regions, leave the Organization.
+
+## Environments
+
+- **Structurally identical** (same IaC), different only in **scale** and configuration.
+- Production data is **not** copied to dev — anonymise it if you must.
+- Ephemeral per-pull-request environments catch problems early — and must clean themselves up.
+
+<Callout type="key">
+Start early with at least **three accounts**: management (runs nothing), non-prod and prod. Splitting accounts later is much harder than starting split.
+</Callout>

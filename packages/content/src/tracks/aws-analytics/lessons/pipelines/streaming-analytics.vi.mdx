@@ -1,0 +1,35 @@
+Batch trả lời câu hỏi về **hôm qua**. Streaming analytics trả lời câu hỏi về **giây vừa rồi**: gian lận, giám sát, gợi ý theo thời gian thực.
+
+## Các thành phần
+
+| Dịch vụ | Vai trò |
+|---|---|
+| **Kinesis Data Streams** | Bộ đệm có thứ tự, phát lại được; nhiều consumer đọc độc lập |
+| **Amazon MSK** | Kafka được quản lý, khi bạn cần hệ sinh thái Kafka |
+| **Amazon Data Firehose** | Gom lô (theo dung lượng hoặc thời gian), chuyển sang Parquet, partition động, đẩy vào S3, Redshift, OpenSearch… **không cần code** |
+| **Managed Service for Apache Flink** | Xử lý có trạng thái: cửa sổ thời gian, join stream, phát hiện mẫu, exactly-once |
+| **Lambda** | Xử lý đơn giản theo từng lô record |
+
+## Kiến trúc clickstream
+
+```
+Web/App ──► API Gateway ──► Kinesis Data Streams ──┬──► Firehose ──► S3 (Parquet, dt=…) ──► Athena
+                                                   ├──► Flink (phát hiện bất thường) ──► SNS
+                                                   └──► Lambda (cập nhật bộ đếm realtime)
+```
+
+- **Định cỡ theo cao điểm**: mỗi shard nhận 1.000 record/s hoặc 1 MB/s; hoặc dùng **on-demand mode**.
+- Client nên **gom lô** (PutRecords tối đa 500 record) để giảm số request.
+- Firehose đệm tới 5 phút hoặc vài MB để ghi **ít file lớn** thay vì hàng triệu file tí hon.
+
+## Cửa sổ thời gian
+
+| Loại cửa sổ | Ví dụ |
+|---|---|
+| **Tumbling** (không chồng nhau) | Số click mỗi phút |
+| **Sliding** (chồng nhau) | Trung bình 5 phút, cập nhật mỗi 10 giây |
+| **Session** (theo khoảng nghỉ) | Một phiên truy cập kết thúc sau 30 phút không hoạt động |
+
+<Callout type="key">
+Hãy phân biệt **event time** (lúc sự kiện xảy ra) với **processing time** (lúc hệ thống nhận được). Sự kiện từ mobile có thể tới trễ vài phút, và Flink dùng *watermark* để xử lý chúng đúng cửa sổ.
+</Callout>

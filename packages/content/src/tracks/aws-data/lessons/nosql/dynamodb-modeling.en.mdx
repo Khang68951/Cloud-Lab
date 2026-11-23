@@ -1,0 +1,36 @@
+In SQL you design tables first and write queries later. DynamoDB is **the other way round**: list your queries first, then design keys that serve them.
+
+## Core concepts
+
+| Concept | Meaning |
+|---|---|
+| **Partition key (PK)** | Decides which partition holds the item; every query needs it |
+| **Sort key (SK)** | Orders items within a PK; supports `begins_with`, `between`, `>`… |
+| **GSI** | A "side table" with different keys, replicated asynchronously; own throughput |
+| **LSI** | Same PK, different SK; must be created with the table |
+| **Query** | Fetch by PK (and SK conditions) — cheap and fast |
+| **Scan** | Reads **the whole table** — slow and expensive, avoid on request paths |
+
+## A single-table design example
+
+| PK | SK | Attributes |
+|---|---|---|
+| `USER#42` | `PROFILE` | name, email |
+| `USER#42` | `ORDER#2026-11-01#A1` | total, status |
+| `USER#42` | `ORDER#2026-11-19#B7` | … |
+| `ORDER#B7` | `ITEM#1` | product, qty |
+
+- "User 42's profile and recent orders" → `Query PK = USER#42` (1 request).
+- "November orders" → `Query PK = USER#42 AND begins_with(SK, "ORDER#2026-11")`.
+
+## Capacity maths
+
+- **RCU**: 1 strongly consistent read/s of up to **4 KB** (eventually consistent costs half).
+- **WCU**: 1 write/s of up to **1 KB** — a 2.5 KB item costs 3 WCU.
+- **On-demand**: pay per request, great for new or unpredictable load. **Provisioned** (with auto scaling): much cheaper for steady load.
+
+<Callout type="key">
+**Hot partitions**: one key with too much traffic gets throttled even when total capacity is fine. Choose PKs with **many, evenly used values**, or shard the key (`game#42#0..9`).
+</Callout>
+
+Features to know: **TTL** (free expiry of items), **Streams** (change capture → Lambda), **DAX** (in-memory cache, microseconds), **Global Tables** (multi-Region active-active), **transactions** (up to 100 items).

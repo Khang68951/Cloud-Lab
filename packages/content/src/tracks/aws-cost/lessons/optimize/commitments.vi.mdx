@@ -1,0 +1,30 @@
+Nếu bạn biết chắc mình sẽ dùng một lượng compute nhất định trong 1–3 năm, AWS giảm giá đổi lấy **cam kết** đó, có thể tới hơn 70%.
+
+## Các loại cam kết
+
+| Loại | Cam kết gì | Áp dụng cho | Giảm tối đa |
+|---|---|---|---|
+| **Compute Savings Plans** | $/giờ chi cho compute | EC2 (mọi họ, mọi Region), Fargate, Lambda | ~66% |
+| **EC2 Instance Savings Plans** | $/giờ cho một họ instance trong một Region | Ví dụ m7g ở us-east-1, mọi size | ~72% |
+| **Reserved Instances** | Một cấu hình cụ thể | EC2, và **RDS, ElastiCache, OpenSearch, Redshift** | ~72% |
+| **SageMaker Savings Plans** | $/giờ | SageMaker | ~64% |
+
+Kỳ hạn 1 hoặc 3 năm; thanh toán *all upfront*, *partial* hoặc *no upfront*. Trả trước càng nhiều, giảm càng sâu.
+
+## Cam kết bao nhiêu?
+
+```
+$/giờ
+100 ┤        ╭──╮        ╭──╮
+    │      ╭─╯  ╰─╮    ╭─╯  ╰─╮    ← phần biến động: on-demand / Spot
+ 40 ┤──────┴──────┴────┴──────┴──  ← mức sàn: cam kết Savings Plan ở đây
+    └───────────────────────────── thời gian
+```
+
+- Cam kết ở **mức sàn ổn định**, không phải mức trung bình. Phần dư trên đó dùng on-demand hoặc Spot.
+- **Utilization** = phần cam kết thực sự được dùng (mục tiêu ~100%). **Coverage** = phần chi tiêu đủ điều kiện đã được giảm giá (mục tiêu thường 70–90%).
+- Cam kết theo **từng bậc nhỏ** (mua thêm mỗi quý) thay vì một lần thật lớn.
+
+<Callout type="key">
+Thứ tự đúng: **bỏ lãng phí → rightsize → rồi mới cam kết**. Cam kết trước khi tối ưu là khoá luôn phần lãng phí trong 1–3 năm.
+</Callout>

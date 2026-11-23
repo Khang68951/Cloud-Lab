@@ -1,0 +1,26 @@
+NAT Gateway trông như một chi tiết mạng nhỏ, nhưng có cách tính tiền **hai lớp**:
+
+| Khoản | Giá (us-east-1) |
+|---|---|
+| Mỗi giờ gateway chạy | ~$0.045/giờ → ~$33/tháng mỗi gateway |
+| **Mỗi GB đi qua** | **~$0.045/GB** (cộng thêm phí data transfer nếu ra internet) |
+
+## Cái bẫy
+
+Instance trong private subnet đọc/ghi S3 hoặc DynamoDB. Nếu route table chỉ có `0.0.0.0/0 → NAT`, **toàn bộ** traffic tới S3 sẽ đi qua NAT, và GB nào cũng bị tính phí.
+
+```
+App (private) ──► NAT Gateway ──► S3      $0.045 mỗi GB 💸
+App (private) ──► Gateway Endpoint ──► S3  $0 ✅
+```
+
+<Callout type="key">
+**Gateway VPC Endpoint** cho S3 và DynamoDB **miễn phí** và chỉ cần thêm một route vào route table của private subnet. Đây là một trong những cách tiết kiệm "một dòng cấu hình" lớn nhất trên AWS.
+</Callout>
+
+## Những điều khác nên nhớ
+
+- Production nên có **một NAT cho mỗi AZ**. Một NAT dùng chung thì AZ đó sập là mọi AZ mất đường ra internet, và traffic chéo AZ còn tốn thêm phí.
+- Với các dịch vụ AWS khác (ECR, CloudWatch, Secrets Manager…), **Interface Endpoint** ($0.01/giờ/AZ + $0.01/GB) thường rẻ hơn NAT khi lưu lượng lớn.
+
+Bài tập bên dưới: tính nhẩm chi phí, rồi gỡ bẫy NAT trong Lab.

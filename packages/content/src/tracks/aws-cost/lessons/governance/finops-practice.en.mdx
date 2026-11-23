@@ -1,0 +1,29 @@
+**FinOps** is a way of working where engineering, finance and the business share responsibility for cloud spend. Tools are part of it; **who owns the number** matters more.
+
+## The three FinOps phases
+
+| Phase | Goal | Examples |
+|---|---|---|
+| **Inform** | Who spends what, on what | Tags, accounts per team, dashboards, showback |
+| **Optimize** | Cut waste, raise efficiency | Rightsizing, commitments, architecture |
+| **Operate** | Make it a habit | Budgets, monthly reviews, KPIs |
+
+## The foundation: cost allocation
+
+- **Multi-account** (AWS Organizations): one account per team or environment — the cleanest allocation.
+- **Cost allocation tags**: `team`, `env`, `service`, `cost-center`. **Activate** them in Billing, and enforce them with tag policies, SCPs or IaC checks.
+- **Cost Categories**: group accounts and tags into business-meaningful buckets.
+- **Showback** (show teams their costs), then **chargeback** (charge their budgets).
+
+## Catch problems early
+
+- **AWS Budgets**: thresholds per account, tag or service; alert on **forecast**, not just actuals; budget actions to block automatically.
+- **Cost Anomaly Detection**: ML finds unusual spend within hours.
+
+## Measure the right thing: unit economics
+
+A growing bill is not necessarily bad. Track **unit cost**: $/order, $/active user, $/GB processed. If volume grew 80% and the bill only 40%, you are doing well.
+
+<Callout type="key">
+Bring cost into **engineering workflows**: estimate cost in design reviews, show cost in pull requests (e.g. Infracost), and put unit cost next to latency and error rate on dashboards.
+</Callout>

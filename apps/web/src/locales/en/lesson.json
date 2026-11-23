@@ -1,0 +1,51 @@
+{
+  "notFound": "This lesson doesn't exist.",
+  "breadcrumb": "Breadcrumb",
+  "minutes_one": "{{count}} minute",
+  "minutes_other": "{{count}} minutes",
+  "exercisesPassed": "{{passed}}/{{total}} exercises passed",
+  "completed": "Completed",
+  "fallback": "This lesson isn't translated yet — showing the English version.",
+  "practiceTitle": "Practice",
+  "practiceHint": "Do the exercises to make it stick. Each one is graded instantly and explains why.",
+  "markDone": "Mark lesson as done",
+  "markUndone": "Mark as not done",
+  "navigation": "Previous and next lessons",
+  "prev": "Previous",
+  "next": "Next",
+  "openLab": "Open in the Lab",
+  "perMonth": "month",
+  "callout": {
+    "tip": "Tip",
+    "warning": "Watch out",
+    "info": "Info",
+    "key": "Key point"
+  },
+  "crossover": {
+    "title": "Monthly cost by traffic (compute + front door)",
+    "traffic": "Average traffic",
+    "millionPerMonth": "million requests/month",
+    "options": {
+      "serverless": "API Gateway + Lambda (512 MB, 100 ms)",
+      "fargate": "ALB + Fargate (Auto Scaling, 2 AZs)",
+      "ec2": "ALB + EC2 t3.medium (Savings Plan, 2 AZs)"
+    },
+    "cheapest": "cheapest",
+    "note": "With these settings, serverless stops being cheapest above roughly {{rps}} steady requests/second.",
+    "noCross": "Across this range, serverless is always cheapest."
+  },
+  "avail": {
+    "title": "Availability calculator",
+    "component": "Component",
+    "availability": "Availability",
+    "copies": "Redundant copies",
+    "tier": "Tier",
+    "remove": "Remove",
+    "add": "Add component",
+    "total": "Overall availability (in series)",
+    "downtime": "Expected downtime per month",
+    "minutes": "minutes"
+  },
+  "writing": "This lesson is being written. You can take the other lessons in this course first.",
+  "outline": "Course contents"
+}
