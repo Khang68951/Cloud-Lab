@@ -8,6 +8,8 @@ Lambda looks simple, but using it well at scale means understanding what happens
 
 → Put expensive initialisation **outside the handler** so warm invocations reuse it.
 
+Since August 2025 the **Init phase is billed** like invoke time for every function, so slow imports and heavy start-up now cost money on each cold start, not just latency.
+
 ## Concurrency
 
 **Concurrency ≈ requests/second × duration (seconds)**. E.g. 500 req/s × 0.2 s = 100 environments at once.

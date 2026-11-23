@@ -30,6 +30,7 @@ export const fanOut: CanvasChallenge = {
     ordersScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'pubsub', 'queue', 'compute'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'metric', metric: 'p95Ms', op: '<=', value: 250 },
     { type: 'metric', metric: 'availability', op: '>=', value: 0.998 },
@@ -87,6 +88,7 @@ export const steadyApi: CanvasChallenge = {
     steadyScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'metric', metric: 'p95Ms', op: '<=', value: 300 },
     { type: 'uses', services: ['dynamodb'], label: tx('Keeps DynamoDB', 'Vẫn dùng DynamoDB') },

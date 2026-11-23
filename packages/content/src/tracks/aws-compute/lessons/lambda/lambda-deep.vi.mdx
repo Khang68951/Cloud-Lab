@@ -8,6 +8,8 @@ Lambda trông đơn giản, nhưng muốn dùng tốt ở quy mô lớn thì c�
 
 → Đặt việc khởi tạo tốn kém **ngoài handler** để các lần gọi warm dùng lại được.
 
+Từ 08/2025, **thời gian Init cũng bị tính tiền** như thời gian chạy handler với mọi function, nên import chậm và khởi tạo nặng giờ tốn cả tiền ở mỗi cold start, không chỉ độ trễ.
+
 ## Concurrency
 
 **Concurrency ≈ request/giây × thời gian chạy (giây)**. Ví dụ 500 req/s × 0,2 giây = 100 môi trường chạy đồng thời.

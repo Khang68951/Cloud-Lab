@@ -28,6 +28,7 @@ export const privateEgress: CanvasChallenge = {
     egressScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'uses', services: ['nat'], label: tx('Servers can still reach the internet (NAT Gateway)', 'Server vẫn ra được internet (NAT Gateway)') },
     { type: 'no-finding', prefix: 'nat-to-aws', label: tx('S3 traffic does not go through NAT', 'Traffic tới S3 không đi qua NAT') },
     { type: 'no-finding', prefix: 'single-nat', label: tx('Egress survives the loss of one AZ', 'Egress chịu được việc mất một AZ') },

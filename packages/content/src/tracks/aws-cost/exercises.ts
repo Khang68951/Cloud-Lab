@@ -27,6 +27,7 @@ export const cutHalf: CanvasChallenge = {
     saasScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'survives', chaos: { azDown: true }, label: tx('Survives an AZ outage', 'Chịu được sự cố một AZ') },
     { type: 'metric', metric: 'availability', op: '>=', value: 0.999 },

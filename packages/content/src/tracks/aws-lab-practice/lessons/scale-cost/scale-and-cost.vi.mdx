@@ -1,0 +1,20 @@
+Hai chiều của cùng một kỹ năng: **scale lên** khi traffic tăng, và **thu nhỏ xuống** khi không cần.
+
+| Thử thách | Nguồn gốc | Bạn luyện được gì |
+|---|---|---|
+| **Một triệu người dùng đầu tiên** | Talk re:Invent "[Scaling up to your first 10 million users](https://d1.awsstatic.com/events/reinvent/2019/REPEAT_1_Scaling_up_to_your_first_10_million_users_ARC211-R1.pdf)" và bài "scale lên hàng triệu người dùng trên AWS" của System Design Primer | Tách tầng, multi-AZ, cache ở edge và trong bộ nhớ |
+| **Bảng xếp hạng game** | Câu phỏng vấn system design kinh điển | Sorted set trong Redis + database làm nguồn sự thật |
+| **Môi trường dev đắt như production** | Các bài lab chi phí của AWS Well-Architected | Rightsizing, bỏ Multi-AZ/replica ở môi trường không phải production |
+
+## Lộ trình scale trong bài talk của AWS
+
+1. Một instance cho mọi thứ.
+2. Tách database sang dịch vụ được quản lý (RDS).
+3. Thêm load balancer, nhiều instance, **nhiều AZ**.
+4. Giảm tải đọc: **CDN** cho nội dung tĩnh, **cache** cho dữ liệu nóng, read replica.
+5. Auto Scaling; chuyển phần dữ liệu phù hợp sang DynamoDB.
+6. Tách service, thêm queue, rồi mới tới sharding.
+
+<Callout type="tip">
+Đừng nhảy cóc. Chỉ làm bước tiếp theo khi số liệu cho thấy bước trước đã thành nút thắt. Lab cho bạn thấy đúng điều đó qua cột utilization và tab Chi phí.
+</Callout>

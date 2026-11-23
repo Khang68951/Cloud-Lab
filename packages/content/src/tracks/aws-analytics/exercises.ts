@@ -18,6 +18,7 @@ export const clickstream: CanvasChallenge = {
   scenario: clickScenario,
   starter: buildDesign([['users', 'users', 0, 1]], [], clickScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', ['kinesis'], ['firehose'], ['s3']] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'uses', services: ['kinesis'], label: tx('A replayable stream for many consumers', 'Một stream phát lại được cho nhiều consumer') },
     { type: 'uses', services: ['firehose'], label: tx('Buffered delivery to the lake (Firehose)', 'Đẩy vào lake có bộ đệm (Firehose)') },

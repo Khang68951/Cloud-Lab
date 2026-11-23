@@ -43,7 +43,20 @@ export type Requirement =
   /** A specific reviewer finding (by id prefix, e.g. "nat-to-aws") must be gone. */
   | { type: 'no-finding'; prefix: string; label: LocalizedText }
   | { type: 'uses'; services: string[]; label: LocalizedText }
-  | { type: 'not-uses'; services: string[]; label: LocalizedText };
+  | { type: 'not-uses'; services: string[]; label: LocalizedText }
+  /**
+   * Structure check: some path starting at Users must pass through every step,
+   * in order (other hops in between are allowed). Stops "Users → Lambda" from
+   * counting as a full API when the job needs a front door and a data store.
+   */
+  | { type: 'flow'; steps: FlowStep[]; label?: LocalizedText };
+
+/**
+ * One hop of a `flow` requirement: a role (any service that plays it) or an
+ * explicit list of service ids (any of them).
+ */
+export type FlowRole = 'entry' | 'compute' | 'data' | 'cache' | 'queue' | 'pubsub' | 'async';
+export type FlowStep = FlowRole | string[];
 
 export interface CanvasChallenge extends Base {
   kind: 'canvas-design' | 'canvas-fix';

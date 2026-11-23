@@ -77,9 +77,9 @@ test('mobile menu opens and navigates', async ({ page }) => {
   await expect(page.getByRole('dialog')).toBeHidden();
 });
 
-test('course catalog lists all 11 courses, every lesson is written and opens', async ({ page }) => {
+test('course catalog lists all 12 courses, every lesson is written and opens', async ({ page }) => {
   await page.goto('/learn');
-  await expect(page.locator('main a[href^="/learn/"]')).toHaveCount(11);
+  await expect(page.locator('main a[href^="/learn/"]')).toHaveCount(12);
   await page.goto('/learn/aws-system-design');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('System Design trên AWS');
   await expect(page.getByText('Đang soạn')).toHaveCount(0);

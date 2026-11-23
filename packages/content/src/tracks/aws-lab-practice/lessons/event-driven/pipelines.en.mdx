@@ -1,0 +1,20 @@
+These three exercises practise the work that **happens after the response**: what makes a system fast for users and resilient to bursts at the same time.
+
+| Challenge | Source | Pattern |
+|---|---|---|
+| **Image upload + thumbnails** | AWS Lambda tutorial "use an S3 trigger to create thumbnails" | S3 event → Lambda (asynchronous) |
+| **Webhook receiver** | API Gateway → SQS → Lambda patterns on [Serverless Land](https://serverlessland.com/patterns) | Storage-first: store, then process |
+| **Multi-channel notifications** | A classic system-design interview question | SNS fan-out → one queue per channel |
+
+## What the dashed edges mean
+
+In the Lab, edges leaving a **queue, topic, S3 or DynamoDB** are dashed: that work runs asynchronously, **does not add to user latency**, and the services behind it only see the **average** load, not the peak.
+
+```
+Synchronous:   Users ─► API ─► Lambda ─► RDS          (RDS must take the ×20 peak)
+Asynchronous:  Users ─► API ─► SQS ┄┄► Lambda ─► RDS  (the queue absorbs the peak)
+```
+
+<Callout type="warning">
+Asynchronous means a message can arrive **twice** or **out of order**. Processing must be idempotent, and you always want a dead-letter queue for failed messages.
+</Callout>

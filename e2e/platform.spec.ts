@@ -6,11 +6,11 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
 });
 
-test('roadmap shows 5 stages, 11 courses and recommends Core first', async ({ page }) => {
+test('roadmap shows 5 stages, 12 courses and recommends Core first', async ({ page }) => {
   await page.goto('/roadmap');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Lộ trình học');
   await expect(page.locator('[data-stage]')).toHaveCount(5);
-  await expect(page.locator('[data-course]')).toHaveCount(11);
+  await expect(page.locator('[data-course]')).toHaveCount(12);
   await expect(page.locator('[data-course="aws"]')).toContainText('Nên học tiếp');
   await page.getByRole('link', { name: /Học tiếp: AWS Core/ }).click();
   await expect(page).toHaveURL(/\/learn\/aws\/foundations\/lab-tour$/);

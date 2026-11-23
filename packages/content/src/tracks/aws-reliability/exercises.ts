@@ -28,6 +28,7 @@ export const surviveAz: CanvasChallenge = {
     shopScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'survives', chaos: { azDown: true }, label: tx('Survives an AZ outage at peak', 'Chịu được sự cố một AZ lúc cao điểm') },
     { type: 'metric', metric: 'availability', op: '>=', value: 0.999 },
@@ -69,6 +70,7 @@ export const paymentsNines: CanvasChallenge = {
   scenario: paymentsScenario,
   starter: buildDesign([['users', 'users', 0, 1]], [], paymentsScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'metric', metric: 'availability', op: '>=', value: 0.9999 },
     { type: 'survives', chaos: { azDown: true }, label: tx('Survives an AZ outage', 'Chịu được sự cố một AZ') },

@@ -10,22 +10,51 @@ function formatRps(rps: number) {
 }
 
 /**
+ * Traffic range the dots can express: 1 req/s (sparse, slow) … 100k req/s
+ * (dense, fast stream). Below/above that the visuals clamp.
+ */
+const FLOW_MIN_DECADE = 0; // 10^0 = 1 req/s
+const FLOW_MAX_DECADE = 5; // 10^5 = 100k req/s
+/** How much speed and density each grow over the whole range (16× each). */
+const FLOW_RANGE = 16;
+const SPEED_MIN = 25; // px/s at 1 req/s
+const SPACING_MAX = 240; // px between dots at 1 req/s
+const MAX_DOTS = 28; // per edge, keeps long edges cheap to animate
+
+/**
+ * Speed and spacing of the flow dots for a given traffic level.
+ *
+ * Traffic is shown as *dots passing per second* = speed ÷ spacing. Both grow
+ * with the same power of rps, so every ×10 in traffic makes dots ~1.7× faster
+ * AND ~1.7× denser → ~3× more dots per second. (A fully linear mapping can't
+ * fit 1 → 100k req/s on screen; the old log-additive one only gave ~1.2×.)
+ */
+function flowVisuals(rps: number) {
+  if (rps <= 0) return { speed: 18, spacing: Number.POSITIVE_INFINITY };
+  const decade = Math.min(FLOW_MAX_DECADE, Math.max(FLOW_MIN_DECADE, Math.log10(rps)));
+  const u = (decade - FLOW_MIN_DECADE) / (FLOW_MAX_DECADE - FLOW_MIN_DECADE); // 0..1
+  const k = FLOW_RANGE ** u; // 1..16
+  return { speed: SPEED_MIN * k, spacing: SPACING_MAX / k };
+}
+
+/**
  * Little dots that travel along the edge from source to target, so the learner
  * sees which way requests/messages flow. More traffic → more and faster dots.
  * Uses SMIL <animateMotion> (works on SVG paths everywhere); hidden by CSS
  * under prefers-reduced-motion.
  */
 function FlowDots({ path, length, rps, async }: { path: string; length: number; rps: number; async: boolean }) {
-  // 1 dot when idle, up to 4 under heavy traffic (log scale: 10/s → 2, 1k/s → 3, 100k/s → 4).
-  const count = rps > 0 ? Math.min(4, 1 + Math.floor(Math.log10(Math.max(rps, 1)) / 1.5)) : 1;
-  // Pixels per second: idle edges crawl, busy ones move briskly.
-  const speed = rps > 0 ? Math.min(220, 70 + Math.log10(rps + 1) * 30) : 40;
-  const dur = Math.max(0.8, length / speed);
+  const { speed, spacing } = flowVisuals(rps);
+  // Evenly spaced along the edge, so density (not edge length) reflects traffic.
+  const count = Math.max(1, Math.min(MAX_DOTS, Math.round(length / spacing)));
+  const dur = Math.max(0.4, length / speed);
+  // Remount when timing changes: SMIL keeps the old phase otherwise and dots jump.
+  const timingKey = `${dur.toFixed(2)}-${count}`;
   return (
     <g className="lab-flow-dot" aria-hidden style={{ pointerEvents: 'none' }}>
       {Array.from({ length: count }, (_, i) => (
         <circle
-          key={i}
+          key={`${timingKey}-${i}`}
           r={async ? 3.25 : 3.75}
           fill={async ? 'var(--info)' : 'var(--primary)'}
           stroke="var(--card)"

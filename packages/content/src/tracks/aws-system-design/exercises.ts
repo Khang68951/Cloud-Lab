@@ -25,6 +25,8 @@ export const newsFeed: CanvasChallenge = {
   scenario: feedScenario,
   starter: usersOnly(feedScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
+    { type: 'flow', steps: ['entry', 'compute', 'async', 'compute', 'data'] },
     errors,
     p95(100),
     survivesAz,
@@ -72,6 +74,7 @@ export const videoStreaming: CanvasChallenge = {
   scenario: videoScenario,
   starter: usersOnly(videoScenario),
   requirements: [
+    { type: 'flow', steps: [['cloudfront'], ['s3']] },
     errors,
     p95(150),
     { type: 'uses', services: ['cloudfront'], label: tx('Served through a CDN', 'Phục vụ qua CDN') },
@@ -114,6 +117,7 @@ export const flashSale: CanvasChallenge = {
   scenario: flashScenario,
   starter: usersOnly(flashScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'queue', 'compute', 'data'] },
     errors,
     p95(200),
     { type: 'uses', services: ['cloudfront'], label: tx('Product pages cached at the edge', 'Trang sản phẩm được cache ở edge') },
@@ -159,6 +163,7 @@ export const chatApp: CanvasChallenge = {
   scenario: chatScenario,
   starter: usersOnly(chatScenario),
   requirements: [
+    { type: 'flow', steps: [['apigw'], 'compute', 'data'] },
     errors,
     p95(150),
     survivesAz,
@@ -203,6 +208,8 @@ export const rideHailing: CanvasChallenge = {
   scenario: rideScenario,
   starter: usersOnly(rideScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'cache'] },
+    { type: 'flow', steps: ['entry', 'compute', ['kinesis']] },
     errors,
     p95(150),
     survivesAz,
@@ -249,6 +256,8 @@ export const paymentsLedger: CanvasChallenge = {
   scenario: ledgerScenario,
   starter: usersOnly(ledgerScenario),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', ['aurora', 'rds']] },
+    { type: 'flow', steps: ['entry', 'compute', 'async', 'compute'] },
     errors,
     survivesAz,
     { type: 'metric', metric: 'availability', op: '>=', value: 0.9995 },

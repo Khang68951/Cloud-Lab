@@ -5,6 +5,7 @@ import * as compute from './tracks/aws-compute/index.ts';
 import * as cost from './tracks/aws-cost/index.ts';
 import * as data from './tracks/aws-data/index.ts';
 import * as devops from './tracks/aws-devops/index.ts';
+import * as labPractice from './tracks/aws-lab-practice/index.ts';
 import * as networking from './tracks/aws-networking/index.ts';
 import * as reliability from './tracks/aws-reliability/index.ts';
 import * as security from './tracks/aws-security/index.ts';
@@ -24,7 +25,7 @@ interface CourseModule {
  * Every course, in roadmap order. A new course = a folder under tracks/
  * exporting { track, exercises } + one line here.
  */
-const COURSES: CourseModule[] = [core, security, networking, compute, data, serverless, reliability, cost, devops, analytics, systemDesign];
+const COURSES: CourseModule[] = [core, security, networking, compute, data, labPractice, serverless, reliability, cost, devops, analytics, systemDesign];
 
 export const tracks: readonly TrackMeta[] = COURSES.map((c) => c.track);
 

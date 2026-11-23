@@ -1,6 +1,7 @@
 import { tx } from '@cloudlab/catalog';
 import type { LocalizedText } from '@cloudlab/shared';
 import { simulate, type SimResult } from '@cloudlab/sim-engine';
+import { flowLabel, hasFlow } from './flow.ts';
 import type { Answer, CanvasChallenge, CheckResult, Exercise, GradeResult, MetricKey, Requirement } from './types.ts';
 
 const METRIC_LABEL: Record<MetricKey, (op: string, v: string) => LocalizedText> = {
@@ -43,6 +44,8 @@ export function requirementLabel(r: Requirement): LocalizedText {
       const base = SEVERITY_LABEL[r.severity];
       return r.pillar ? { en: `${base.en} (${r.pillar})`, vi: `${base.vi} (${r.pillar})` } : base;
     }
+    case 'flow':
+      return r.label ?? flowLabel(r.steps);
     default:
       return r.label;
   }
@@ -72,6 +75,8 @@ export function checkRequirement(r: Requirement, design: CanvasChallenge['starte
       return { label, passed: design.nodes.some((n) => r.services.includes(n.service)) };
     case 'not-uses':
       return { label, passed: !design.nodes.some((n) => r.services.includes(n.service)) };
+    case 'flow':
+      return { label, passed: hasFlow(design, r.steps) };
   }
 }
 

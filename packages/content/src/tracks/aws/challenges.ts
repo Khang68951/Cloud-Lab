@@ -46,6 +46,7 @@ export const staticSite: CanvasChallenge = {
   scenario: staticSiteScenario,
   starter: usersOnly(staticSiteScenario),
   requirements: [
+    { type: 'flow', steps: [['cloudfront'], ['s3']] },
     { type: 'uses', services: ['s3'], label: tx('Files are stored in Amazon S3', 'File được lưu trên Amazon S3') },
     { type: 'uses', services: ['cloudfront'], label: tx('Served through the CloudFront CDN', 'Phục vụ qua CDN CloudFront') },
     {
@@ -91,7 +92,8 @@ export const sideProject: CanvasChallenge = {
   ),
   scenario: sideProjectScenario,
   starter: usersOnly(sideProjectScenario),
-  requirements: [R.cost(12), R.errors(), R.survivesAz(), R.availability(0.998), R.noErrors()],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.cost(12), R.errors(), R.survivesAz(), R.availability(0.998), R.noErrors()],
   hints: [
     tx('Look at the fixed monthly cost of a load balancer and of an always-on instance.', 'Hãy xem chi phí cố định mỗi tháng của một load balancer và của một instance chạy liên tục.'),
     tx('At ~1 request/second, paying per request beats paying per hour.', 'Ở mức ~1 request/giây, trả tiền theo request rẻ hơn trả theo giờ.'),
@@ -136,6 +138,7 @@ export const singleServer: CanvasChallenge = {
     singleServerScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     R.errors(),
     R.survivesAz(),
     R.availability(0.999),
@@ -186,7 +189,8 @@ export const readHeavy: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>db'],
     readHeavyScenario,
   ),
-  requirements: [R.errors(), R.p95(150), R.availability(0.999), R.cost(1100)],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.errors(), R.p95(150), R.availability(0.999), R.cost(1100)],
   hints: [
     tx('Open the Review tab: which node is red, and what kind of traffic dominates?', 'Mở tab Đánh giá: node nào đang đỏ, và loại traffic nào chiếm đa số?'),
     tx('90% of requests read the same catalogue data again and again.', '90% request đọc đi đọc lại cùng một dữ liệu danh mục.'),
@@ -234,6 +238,7 @@ export const natTrap: CanvasChallenge = {
     natScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     {
       type: 'no-finding',
       prefix: 'nat-to-aws',
@@ -289,7 +294,8 @@ export const cdnOffload: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>db'],
     cdnScenario,
   ),
-  requirements: [R.errors(), R.p95(60), R.cost(CDN_BUDGET)],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.errors(), R.p95(60), R.cost(CDN_BUDGET)],
   hints: [
     tx('Raising the Auto Scaling maximum fixes the errors — but check the p95. Where does the time go?', 'Tăng mức tối đa của Auto Scaling sẽ hết lỗi — nhưng hãy xem p95. Thời gian bị tiêu ở đâu?'),
     tx('Most requests ask for the same article. Who could answer them before they reach your servers?', 'Phần lớn request hỏi cùng một bài viết. Ai có thể trả lời chúng trước khi tới server của bạn?'),
@@ -337,6 +343,7 @@ export const flashSale: CanvasChallenge = {
     flashSaleScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'queue', 'compute', 'data'] },
     R.errors(),
     { type: 'uses', services: ['sqs'], label: tx('Orders are buffered in a queue', 'Đơn hàng được đệm trong một queue') },
     { type: 'not-uses', services: ['aurora'], label: tx('Keeps the existing RDS database', 'Giữ nguyên database RDS hiện có') },
@@ -379,7 +386,8 @@ export const fourNines: CanvasChallenge = {
   ),
   scenario: ninesScenario,
   starter: usersOnly(ninesScenario),
-  requirements: [R.availability(0.9995), R.survivesAz(), R.errors(), R.cost(500), R.noErrors()],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.availability(0.9995), R.survivesAz(), R.errors(), R.cost(500), R.noErrors()],
   hints: [
     tx('Look at each component\'s availability: API Gateway and Lambda are 99.95% each — two in a row are already below target.', 'Xem availability của từng thành phần: API Gateway và Lambda mỗi cái 99,95% — hai cái nối tiếp đã thấp hơn mục tiêu.'),
     tx('RDS Multi-AZ is 99.95% on its own, so anything in front of it pulls you below. Which database offers 99.99%?', 'Riêng RDS Multi-AZ đã là 99,95%, nên bất cứ thứ gì đứng trước nó cũng kéo bạn xuống dưới mục tiêu. Database nào cho 99,99%?'),
@@ -425,7 +433,8 @@ export const cutTheBill: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>cache', 'app>db'],
     overprovScenario,
   ),
-  requirements: [R.cost(1700), R.errors(), R.survivesAz(), R.availability(0.999)],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.cost(1700), R.errors(), R.survivesAz(), R.availability(0.999)],
   hints: [
     tx('Check utilisation on each node: anything under ~15% at peak is paying for idle capacity.', 'Xem mức tải của từng node: thứ gì dưới ~15% lúc cao điểm là đang trả tiền cho phần ngồi không.'),
     tx('Right-size first (smaller instance classes, fewer replicas), then consider a Savings Plan for the steady part.', 'Rightsize trước (loại instance nhỏ hơn, ít replica hơn), sau đó mới cân nhắc Savings Plan cho phần tải đều.'),
@@ -461,7 +470,8 @@ export const urlShortener: CanvasChallenge = {
   ),
   scenario: shortenerScenario,
   starter: usersOnly(shortenerScenario),
-  requirements: [R.p95(100), R.errors(), R.survivesAz(), R.availability(0.999), R.noErrors(), R.cost(1200)],
+  requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.p95(100), R.errors(), R.survivesAz(), R.availability(0.999), R.noErrors(), R.cost(1200)],
   hints: [
     tx('The data model is a single key → value lookup (short code → long URL). Which database is built for that?', 'Mô hình dữ liệu chỉ là tra cứu key → value (mã ngắn → URL dài). Database nào sinh ra cho việc đó?'),
     tx('Redirects are extremely read-heavy and repetitive: caching pays off.', 'Redirect cực kỳ thiên về đọc và lặp lại: cache rất đáng giá.'),

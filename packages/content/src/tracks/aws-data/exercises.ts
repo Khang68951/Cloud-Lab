@@ -27,6 +27,7 @@ export const auroraReads: CanvasChallenge = {
     readsScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'metric', metric: 'availability', op: '>=', value: 0.9995 },
     { type: 'metric', metric: 'p95Ms', op: '<=', value: 120 },
@@ -77,6 +78,7 @@ export const provisionedDynamo: CanvasChallenge = {
     steadyScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'uses', services: ['dynamodb'], label: tx('Keeps DynamoDB', 'Vẫn dùng DynamoDB') },
     { type: 'metric', metric: 'monthlyUsd', op: '<=', value: 450 },

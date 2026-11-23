@@ -61,7 +61,7 @@ export function courseProgress(track: TrackMeta, data: Progress): CourseProgress
  * unfinished course with content.
  */
 export function recommendedCourse(all: Record<string, CourseProgress>): TrackMeta | undefined {
-  const candidates = tracks.filter((t) => !all[t.slug]?.completed && (all[t.slug]?.lessonsAvailable ?? 0) > all[t.slug]!.lessonsDone);
+  const candidates = tracks.filter((t) => !all[t.slug]?.completed && (all[t.slug]?.lessonsAvailable ?? 0) > (all[t.slug]?.lessonsDone ?? 0));
   return candidates.find((t) => t.prerequisites.every((p) => all[p]?.completed)) ?? candidates[0];
 }
 

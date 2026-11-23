@@ -1,0 +1,23 @@
+Ba bài tập dưới đây là những bài "nhập môn" mà cộng đồng cloud hay giao cho nhau. Mỗi bài bắt đầu từ canvas trống (hoặc một hệ thống đang có vấn đề), và được chấm theo **cả luồng request** lẫn các con số: chỉ đặt node lên canvas mà không nối thành luồng hoàn chỉnh thì chưa qua.
+
+| Thử thách | Nguồn gốc | Bạn luyện được gì |
+|---|---|---|
+| **Cloud Resume Challenge** | [cloudresumechallenge.dev](https://cloudresumechallenge.dev) | Website tĩnh + API serverless, hai luồng song song từ người dùng |
+| **Thiết kế Pastebin** | [System Design Primer](https://github.com/donnemartin/system-design-primer) | Tách blob (S3) và metadata (database), ước lượng tải đọc/ghi |
+| **WordPress sẵn sàng cao** | Kiến trúc tham chiếu WordPress của AWS | CDN, load balancer, Auto Scaling nhiều AZ, database Multi-AZ |
+
+## Một luồng "đủ" trông như thế nào
+
+```
+Users ─► cửa trước ─► compute ─► nơi lưu dữ liệu
+         (CloudFront,   (Lambda,       (DynamoDB, RDS,
+          ALB, API GW)   EC2, Fargate)   S3…)
+```
+
+Đây là hình dạng tối thiểu của hầu hết ứng dụng thật. Thiếu cửa trước thì không có chỗ đặt HTTPS, xác thực, throttling hay WAF. Thiếu nơi lưu dữ liệu thì function chạy xong là mất hết.
+
+<Callout type="key">
+Các node được phép nằm **xen giữa** (Route 53, WAF, NAT, cache…), nhưng thứ tự **cửa trước → compute → dữ liệu** phải được nối liền bằng cạnh. Mở tab Thử thách trong Lab để thấy yêu cầu nào đang trượt.
+</Callout>
+
+Làm xong một bài, hãy đọc phần giải thích hiện ra sau khi qua: nó cho biết phiên bản thật của bài đó còn thêm những gì.

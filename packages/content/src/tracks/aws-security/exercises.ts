@@ -27,6 +27,7 @@ export const lockdown: CanvasChallenge = {
     lockdownScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'no-findings', severity: 'info', pillar: 'security' },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'metric', metric: 'monthlyUsd', op: '<=', value: 900 },

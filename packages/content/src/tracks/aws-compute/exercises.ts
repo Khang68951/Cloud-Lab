@@ -29,6 +29,7 @@ export const spotWorkers: CanvasChallenge = {
     batchScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'queue', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'uses', services: ['sqs'], label: tx('Jobs stay buffered in SQS', 'Job vẫn được đệm trong SQS') },
     { type: 'metric', metric: 'monthlyUsd', op: '<=', value: 1200 },
@@ -79,6 +80,7 @@ export const cheapest2000: CanvasChallenge = {
     steadyScenario,
   ),
   requirements: [
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },
     { type: 'metric', metric: 'errorRate', op: '<=', value: 0.01 },
     { type: 'survives', chaos: { azDown: true }, label: tx('Survives an Availability Zone outage', 'Chịu được sự cố một Availability Zone') },
     { type: 'metric', metric: 'p95Ms', op: '<=', value: 150 },

@@ -1,0 +1,23 @@
+The three exercises below are "first projects" the cloud community keeps handing to each other. Each starts from a blank canvas (or a system with problems) and is graded on **the whole request flow** as well as the numbers: dropping nodes on the canvas without wiring them into a complete flow does not pass.
+
+| Challenge | Source | What you practise |
+|---|---|---|
+| **Cloud Resume Challenge** | [cloudresumechallenge.dev](https://cloudresumechallenge.dev) | Static site + serverless API, two parallel flows from users |
+| **Design Pastebin** | [System Design Primer](https://github.com/donnemartin/system-design-primer) | Splitting blobs (S3) from metadata (database), read/write estimates |
+| **Highly available WordPress** | AWS WordPress reference architecture | CDN, load balancer, multi-AZ Auto Scaling, Multi-AZ database |
+
+## What a "complete" flow looks like
+
+```
+Users ─► front door ─► compute ─► data store
+         (CloudFront,   (Lambda,       (DynamoDB, RDS,
+          ALB, API GW)   EC2, Fargate)   S3…)
+```
+
+This is the minimum shape of almost every real application. Without a front door there is nowhere to put HTTPS, authentication, throttling or a WAF. Without a data store, everything is gone when the function returns.
+
+<Callout type="key">
+Other nodes may sit **in between** (Route 53, WAF, NAT, caches…), but **front door → compute → data** must be connected by edges, in that order. Open the Challenge tab in the Lab to see which requirement is still failing.
+</Callout>
+
+After you pass, read the debrief: it tells you what the real-world version of each exercise adds.

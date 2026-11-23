@@ -1,0 +1,20 @@
+Ba bài này luyện phần việc **xảy ra sau khi đã trả response**: thứ giúp hệ thống vừa nhanh với người dùng, vừa chịu được các đợt tăng vọt.
+
+| Thử thách | Nguồn gốc | Mẫu thiết kế |
+|---|---|---|
+| **Upload ảnh + thumbnail** | Tutorial "dùng S3 trigger để tạo thumbnail" của AWS Lambda | S3 event → Lambda (bất đồng bộ) |
+| **Webhook receiver** | Các pattern API Gateway → SQS → Lambda trên [Serverless Land](https://serverlessland.com/patterns) | Lưu trước, xử lý sau (storage-first) |
+| **Dịch vụ thông báo đa kênh** | Câu phỏng vấn system design kinh điển | Fan-out SNS → mỗi kênh một queue |
+
+## Cạnh nét đứt là gì
+
+Trong Lab, cạnh đi ra từ **queue, topic, S3 hay DynamoDB** là nét đứt: việc đó chạy bất đồng bộ, **không cộng vào độ trễ** của người dùng, và phía sau chỉ phải chịu tải **trung bình** chứ không phải tải đỉnh.
+
+```
+Đồng bộ:      Users ─► API ─► Lambda ─► RDS          (RDS phải chịu đỉnh ×20)
+Bất đồng bộ:  Users ─► API ─► SQS ┄┄► Lambda ─► RDS  (queue hấp thụ đỉnh)
+```
+
+<Callout type="warning">
+Bất đồng bộ nghĩa là message có thể đến **hai lần** hoặc **không theo thứ tự**. Phần xử lý phải idempotent, và luôn cần dead-letter queue cho message lỗi.
+</Callout>

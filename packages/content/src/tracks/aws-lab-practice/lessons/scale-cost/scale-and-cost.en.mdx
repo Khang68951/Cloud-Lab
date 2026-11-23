@@ -1,0 +1,20 @@
+Two directions of the same skill: **scaling up** when traffic grows, and **scaling down** when it is not needed.
+
+| Challenge | Source | What you practise |
+|---|---|---|
+| **Your first million users** | The re:Invent talk "[Scaling up to your first 10 million users](https://d1.awsstatic.com/events/reinvent/2019/REPEAT_1_Scaling_up_to_your_first_10_million_users_ARC211-R1.pdf)" and the System Design Primer's "scale to millions of users on AWS" | Separate tiers, multi-AZ, caching at the edge and in memory |
+| **Game leaderboard** | A classic system-design interview question | Redis sorted sets + a database as the source of truth |
+| **A dev environment that costs like production** | AWS Well-Architected cost labs | Rightsizing, dropping Multi-AZ/replicas outside production |
+
+## The scaling path from the AWS talk
+
+1. One instance for everything.
+2. Move the database to a managed service (RDS).
+3. Add a load balancer, more instances, **more AZs**.
+4. Take reads away: a **CDN** for static content, a **cache** for hot data, read replicas.
+5. Auto Scaling; move suitable data to DynamoDB.
+6. Split into services, add queues — and only then shard.
+
+<Callout type="tip">
+Don't skip steps. Take the next one only when the numbers show the previous one has become the bottleneck. The Lab shows you exactly that through utilisation and the Cost tab.
+</Callout>

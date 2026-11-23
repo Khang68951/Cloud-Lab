@@ -27,7 +27,7 @@ describe('courseProgress', () => {
     const fake = (slug: string, completed: boolean, available = 5): CourseProgress =>
       ({ slug, completed, lessonsAvailable: available, lessonsDone: completed ? available : 0 }) as CourseProgress;
     const base = Object.fromEntries(
-      ['aws', 'aws-security', 'aws-networking', 'aws-compute', 'aws-data', 'aws-serverless', 'aws-reliability', 'aws-cost', 'aws-devops', 'aws-analytics', 'aws-system-design'].map(
+      ['aws', 'aws-security', 'aws-networking', 'aws-compute', 'aws-data', 'aws-lab-practice', 'aws-serverless', 'aws-reliability', 'aws-cost', 'aws-devops', 'aws-analytics', 'aws-system-design'].map(
         (s) => [s, fake(s, false)],
       ),
     );

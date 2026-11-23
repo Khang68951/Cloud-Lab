@@ -9,6 +9,16 @@ import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { ExerciseShell } from './ExerciseShell';
 
+/** Fisher–Yates shuffle (returns a new array). */
+function shuffled<T>(items: readonly T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
 export function QuizPlayer({ exercise, index }: { exercise: ScenarioQuiz; index?: number }) {
   const { t } = useTranslation('practice');
   const locale = currentLocale();
@@ -17,6 +27,10 @@ export function QuizPlayer({ exercise, index }: { exercise: ScenarioQuiz; index?
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<GradeResult | null>(null);
   const [hints, setHints] = useState(0);
+  // Content authors tend to put the right answer first, so show choices in a
+  // fresh random order on every mount and every retry. Grading uses choice ids,
+  // and the letter badge follows the displayed position, so nothing leaks.
+  const [order, setOrder] = useState(() => shuffled(exercise.choices));
 
   const toggle = (id: string) => {
     if (result) return;
@@ -40,7 +54,7 @@ export function QuizPlayer({ exercise, index }: { exercise: ScenarioQuiz; index?
       <p className="font-medium leading-relaxed">{localize(exercise.prompt, locale)}</p>
       {multi && <p className="mt-1 text-xs text-muted-foreground">{t('quiz.multi')}</p>}
       <div role={multi ? 'group' : 'radiogroup'} className="mt-3 flex flex-col gap-2">
-        {exercise.choices.map((c) => {
+        {order.map((c, pos) => {
           const isSel = selected.has(c.id);
           const show = result !== null;
           return (
@@ -67,7 +81,7 @@ export function QuizPlayer({ exercise, index }: { exercise: ScenarioQuiz; index?
                   )}
                   aria-hidden
                 >
-                  {c.id}
+                  {String.fromCharCode(97 + pos)}
                 </span>
                 <span className="flex-1">{localize(c.text, locale)}</span>
                 {show && c.correct && <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" aria-label={t('quiz.correct')} />}
@@ -96,6 +110,7 @@ export function QuizPlayer({ exercise, index }: { exercise: ScenarioQuiz; index?
               onClick={() => {
                 setResult(null);
                 setSelected(new Set());
+                setOrder(shuffled(exercise.choices));
               }}
             >
               <RotateCcw />
