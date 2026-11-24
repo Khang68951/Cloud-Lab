@@ -54,7 +54,7 @@ export const resume: CanvasChallenge = {
   scenario: resumeScenario,
   starter: usersOnly(resumeScenario),
   requirements: [
-    { type: 'flow', steps: [['cloudfront'], ['s3']], label: tx('Static site: Users → CloudFront → S3', 'Website tĩnh: Users → CloudFront → S3') },
+    { type: 'flow', steps: [['cloudfront'], ['s3']], label: tx('Static site: CloudFront and S3', 'Website tĩnh: CloudFront và S3') },
     {
       type: 'flow',
       steps: ['entry', 'compute', ['dynamodb', 'aurora-serverless', 'aurora-dsql']],

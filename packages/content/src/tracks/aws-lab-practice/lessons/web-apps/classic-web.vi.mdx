@@ -1,4 +1,4 @@
-Ba bài tập dưới đây là những bài "nhập môn" mà cộng đồng cloud hay giao cho nhau. Mỗi bài bắt đầu từ canvas trống (hoặc một hệ thống đang có vấn đề), và được chấm theo **cả luồng request** lẫn các con số: chỉ đặt node lên canvas mà không nối thành luồng hoàn chỉnh thì chưa qua.
+Ba bài tập dưới đây là những bài "nhập môn" mà cộng đồng cloud hay giao cho nhau. Mỗi bài bắt đầu từ canvas trống (hoặc một hệ thống đang có vấn đề), và được chấm theo **các thành phần bắt buộc** lẫn các con số: mỗi thành phần phải có trên canvas và nối với ít nhất một node khác.
 
 | Thử thách | Nguồn gốc | Bạn luyện được gì |
 |---|---|---|
@@ -17,7 +17,7 @@ Users ─► cửa trước ─► compute ─► nơi lưu dữ liệu
 Đây là hình dạng tối thiểu của hầu hết ứng dụng thật. Thiếu cửa trước thì không có chỗ đặt HTTPS, xác thực, throttling hay WAF. Thiếu nơi lưu dữ liệu thì function chạy xong là mất hết.
 
 <Callout type="key">
-Các node được phép nằm **xen giữa** (Route 53, WAF, NAT, cache…), nhưng thứ tự **cửa trước → compute → dữ liệu** phải được nối liền bằng cạnh. Mở tab Thử thách trong Lab để thấy yêu cầu nào đang trượt.
+Yêu cầu chỉ kiểm tra có đủ **cửa trước, compute và nơi lưu dữ liệu**, mỗi cái có ít nhất một cạnh nối; node thả lên canvas mà không nối thì không được tính. Mở tab Thử thách trong Lab để thấy yêu cầu nào đang trượt.
 </Callout>
 
 Làm xong một bài, hãy đọc phần giải thích hiện ra sau khi qua: nó cho biết phiên bản thật của bài đó còn thêm những gì.

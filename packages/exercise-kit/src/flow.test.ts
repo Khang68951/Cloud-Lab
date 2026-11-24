@@ -1,6 +1,6 @@
 import { buildDesign, DEFAULT_SCENARIO } from '@cloudlab/catalog';
 import { describe, expect, it } from 'vitest';
-import { hasFlow } from './flow.ts';
+import { flowLabel, hasFlow } from './flow.ts';
 import type { FlowStep } from './types.ts';
 
 const API: FlowStep[] = ['entry', 'compute', 'data'];
@@ -16,9 +16,14 @@ describe('flow requirement', () => {
     expect(hasFlow(d([['u', 'users'], ['fn', 'lambda']], ['u>fn']), API)).toBe(false);
   });
 
-  it('rejects nodes that are placed but not connected', () => {
+  it('rejects a component that is placed but has no edge', () => {
     const design = d([['u', 'users'], ['api', 'apigw'], ['fn', 'lambda'], ['db', 'dynamodb']], ['u>api', 'api>fn']);
     expect(hasFlow(design, API)).toBe(false);
+  });
+
+  it('accepts components wired to anything, in any order or path', () => {
+    const design = d([['u', 'users'], ['api', 'apigw'], ['fn', 'lambda'], ['db', 'dynamodb']], ['u>api', 'u>fn', 'db>fn']);
+    expect(hasFlow(design, API)).toBe(true);
   });
 
   it('does not count DNS or WAF as a front door', () => {
@@ -26,20 +31,18 @@ describe('flow requirement', () => {
     expect(hasFlow(design, API)).toBe(false);
   });
 
-  it('accepts API Gateway → Lambda → DynamoDB, with extra hops in between', () => {
-    const design = d(
-      [['u', 'users'], ['dns', 'route53'], ['api', 'apigw'], ['fn', 'lambda'], ['vpce', 'vpce'], ['db', 'dynamodb']],
-      ['u>dns', 'dns>api', 'api>fn', 'fn>vpce', 'vpce>db'],
-    );
-    expect(hasFlow(design, API)).toBe(true);
-  });
-
-  it('checks order and async hops', () => {
+  it('requires every listed component', () => {
     const design = d(
       [['u', 'users'], ['alb', 'alb'], ['app', 'fargate'], ['q', 'sqs'], ['w', 'lambda'], ['db', 'rds']],
       ['u>alb', 'alb>app', 'app>q', 'q>w', 'w>db'],
     );
     expect(hasFlow(design, ['entry', 'compute', 'queue', 'compute', 'data'])).toBe(true);
     expect(hasFlow(design, ['entry', 'compute', ['sns'], 'compute'])).toBe(false);
+  });
+
+  it('labels list each component once, without the flow arrows', () => {
+    expect(flowLabel(['entry', 'compute', 'queue', 'compute', 'data']).vi).toBe(
+      'Có cửa trước (ALB / NLB / API Gateway / CloudFront…), compute (EC2 / Fargate / Lambda…), queue (SQS…), nơi lưu dữ liệu (database hoặc S3)',
+    );
   });
 });

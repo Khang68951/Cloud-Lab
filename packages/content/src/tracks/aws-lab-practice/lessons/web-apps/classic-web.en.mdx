@@ -1,4 +1,4 @@
-The three exercises below are "first projects" the cloud community keeps handing to each other. Each starts from a blank canvas (or a system with problems) and is graded on **the whole request flow** as well as the numbers: dropping nodes on the canvas without wiring them into a complete flow does not pass.
+The three exercises below are "first projects" the cloud community keeps handing to each other. Each starts from a blank canvas (or a system with problems) and is graded on **the required components** as well as the numbers: each one must be on the canvas and wired to at least one other node.
 
 | Challenge | Source | What you practise |
 |---|---|---|
@@ -17,7 +17,7 @@ Users ─► front door ─► compute ─► data store
 This is the minimum shape of almost every real application. Without a front door there is nowhere to put HTTPS, authentication, throttling or a WAF. Without a data store, everything is gone when the function returns.
 
 <Callout type="key">
-Other nodes may sit **in between** (Route 53, WAF, NAT, caches…), but **front door → compute → data** must be connected by edges, in that order. Open the Challenge tab in the Lab to see which requirement is still failing.
+The requirement only checks that the **front door, compute and data store** are all there, each with at least one edge; a node dropped on the canvas and left unconnected does not count. Open the Challenge tab in the Lab to see which requirement is still failing.
 </Callout>
 
 After you pass, read the debrief: it tells you what the real-world version of each exercise adds.

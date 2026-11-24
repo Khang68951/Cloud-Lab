@@ -45,8 +45,8 @@ export type Requirement =
   | { type: 'uses'; services: string[]; label: LocalizedText }
   | { type: 'not-uses'; services: string[]; label: LocalizedText }
   /**
-   * Structure check: some path starting at Users must pass through every step,
-   * in order (other hops in between are allowed). Stops "Users → Lambda" from
+   * Structure check: every step must be matched by a node wired to at least
+   * one other node (order and path do not matter). Stops "Users → Lambda" from
    * counting as a full API when the job needs a front door and a data store.
    */
   | { type: 'flow'; steps: FlowStep[]; label?: LocalizedText };

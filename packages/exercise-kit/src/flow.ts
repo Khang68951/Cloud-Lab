@@ -43,45 +43,36 @@ function stepLabel(step: FlowStep): LocalizedText {
   return { en: names, vi: names };
 }
 
-/** "Request flow: Users → a front door → compute → a data store". */
+/** "Required: a front door, compute, a data store" (each component once). */
 export function flowLabel(steps: FlowStep[]): LocalizedText {
-  const parts = steps.map(stepLabel);
+  const seen = new Set<string>();
+  const parts = steps
+    .filter((step) => {
+      const key = Array.isArray(step) ? step.join('|') : step;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(stepLabel);
   return {
-    en: `Connected flow: Users → ${parts.map((p) => p.en).join(' → ')}`,
-    vi: `Có luồng nối liền: Users → ${parts.map((p) => p.vi).join(' → ')}`,
+    en: `Has ${parts.map((p) => p.en).join(', ')}`,
+    vi: `Có ${parts.map((p) => p.vi).join(', ')}`,
   };
 }
 
 /**
- * Is there a directed path from a Users node that visits nodes matching every
- * step, in order? Intermediate hops are free (WAF, NAT, endpoints, caches…).
- * State = (node, steps matched so far), so cycles terminate.
+ * Does the design contain every component the steps name? Each one must be
+ * matched by a node that is wired to at least one other node (an edge in or
+ * out), so a component dropped on the canvas and left unconnected does not
+ * count. Order and the exact path do not matter.
  */
 export function hasFlow(design: Design, steps: FlowStep[]): boolean {
-  if (steps.length === 0) return true;
-  const out = new Map<string, string[]>();
+  const wired = new Set<string>();
   for (const e of design.edges) {
-    const list = out.get(e.source) ?? [];
-    list.push(e.target);
-    out.set(e.source, list);
+    if (e.source === e.target) continue;
+    wired.add(e.source);
+    wired.add(e.target);
   }
-  const serviceOf = new Map(design.nodes.map((n) => [n.id, n.service]));
-  const seen = new Set<string>();
-  const stack: [string, number][] = design.nodes.filter((n) => n.service === 'users').map((n) => [n.id, 0]);
-
-  while (stack.length) {
-    const [node, matched] = stack.pop()!;
-    const key = `${node}#${matched}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    for (const next of out.get(node) ?? []) {
-      const svc = serviceOf.get(next);
-      if (!svc) continue;
-      const step = steps[matched]!;
-      const m = stepMatches(step, svc) ? matched + 1 : matched;
-      if (m === steps.length) return true;
-      stack.push([next, m]);
-    }
-  }
-  return false;
+  const services = design.nodes.filter((n) => wired.has(n.id)).map((n) => n.service);
+  return steps.every((step) => services.some((svc) => stepMatches(step, svc)));
 }
