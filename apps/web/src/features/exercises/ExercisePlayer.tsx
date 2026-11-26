@@ -1,11 +1,16 @@
 import type { Exercise } from '@learninglab/content';
-import { ChallengeCard } from './ChallengeCard';
+import { Suspense } from 'react';
+import { DOMAINS } from '@/domains';
 import { EstimationPlayer } from './EstimationPlayer';
 import { QuizPlayer } from './QuizPlayer';
 
+/** Players of domain-specific kinds, from every domain's definition. */
+const DOMAIN_PLAYERS = Object.assign({}, ...DOMAINS.map((d) => d.players ?? {})) as NonNullable<(typeof DOMAINS)[number]['players']>;
+
 /**
- * Exercise registry: one player per exercise kind. A new kind (e.g. IAM policy
- * lab) = new player component + one case here.
+ * One player per exercise kind. The common kinds are built in; a domain adds
+ * its own kinds through `DomainDefinition.players` (e.g. Cloud's canvas
+ * challenges), so this file never changes for a new domain.
  */
 export function ExercisePlayer({ exercise, index }: { exercise: Exercise; index?: number }) {
   switch (exercise.kind) {
@@ -13,8 +18,14 @@ export function ExercisePlayer({ exercise, index }: { exercise: Exercise; index?
       return <QuizPlayer exercise={exercise} index={index} />;
     case 'estimation':
       return <EstimationPlayer exercise={exercise} index={index} />;
-    case 'canvas-design':
-    case 'canvas-fix':
-      return <ChallengeCard exercise={exercise} index={index} />;
+    default: {
+      const Player = DOMAIN_PLAYERS[exercise.kind];
+      if (!Player) throw new Error(`No player registered for exercise kind "${exercise.kind}" (${exercise.id})`);
+      return (
+        <Suspense fallback={<div className="h-40 rounded-xl border bg-card" aria-busy="true" />}>
+          <Player exercise={exercise} index={index} />
+        </Suspense>
+      );
+    }
   }
 }

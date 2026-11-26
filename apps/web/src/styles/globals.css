@@ -11,6 +11,8 @@
  * consistent. Status colours are always paired with an icon/text, never colour alone.
  */
 :root {
+  /* Brand hue: 262 for the Learning Lab hub; each domain sets its own (AppShell). */
+  --brand-hue: 262;
   --background: oklch(0.985 0.003 250);
   --foreground: oklch(0.22 0.02 262);
   --card: oklch(1 0 0);
@@ -21,11 +23,11 @@
   --muted-foreground: oklch(0.48 0.02 260);
   --border: oklch(0.91 0.008 255);
   --input: oklch(0.88 0.01 255);
-  --primary: oklch(0.52 0.17 262);
+  --primary: oklch(0.52 0.17 var(--brand-hue));
   --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.95 0.025 262);
-  --accent-foreground: oklch(0.32 0.12 262);
-  --ring: oklch(0.6 0.16 262);
+  --accent: oklch(0.95 0.025 var(--brand-hue));
+  --accent-foreground: oklch(0.32 0.12 var(--brand-hue));
+  --ring: oklch(0.6 0.16 var(--brand-hue));
 
   --success: oklch(0.55 0.14 155);
   --success-soft: oklch(0.95 0.04 155);
@@ -51,11 +53,11 @@
   --muted-foreground: oklch(0.7 0.015 258);
   --border: oklch(0.3 0.015 262);
   --input: oklch(0.34 0.016 262);
-  --primary: oklch(0.7 0.14 262);
-  --primary-foreground: oklch(0.17 0.02 262);
-  --accent: oklch(0.28 0.04 262);
-  --accent-foreground: oklch(0.88 0.06 262);
-  --ring: oklch(0.7 0.14 262);
+  --primary: oklch(0.7 0.14 var(--brand-hue));
+  --primary-foreground: oklch(0.17 0.02 var(--brand-hue));
+  --accent: oklch(0.28 0.04 var(--brand-hue));
+  --accent-foreground: oklch(0.88 0.06 var(--brand-hue));
+  --ring: oklch(0.7 0.14 var(--brand-hue));
 
   --success: oklch(0.74 0.15 155);
   --success-soft: oklch(0.28 0.05 155);

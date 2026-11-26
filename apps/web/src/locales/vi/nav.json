@@ -2,14 +2,17 @@
   "sections": {
     "learn": "Học",
     "practice": "Thực hành",
-    "tools": "Công cụ"
+    "tools": "Công cụ",
+    "app": "Learning Lab",
+    "domains": "Mảng học"
   },
-  "home": "Trang chủ",
   "learn": "Khoá học",
   "practice": "Luyện tập",
   "explore": "Service Explorer",
   "settings": "Cài đặt",
   "lab": "Lab kiến trúc",
   "roadmap": "Lộ trình",
-  "glossary": "Glossary"
+  "glossary": "Glossary",
+  "hub": "Trang chủ Learning Lab",
+  "domainHome": "Tổng quan"
 }

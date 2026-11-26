@@ -4,7 +4,7 @@ import { normalize, search } from './searchIndex';
 describe('search', () => {
   it('ignores Vietnamese accents', () => {
     expect(normalize('Bảo mật & Đánh giá')).toBe('bao mat & danh gia');
-    expect(search('vi', 'bao mat').some((r) => r.kind === 'course' && r.url === '/learn/aws-security')).toBe(true);
+    expect(search('vi', 'bao mat').some((r) => r.kind === 'course' && r.url === '/cloud/learn/aws-security')).toBe(true);
   });
 
   it('finds services, lessons, challenges and glossary terms', () => {

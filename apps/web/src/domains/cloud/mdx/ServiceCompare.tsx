@@ -3,8 +3,8 @@ import { localize, type LocalizedText } from '@learninglab/shared';
 import { Check, Coins, X } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CATEGORY_HUE } from '@/features/lab/hues';
-import { ServiceIcon } from '@/features/lab/visuals';
+import { CATEGORY_HUE } from '@/domains/cloud/lab/hues';
+import { ServiceIcon } from '@/domains/cloud/lab/visuals';
 import { currentLocale } from '@/i18n';
 
 function Bullets({ items, icon }: { items: LocalizedText[]; icon: 'yes' | 'no' }) {

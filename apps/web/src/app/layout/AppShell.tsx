@@ -1,5 +1,5 @@
 import { Menu, Search, WifiOff } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, ScrollRestoration, useMatches } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { SettingsSync } from '@/features/settings/SettingsSync';
 import { useSettingsQuery } from '@/features/settings/useSettings';
 import { Logo } from './Logo';
 import { NavList } from './NavList';
-import type { RouteHandle } from '../router';
+import { useCurrentDomain, type DomainHandle } from '@/domains/useDomain';
 import { cn } from '@/lib/utils';
 
 export function AppShell() {
@@ -21,7 +21,16 @@ export function AppShell() {
   useSearchShortcut(setSearchOpen);
   const settings = useSettingsQuery();
   const close = () => setMenuOpen(false);
-  const fullBleed = useMatches().some((m) => (m.handle as RouteHandle | undefined)?.fullBleed);
+  const fullBleed = useMatches().some((m) => (m.handle as DomainHandle | undefined)?.fullBleed);
+  const domain = useCurrentDomain();
+
+  // Each domain tints the primary colour with its own hue (on <html>, so dialogs and toasts follow).
+  useEffect(() => {
+    const root = document.documentElement;
+    if (domain) root.style.setProperty('--brand-hue', String(domain.hue));
+    else root.style.removeProperty('--brand-hue');
+    root.dataset.domain = domain?.id ?? '';
+  }, [domain]);
 
   return (
     <div className="min-h-dvh">

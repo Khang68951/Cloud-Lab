@@ -1,0 +1,27 @@
+{
+  "hero": {
+    "eyebrow": "Thực hành trước, lý thuyết vừa đủ",
+    "title": "Học bằng cách tự làm, phá thử và sửa",
+    "welcomeBack": "Chào mừng trở lại — học tiếp nào",
+    "subtitle": "Learning Lab gồm nhiều mảng học. Mỗi mảng có khoá học và công cụ thực hành riêng — tất cả chạy trên máy bạn, miễn phí.",
+    "continue": "Học tiếp: {{lesson}}",
+    "start": "Bắt đầu với {{domain}}"
+  },
+  "domains": {
+    "title": "Mảng học",
+    "subtitle": "Chọn một mảng. Khoá học, tiến độ và chứng nhận dùng chung; công cụ thực hành thì mỗi mảng một kiểu.",
+    "open": "Vào {{name}}",
+    "courses_one": "{{count}} khoá",
+    "courses_other": "{{count}} khoá",
+    "lessons": "{{done}}/{{total}} bài học",
+    "exercises": "{{passed}}/{{total}} bài tập",
+    "more": "Sắp có thêm mảng mới",
+    "moreBody": "Mỗi mảng mới sẽ có công cụ riêng — lab, chạy code, flashcard… — bên cạnh khoá học và theo dõi tiến độ dùng chung."
+  },
+  "progress": {
+    "title": "Tiến độ của bạn ở mọi mảng",
+    "lessons": "Bài học đã xong",
+    "exercises": "Bài tập đã đạt",
+    "courses": "Khoá đã hoàn thành"
+  }
+}

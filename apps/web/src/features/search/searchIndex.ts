@@ -1,46 +1,22 @@
-import { allExercises, glossaryOf, lessonsOf, tracks } from '@learninglab/content';
-import { SERVICES } from '@learninglab/cloud-catalog';
+import { contentDomains, glossaryOf, lessonsOf, tracks } from '@learninglab/content';
 import { localize, type Locale } from '@learninglab/shared';
+import { coursePath, domainPath, lessonPath } from '@/app/paths';
+import { DOMAINS } from '@/domains';
+import { normalize, searchEntry as e, termId, type SearchEntry, type SearchKind } from './entry';
 
-export type SearchKind = 'course' | 'lesson' | 'challenge' | 'service' | 'term';
-
-export interface SearchEntry {
-  kind: SearchKind;
-  title: string;
-  subtitle: string;
-  url: string;
-  /** Lower-cased, accent-free text used for matching. */
-  haystack: string;
-  titleKey: string;
-}
-
-export const termId = (term: string) => `term-${term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-
-/** Lower-case and strip accents so "bao mat" finds "bảo mật". */
-export function normalize(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'd')
-    .toLowerCase();
-}
+export { normalize, termId, type SearchEntry, type SearchKind };
 
 const cache = new Map<Locale, SearchEntry[]>();
 
+/**
+ * Courses, lessons and glossary terms of every domain, plus whatever each
+ * domain indexes itself (DomainDefinition.search: tools, reference pages).
+ */
 export function buildIndex(locale: Locale): SearchEntry[] {
   const hit = cache.get(locale);
   if (hit) return hit;
-  const e = (kind: SearchKind, title: string, subtitle: string, url: string, extra = ''): SearchEntry => ({
-    kind,
-    title,
-    subtitle,
-    url,
-    titleKey: normalize(title),
-    haystack: normalize(`${title} ${subtitle} ${extra}`),
-  });
   const entries: SearchEntry[] = [
-    ...tracks.map((t) => e('course', localize(t.title, locale), localize(t.tagline, locale), `/learn/${t.slug}`, `${t.title.en} ${t.slug}`)),
+    ...tracks.map((t) => e('course', localize(t.title, locale), localize(t.tagline, locale), coursePath(t), `${t.title.en} ${t.slug}`)),
     ...tracks.flatMap((t) =>
       lessonsOf(t)
         .filter((l) => l.lesson.status === 'available')
@@ -49,21 +25,15 @@ export function buildIndex(locale: Locale): SearchEntry[] {
             'lesson',
             localize(l.lesson.title, locale),
             `${localize(t.title, locale)} · ${localize(l.module.title, locale)}`,
-            `/learn/${t.slug}/${l.module.slug}/${l.lesson.slug}`,
+            lessonPath(l),
             `${l.lesson.title.en} ${l.lesson.summary ? localize(l.lesson.summary, locale) : ''}`,
           ),
         ),
     ),
-    ...allExercises
-      .filter((x) => x.exercise.kind === 'canvas-design' || x.exercise.kind === 'canvas-fix')
-      .map((x) => {
-        const ex = x.exercise as Extract<typeof x.exercise, { title: unknown }>;
-        return e('challenge', localize(ex.title, locale), localize(x.ref.lesson.title, locale), `/lab/challenge/${ex.id}`, ex.title.en);
-      }),
-    ...SERVICES.filter((s) => s.behavior !== 'client').map((s) =>
-      e('service', s.short, `${s.name} — ${localize(s.description, locale)}`, `/explore?service=${s.id}`, s.equivalents ? `${s.equivalents.azure} ${s.equivalents.gcp}` : ''),
+    ...contentDomains.flatMap((d) =>
+      glossaryOf(d).map((g) => e('term', g.term, localize(g.def, locale), `${domainPath(d, 'glossary')}#${termId(g.term)}`, (g.see ?? []).join(' '))),
     ),
-    ...glossaryOf('cloud').map((g) => e('term', g.term, localize(g.def, locale), `/glossary#${termId(g.term)}`, (g.see ?? []).join(' '))),
+    ...DOMAINS.flatMap((d) => d.search?.(locale) ?? []),
   ];
   cache.set(locale, entries);
   return entries;

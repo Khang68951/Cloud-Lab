@@ -3,10 +3,10 @@ import { localize } from '@learninglab/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import { fetchDesign } from '@/features/lab/api';
-import { resolveBackTo } from '@/features/lab/backTo';
-import { readDraft } from '@/features/lab/draft';
-import { LabWorkspace } from '@/features/lab/LabWorkspace';
+import { fetchDesign } from '@/domains/cloud/lab/api';
+import { resolveBackTo } from '@/domains/cloud/lab/backTo';
+import { readDraft } from '@/domains/cloud/lab/draft';
+import { LabWorkspace } from '@/domains/cloud/lab/LabWorkspace';
 import { currentLocale } from '@/i18n';
 
 interface Initial {

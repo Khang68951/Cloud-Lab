@@ -10,15 +10,28 @@ async function resetSettings(page: Page) {
 
 test.beforeEach(async ({ page }) => resetSettings(page));
 
-test('home page renders in Vietnamese by default', async ({ page }) => {
+test('the hub is the landing page and leads into CloudLab', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Học AWS');
   await expect(page.locator('html')).toHaveAttribute('lang', 'vi');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Học bằng cách tự làm');
+  await page.locator('main [data-domain="cloud"]').click();
+  await expect(page).toHaveURL(/\/cloud$/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Học AWS');
   await expect(page.locator('[data-course="aws"]')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-domain', 'cloud');
+});
+
+test('links from before domains move under /cloud, keeping the #anchor', async ({ page }) => {
+  await page.goto('/glossary#term-vpc-endpoint');
+  await expect(page).toHaveURL(/\/cloud\/glossary#term-vpc-endpoint$/);
+  await page.goto('/learn/aws');
+  await expect(page).toHaveURL(/\/cloud\/learn\/aws$/);
+  await page.goto('/simulator');
+  await expect(page).toHaveURL(/\/cloud\/lab/);
 });
 
 test('switching language updates the UI and is saved to the API', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/cloud');
   await page.getByRole('button', { name: 'Đổi ngôn ngữ' }).click();
   await page.getByRole('menuitemradio', { name: 'English' }).click();
 
@@ -41,13 +54,13 @@ test('switching theme applies the dark class and survives a reload', async ({ pa
 
 test('a fresh browser adopts settings saved in the database', async ({ page }) => {
   await page.request.put('/api/settings', { data: { locale: 'en', theme: 'dark' } });
-  await page.goto('/');
+  await page.goto('/cloud');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Learn AWS');
   await expect(page.locator('html')).toHaveClass(/dark/);
 });
 
 test('AWS track lists all modules with their lessons', async ({ page }) => {
-  await page.goto('/learn/aws');
+  await page.goto('/cloud/learn/aws');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('AWS Core: thiết kế hệ thống trên AWS');
   await expect(page.locator('#modules-title + ol > li')).toHaveCount(14);
   await expect(page.getByRole('link', { name: /Bắt đầu ở đây: Lab kiến trúc/ })).toBeVisible();
@@ -66,6 +79,8 @@ test('unbuilt features redirect home and unknown routes show 404', async ({ page
   await expect(page).toHaveURL(/\/$/);
   await page.goto('/does-not-exist');
   await expect(page.getByText('404')).toBeVisible();
+  await page.goto('/cloud/does-not-exist');
+  await expect(page.getByText('404')).toBeVisible();
 });
 
 test('mobile menu opens and navigates', async ({ page }) => {
@@ -78,9 +93,9 @@ test('mobile menu opens and navigates', async ({ page }) => {
 });
 
 test('course catalog lists all 12 courses, every lesson is written and opens', async ({ page }) => {
-  await page.goto('/learn');
-  await expect(page.locator('main a[href^="/learn/"]')).toHaveCount(12);
-  await page.goto('/learn/aws-system-design');
+  await page.goto('/cloud/learn');
+  await expect(page.locator('main a[href^="/cloud/learn/"]')).toHaveCount(12);
+  await page.goto('/cloud/learn/aws-system-design');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('System Design trên AWS');
   await expect(page.getByText('Đang soạn')).toHaveCount(0);
   await page.getByRole('link', { name: /Ứng dụng chat/ }).first().click();

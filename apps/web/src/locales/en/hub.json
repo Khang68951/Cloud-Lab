@@ -1,0 +1,27 @@
+{
+  "hero": {
+    "eyebrow": "Practice first, just enough theory",
+    "title": "Learn by building, breaking and fixing things",
+    "welcomeBack": "Welcome back — pick up where you left off",
+    "subtitle": "Learning Lab gathers several areas to study. Each area has its own courses and its own practice tools — everything runs on your machine, free.",
+    "continue": "Continue: {{lesson}}",
+    "start": "Start with {{domain}}"
+  },
+  "domains": {
+    "title": "Areas",
+    "subtitle": "Pick an area. Courses, progress and certificates work the same everywhere; the tools differ per area.",
+    "open": "Open {{name}}",
+    "courses_one": "{{count}} course",
+    "courses_other": "{{count}} courses",
+    "lessons": "{{done}}/{{total}} lessons",
+    "exercises": "{{passed}}/{{total}} exercises",
+    "more": "More areas are coming",
+    "moreBody": "Each new area brings its own tools — a lab, a code runner, flashcards… — next to the same courses and progress tracking."
+  },
+  "progress": {
+    "title": "Your progress, all areas",
+    "lessons": "Lessons done",
+    "exercises": "Exercises passed",
+    "courses": "Courses completed"
+  }
+}

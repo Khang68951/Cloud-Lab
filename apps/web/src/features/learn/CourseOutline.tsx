@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { useProgress } from '@/features/progress/api';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
+import { coursePath, lessonPath } from '@/app/paths';
 
 /** Sticky table of contents of a course, shown beside lessons on wide screens. */
 export function CourseOutline({ track, currentKey }: { track: TrackMeta; currentKey: string }) {
@@ -15,7 +16,7 @@ export function CourseOutline({ track, currentKey }: { track: TrackMeta; current
 
   return (
     <nav aria-label={t('outline')} className="sticky top-20 hidden max-h-[calc(100dvh-6rem)] w-64 shrink-0 overflow-y-auto xl:block">
-      <Link to={`/learn/${track.slug}`} className="mb-3 block text-sm font-semibold hover:underline">
+      <Link to={coursePath(track)} className="mb-3 block text-sm font-semibold hover:underline">
         {localize(track.title, locale)}
       </Link>
       <ol className="flex flex-col gap-3">
@@ -45,7 +46,7 @@ export function CourseOutline({ track, currentKey }: { track: TrackMeta; current
                 return (
                   <li key={l.slug}>
                     {l.status === 'available' ? (
-                      <Link to={`/learn/${track.slug}/${m.slug}/${l.slug}`} className={cn(cls, 'hover:text-foreground')} aria-current={current ? 'page' : undefined}>
+                      <Link to={lessonPath({ track, module: m, lesson: l })} className={cn(cls, 'hover:text-foreground')} aria-current={current ? 'page' : undefined}>
                         {body}
                       </Link>
                     ) : (

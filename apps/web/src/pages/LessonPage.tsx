@@ -1,9 +1,9 @@
 import { findLesson, lessonExercises } from '@learninglab/content';
 import { localize, type Locale } from '@learninglab/shared';
 import { MDXProvider } from '@mdx-js/react';
-import type { MDXContent } from 'mdx/types';
+import type { MDXComponents, MDXContent } from 'mdx/types';
 import { ArrowLeft, ArrowRight, CircleCheck, Clock, Languages } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { ContentIcon } from '@/components/icon';
@@ -16,18 +16,39 @@ import { mdxComponents } from '@/features/learn/mdx/components';
 import { useProgress, useSetLessonDone } from '@/features/progress/api';
 import { currentLocale } from '@/i18n';
 import { useScrollToHash } from '@/lib/useScrollToHash';
+import { coursePath, lessonPath } from '@/app/paths';
+import { useDomain } from '@/domains/useDomain';
 import NotFoundPage from './NotFoundPage';
+
+/** Shared lesson components plus the domain's own (loaded once, with its first lesson). */
+function useLessonComponents(load: (() => Promise<MDXComponents>) | undefined): MDXComponents | null {
+  const [extra, setExtra] = useState<{ load: typeof load; components: MDXComponents } | null>(null);
+  useEffect(() => {
+    if (!load) return;
+    let cancelled = false;
+    void load().then((components) => {
+      if (!cancelled) setExtra({ load, components });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
+  // null until the domain's components are in: MDX that uses them cannot render without them.
+  return useMemo(() => (!load ? mdxComponents : extra?.load === load ? { ...mdxComponents, ...extra.components } : null), [extra, load]);
+}
 
 export default function LessonPage() {
   const { trackSlug = '', moduleSlug = '', lessonSlug = '' } = useParams();
   const { t } = useTranslation(['lesson', 'learn']);
   const locale = currentLocale();
+  const domain = useDomain();
   const found = findLesson(trackSlug, moduleSlug, lessonSlug);
+  const components = useLessonComponents(domain.mdx);
   const progress = useProgress();
   const setDone = useSetLessonDone();
   const [content, setContent] = useState<{ Content: MDXContent; locale: Locale; key: string } | null>(null);
   const key = found?.key;
-  useScrollToHash(Boolean(key) && content?.key === `${key}:${locale}`);
+  useScrollToHash(Boolean(key) && content?.key === `${key}:${locale}` && components !== null);
 
   useEffect(() => {
     if (!key) return;
@@ -40,14 +61,14 @@ export default function LessonPage() {
     };
   }, [key, locale]);
 
-  if (!found) return <NotFoundPage message={t('lesson:notFound')} />;
+  if (!found || found.track.domain !== domain.id) return <NotFoundPage message={t('lesson:notFound')} />;
   if (found.lesson.status !== 'available') {
     return (
       <div className="mx-auto max-w-xl py-12 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">{localize(found.lesson.title, locale)}</h1>
         <p className="mt-3 text-muted-foreground">{t('lesson:writing')}</p>
         <Button asChild className="mt-6">
-          <Link to={'/learn/' + found.track.slug}>{localize(found.track.title, locale)}</Link>
+          <Link to={coursePath(found.track)}>{localize(found.track.title, locale)}</Link>
         </Button>
       </div>
     );
@@ -56,14 +77,14 @@ export default function LessonPage() {
   const exercises = lessonExercises(track.slug, module.slug, lesson.slug);
   const done = progress.lessonDone(found.key);
   const passed = exercises.filter((e) => progress.exercise(e.id)?.passed).length;
-  const ready = content?.key === `${found.key}:${locale}`;
-  const lessonUrl = (r: NonNullable<typeof prev>) => `/learn/${r.track.slug}/${r.module.slug}/${r.lesson.slug}`;
+  const ready = content?.key === `${found.key}:${locale}` && components !== null;
+  const lessonUrl = (r: NonNullable<typeof prev>) => lessonPath(r);
 
   return (
     <div className="mx-auto flex max-w-6xl justify-center gap-10">
     <article className="min-w-0 max-w-3xl flex-1">
       <nav aria-label={t('lesson:breadcrumb')} className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-        <Link to={`/learn/${track.slug}`} className="hover:text-foreground">
+        <Link to={coursePath(track)} className="hover:text-foreground">
           {localize(track.title, locale)}
         </Link>
         <span aria-hidden>/</span>
@@ -106,8 +127,8 @@ export default function LessonPage() {
 
       <div className="lesson-prose" lang={ready ? content.locale : undefined}>
         {ready ? (
-          <MDXProvider components={mdxComponents}>
-            <content.Content components={mdxComponents} />
+          <MDXProvider components={components!}>
+            <content.Content components={components!} />
           </MDXProvider>
         ) : (
           <div className="flex flex-col gap-3" aria-busy="true">

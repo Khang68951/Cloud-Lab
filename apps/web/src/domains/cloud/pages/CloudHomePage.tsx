@@ -1,4 +1,5 @@
-import { allExercises, getTrack, roadmapStages, tracks } from '@learninglab/content';
+import { isCanvasChallenge } from '@learninglab/cloud-challenges';
+import { exercisesOf, getTrack, roadmapStages, tracksOf } from '@learninglab/content';
 import { localize } from '@learninglab/shared';
 import { ArrowRight, Award, BookA, BookOpen, Compass, Dumbbell, Map, Target, Workflow } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
@@ -12,6 +13,8 @@ import { useProgress } from '@/features/progress/api';
 import { useCourseProgress } from '@/features/progress/course';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
+import { coursePath, domainPath } from '@/app/paths';
+import { CLOUD, labPath, explorePath } from '../paths';
 
 function Stat({ icon, label, value, total }: { icon: ReactNode; label: string; value: number; total: number }) {
   return (
@@ -32,24 +35,26 @@ function Stat({ icon, label, value, total }: { icon: ReactNode; label: string; v
 }
 
 const TOOLS = [
-  { key: 'lab', icon: Workflow, to: '/lab' },
-  { key: 'practice', icon: Dumbbell, to: '/practice' },
-  { key: 'explore', icon: Compass, to: '/explore' },
-  { key: 'glossary', icon: BookA, to: '/glossary' },
+  { key: 'lab', icon: Workflow, to: labPath() },
+  { key: 'practice', icon: Dumbbell, to: domainPath(CLOUD, 'practice') },
+  { key: 'explore', icon: Compass, to: explorePath() },
+  { key: 'glossary', icon: BookA, to: domainPath(CLOUD, 'glossary') },
 ] as const;
 
-/** Personal dashboard. */
+/** CloudLab home: progress, courses in focus, roadmap preview and the Cloud tools. */
 export default function HomePage() {
-  const { t } = useTranslation('home');
+  const { t } = useTranslation('cloud');
   const locale = currentLocale();
   const progress = useProgress();
-  const { byCourse, recommended } = useCourseProgress();
+  const { byCourse, recommended } = useCourseProgress(CLOUD);
+  const tracks = tracksOf(CLOUD);
+  const allExercises = exercisesOf(CLOUD);
 
   const all = Object.values(byCourse);
   const lessonsDone = all.reduce((a, p) => a + p.lessonsDone, 0);
   const lessonsAvailable = all.reduce((a, p) => a + p.lessonsAvailable, 0);
   const passed = new Set(progress.data.exercises.filter((e) => e.passed).map((e) => e.exerciseId));
-  const challenges = allExercises.filter((e) => e.exercise.kind.startsWith('canvas'));
+  const challenges = allExercises.filter((e) => isCanvasChallenge(e.exercise));
   const started = all.some((p) => p.started);
   const inProgress = tracks.filter((tr) => byCourse[tr.slug]?.started && !byCourse[tr.slug]?.completed);
   const focus = recommended ? byCourse[recommended.slug] : undefined;
@@ -75,7 +80,7 @@ export default function HomePage() {
             </Button>
           )}
           <Button asChild size="lg" variant="outline">
-            <Link to="/roadmap">
+            <Link to={domainPath(CLOUD, 'roadmap')}>
               <Map />
               {t('hero.roadmap')}
             </Link>
@@ -126,11 +131,11 @@ export default function HomePage() {
             <p className="mt-1 text-sm text-muted-foreground">{t('roadmap.subtitle')}</p>
           </div>
           <Button asChild variant="link" className="px-0">
-            <Link to="/roadmap">{t('roadmap.open')}</Link>
+            <Link to={domainPath(CLOUD, 'roadmap')}>{t('roadmap.open')}</Link>
           </Button>
         </div>
         <ol className="mt-4 grid gap-3 sm:grid-cols-5">
-          {roadmapStages('cloud').map(({ stage, courses }) => (
+          {roadmapStages(CLOUD).map(({ stage, courses }) => (
             <li key={stage} className="rounded-xl border bg-card p-3">
               <div className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{t('roadmap.stage', { n: stage })}</div>
               <ul className="mt-2 flex flex-col gap-1.5">
@@ -139,7 +144,7 @@ export default function HomePage() {
                   return (
                     <li key={c.slug}>
                       <Link
-                        to={`/learn/${c.slug}`}
+                        to={coursePath(c)}
                         className="track-accent flex items-center gap-2 rounded-md px-1.5 py-1 text-[13px] hover:bg-muted"
                         style={{ '--hue': c.hue } as CSSProperties}
                       >

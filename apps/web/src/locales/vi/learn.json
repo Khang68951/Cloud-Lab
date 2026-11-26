@@ -1,6 +1,6 @@
 {
   "tracksTitle": "Khoá học",
-  "tracksSubtitle": "11 khoá từ nền tảng tới chuyên sâu, xếp theo lộ trình. Khoá \"Học trước\" chỉ là khuyến nghị — bạn có thể mở mọi khoá.",
+  "tracksSubtitle": "{{count}} khoá từ nền tảng tới chuyên sâu, xếp theo lộ trình. Khoá \"Học trước\" chỉ là khuyến nghị — bạn có thể mở mọi khoá.",
   "trackNotFound": "Không tìm thấy track này.",
   "modulesTitle": "Các module",
   "practiceLabel": "Thực hành",
@@ -18,28 +18,6 @@
     "advanced": "Nâng cao"
   },
   "stageLabel": "Giai đoạn {{n}}",
-  "stages": {
-    "1": {
-      "title": "Nền tảng",
-      "body": "Bắt đầu từ đây: các \"khối\" AWS dùng hằng ngày và cách nối chúng."
-    },
-    "2": {
-      "title": "Chuyên sâu theo mảng",
-      "body": "Đào sâu từng mảng: bảo mật, mạng, compute, dữ liệu."
-    },
-    "3": {
-      "title": "Kết hợp nhiều mảng",
-      "body": "Serverless, độ tin cậy và chi phí — cần kiến thức của nhiều mảng."
-    },
-    "4": {
-      "title": "Vận hành & dữ liệu",
-      "body": "Đưa hệ thống lên production an toàn và khai thác dữ liệu."
-    },
-    "5": {
-      "title": "Tổng hợp",
-      "body": "Thiết kế trọn vẹn những hệ thống thật."
-    }
-  },
   "hours_one": "~{{count}} giờ",
   "hours_other": "~{{count}} giờ",
   "lessonsReady": "{{ready}}/{{total}} bài đã có",

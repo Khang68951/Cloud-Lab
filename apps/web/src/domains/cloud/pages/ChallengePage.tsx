@@ -1,10 +1,10 @@
 import { getExercise } from '@learninglab/content';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router';
-import { resolveBackTo } from '@/features/lab/backTo';
-import { LabWorkspace } from '@/features/lab/LabWorkspace';
+import { resolveBackTo } from '@/domains/cloud/lab/backTo';
+import { LabWorkspace } from '@/domains/cloud/lab/LabWorkspace';
 import { currentLocale } from '@/i18n';
-import NotFoundPage from './NotFoundPage';
+import NotFoundPage from '@/pages/NotFoundPage';
 
 /** A canvas challenge: the Lab with a brief, live requirement checks and grading. */
 export default function ChallengePage() {

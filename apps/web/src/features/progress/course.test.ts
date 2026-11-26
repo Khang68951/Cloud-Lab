@@ -10,7 +10,7 @@ describe('courseProgress', () => {
     const p = courseProgress(getTrack('aws')!, empty);
     expect(p.started).toBe(false);
     expect(p.completed).toBe(false);
-    expect(p.nextLessonUrl).toBe('/learn/aws/foundations/lab-tour');
+    expect(p.nextLessonUrl).toBe('/cloud/learn/aws/foundations/lab-tour');
     expect(p.lessonsAvailable).toBeLessThanOrEqual(p.lessonsTotal);
   });
 
@@ -31,7 +31,7 @@ describe('courseProgress', () => {
         (s) => [s, fake(s, false)],
       ),
     );
-    expect(recommendedCourse(base)?.slug).toBe('aws');
-    expect(recommendedCourse({ ...base, aws: fake('aws', true) })?.slug).toBe('aws-security');
+    expect(recommendedCourse(base, 'cloud')?.slug).toBe('aws');
+    expect(recommendedCourse({ ...base, aws: fake('aws', true) }, 'cloud')?.slug).toBe('aws-security');
   });
 });

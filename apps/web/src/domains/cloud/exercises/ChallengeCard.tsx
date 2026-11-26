@@ -4,9 +4,10 @@ import { ArrowRight, Lock, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { exerciseAnchor, fromParam } from '@/features/lab/backTo';
+import { exerciseAnchor, fromParam } from '@/lib/returnTo';
 import { currentLocale } from '@/i18n';
-import { ExerciseShell } from './ExerciseShell';
+import { ExerciseShell } from '@/features/exercises/ExerciseShell';
+import { challengePath } from '../paths';
 
 /** Canvas challenges are solved in the Lab; this card shows the brief and links there. */
 export function ChallengeCard({ exercise, index }: { exercise: CanvasChallenge; index?: number }) {
@@ -36,7 +37,7 @@ export function ChallengeCard({ exercise, index }: { exercise: CanvasChallenge; 
         )}
       </div>
       <Button asChild className="mt-4">
-        <Link to={`/lab/challenge/${exercise.id}?${fromParam(pathname, exerciseAnchor(exercise.id))}`}>
+        <Link to={challengePath(exercise.id, fromParam(pathname, exerciseAnchor(exercise.id)))}>
           {t('challenge.open')}
           <ArrowRight />
         </Link>

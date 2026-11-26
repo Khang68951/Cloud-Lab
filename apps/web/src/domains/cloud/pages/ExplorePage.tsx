@@ -7,11 +7,12 @@ import { Link, useSearchParams } from 'react-router';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { ServiceCompare } from '@/features/learn/mdx/ServiceCompare';
-import { CATEGORY_HUE } from '@/features/lab/hues';
-import { ServiceIcon } from '@/features/lab/visuals';
+import { ServiceCompare } from '../mdx/ServiceCompare';
+import { CATEGORY_HUE } from '@/domains/cloud/lab/hues';
+import { ServiceIcon } from '@/domains/cloud/lab/visuals';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
+import { labPath } from '../paths';
 
 function Section({ title, items, tone }: { title: string; items: LocalizedText[]; tone: string }) {
   const locale = currentLocale();
@@ -161,7 +162,7 @@ export default function ExplorePage() {
                 <p className="text-sm">{localize(open.docs.pricing, locale)}</p>
               </div>
               <Button asChild className="self-start">
-                <Link to="/lab">{t('explore:tryInLab')}</Link>
+                <Link to={labPath()}>{t('explore:tryInLab')}</Link>
               </Button>
             </div>
           </DialogContent>

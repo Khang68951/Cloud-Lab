@@ -9,6 +9,7 @@ import type { CourseProgress } from '@/features/progress/course';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from './StatusBadge';
+import { coursePath } from '@/app/paths';
 
 export function LevelBadge({ level }: { level: TrackMeta['level'] }) {
   const { t } = useTranslation('learn');
@@ -33,7 +34,7 @@ export function CourseCard({
 
   return (
     <Link
-      to={`/learn/${track.slug}`}
+      to={coursePath(track)}
       className={cn(
         'track-accent group flex h-full flex-col rounded-xl border bg-card p-4 transition-colors hover:border-(--tc) hover:shadow-sm',
         recommended && 'border-(--tc) ring-2 ring-(--tc)/25',

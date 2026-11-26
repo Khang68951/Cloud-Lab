@@ -1,4 +1,4 @@
-import { allExercises, tracks } from '@learninglab/content';
+import { exercisesOf, tracksOf } from '@learninglab/content';
 import { localize } from '@learninglab/shared';
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,32 +9,32 @@ import { ExercisePlayer } from '@/features/exercises/ExercisePlayer';
 import { useScrollToHash } from '@/lib/useScrollToHash';
 import { useProgress } from '@/features/progress/api';
 import { currentLocale } from '@/i18n';
+import { lessonPath } from '@/app/paths';
+import { useDomain } from '@/domains/useDomain';
 
-type KindFilter = 'all' | 'quiz' | 'estimation' | 'challenge';
+/** 'all' or an exercise kind of the domain. */
+type KindFilter = string;
 type StatusFilter = 'todo' | 'all' | 'passed';
 
-const KIND_MATCH: Record<KindFilter, (k: string) => boolean> = {
-  all: () => true,
-  quiz: (k) => k === 'scenario-quiz',
-  estimation: (k) => k === 'estimation',
-  challenge: (k) => k.startsWith('canvas'),
-};
-
-/** "Practice only" mode: every exercise, no theory, filterable. */
+/** "Practice only" mode: every exercise of the domain, no theory, filterable. */
 export default function PracticePage() {
   useScrollToHash(true);
-  const { t } = useTranslation('practice');
+  const { t } = useTranslation(['practice', 'common']);
   const locale = currentLocale();
   const progress = useProgress();
   const [kind, setKind] = useState<KindFilter>('all');
   const [status, setStatus] = useState<StatusFilter>('todo');
   const [course, setCourse] = useState<string>('all');
   const courseId = useId();
+  const domain = useDomain();
+  const allExercises = exercisesOf(domain.id);
+  /** Kinds the domain really uses, in first-seen order (quiz, estimation, then the domain's own). */
+  const kinds = [...new Set(allExercises.map((e) => e.exercise.kind))];
 
   const groups = useMemo(() => {
     const items = allExercises.filter(({ exercise, ref }) => {
       if (course !== 'all' && ref.track.slug !== course) return false;
-      if (!KIND_MATCH[kind](exercise.kind)) return false;
+      if (kind !== 'all' && exercise.kind !== kind) return false;
       const passed = progress.exercise(exercise.id)?.passed ?? false;
       return status === 'all' || (status === 'passed' ? passed : !passed);
     });
@@ -46,7 +46,7 @@ export default function PracticePage() {
     return [...byModule.values()];
     // progress.data changes when attempts are recorded
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, status, course, progress.data]);
+  }, [kind, status, course, progress.data, domain.id]);
 
   const total = allExercises.length;
   const passed = allExercises.filter((e) => progress.exercise(e.exercise.id)?.passed).length;
@@ -65,7 +65,7 @@ export default function PracticePage() {
           className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
         >
           <option value="all">{t('filters.allCourses')}</option>
-          {tracks
+          {tracksOf(domain.id)
             .filter((tr) => allExercises.some((x) => x.ref.track.slug === tr.slug))
             .map((tr) => (
               <option key={tr.slug} value={tr.slug}>
@@ -77,7 +77,10 @@ export default function PracticePage() {
           ariaLabel={t('filters.kind')}
           value={kind}
           onChange={setKind}
-          options={(['all', 'quiz', 'estimation', 'challenge'] as const).map((v) => ({ value: v, label: t(`filters.kinds.${v}`) }))}
+          options={[
+            { value: 'all', label: t('filters.kinds.all') },
+            ...kinds.map((k) => ({ value: k, label: t(`common:practiceKinds.${k}`) })),
+          ]}
         />
         <Segmented<StatusFilter>
           ariaLabel={t('filters.status')}
@@ -99,7 +102,7 @@ export default function PracticePage() {
                 {items.map(({ exercise, ref: r }) => (
                   <div key={exercise.id}>
                     <Link
-                      to={`/learn/${r.track.slug}/${r.module.slug}/${r.lesson.slug}`}
+                      to={lessonPath(r)}
                       className="mb-1.5 inline-block text-xs text-muted-foreground hover:text-foreground hover:underline"
                     >
                       {t('fromLesson', { lesson: localize(r.lesson.title, locale) })}

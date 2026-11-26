@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { exerciseAnchor } from '@/features/lab/backTo';
+import { exerciseAnchor } from '@/lib/returnTo';
 import { useProgress } from '@/features/progress/api';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';

@@ -1,4 +1,4 @@
-import { getTrack, lessonExercises, lessonKey } from '@learninglab/content';
+import { getTrack, lessonExercises, lessonKey, roadmapStages } from '@learninglab/content';
 import { localize } from '@learninglab/shared';
 import { ArrowLeft, ArrowRight, Award, BookOpen, Check, CircleCheck, Circle, CircleDashed, Clock, Target, TriangleAlert } from 'lucide-react';
 import type { CSSProperties } from 'react';
@@ -12,6 +12,8 @@ import { StatusBadge } from '@/features/learn/StatusBadge';
 import { useProgress } from '@/features/progress/api';
 import { missingPrerequisites, useCourseProgress } from '@/features/progress/course';
 import { currentLocale } from '@/i18n';
+import { certificatePath, coursePath, domainPath, lessonPath } from '@/app/paths';
+import { useDomain } from '@/domains/useDomain';
 import NotFoundPage from './NotFoundPage';
 
 export default function TrackPage() {
@@ -19,17 +21,19 @@ export default function TrackPage() {
   const { t } = useTranslation(['learn', 'common']);
   const locale = currentLocale();
   const progress = useProgress();
-  const { byCourse } = useCourseProgress();
+  const domain = useDomain();
+  const { byCourse } = useCourseProgress(domain.id);
   const track = getTrack(trackSlug);
 
-  if (!track) return <NotFoundPage message={t('learn:trackNotFound')} />;
+  if (!track || track.domain !== domain.id) return <NotFoundPage message={t('learn:trackNotFound')} />;
   const p = byCourse[track.slug]!;
   const missing = missingPrerequisites(track, byCourse);
+  const stage = roadmapStages(domain.id).find((s) => s.stage === track.stage);
 
   return (
     <div className="track-accent" style={{ '--hue': track.hue } as CSSProperties}>
       <Button asChild variant="ghost" size="sm" className="-ml-3 mb-4 text-muted-foreground">
-        <Link to="/learn">
+        <Link to={domainPath(domain.id, 'learn')}>
           <ArrowLeft />
           {t('learn:tracksTitle')}
         </Link>
@@ -49,7 +53,8 @@ export default function TrackPage() {
           <p className="mt-3 text-sm text-pretty text-muted-foreground">{localize(track.description, locale)}</p>
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span>
-              {t('learn:stageLabel', { n: track.stage })} · {t(`learn:stages.${track.stage}.title` as 'learn:stages.1.title')}
+              {t('learn:stageLabel', { n: track.stage })}
+              {stage && ` · ${localize(stage.title, locale)}`}
             </span>
             {track.estHours && (
               <span className="inline-flex items-center gap-1">
@@ -102,7 +107,7 @@ export default function TrackPage() {
           <Award className="size-6 text-success" aria-hidden />
           <p className="flex-1 font-medium">{t('learn:completedBanner')}</p>
           <Button asChild variant="outline">
-            <Link to={`/learn/${track.slug}/certificate`}>{t('learn:viewCertificate')}</Link>
+            <Link to={certificatePath(track)}>{t('learn:viewCertificate')}</Link>
           </Button>
         </div>
       )}
@@ -115,7 +120,7 @@ export default function TrackPage() {
             <ul className="mt-1 flex flex-wrap gap-x-3">
               {missing.map((m) => (
                 <li key={m.slug}>
-                  <Link to={`/learn/${m.slug}`} className="underline underline-offset-2">
+                  <Link to={coursePath(m)} className="underline underline-offset-2">
                     {localize(m.title, locale)}
                   </Link>
                 </li>
@@ -188,7 +193,7 @@ export default function TrackPage() {
                   const passed = exs.filter((e) => progress.exercise(e.id)?.passed).length;
                   return (
                     <li key={l.slug}>
-                      <Link to={`/learn/${track.slug}/${m.slug}/${l.slug}`} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted">
+                      <Link to={lessonPath({ track, module: m, lesson: l })} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted">
                         {done ? (
                           <CircleCheck className="size-4 shrink-0 text-success" aria-label={t('learn:done')} />
                         ) : (

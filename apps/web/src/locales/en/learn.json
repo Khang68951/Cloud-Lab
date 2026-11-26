@@ -1,6 +1,6 @@
 {
   "tracksTitle": "Courses",
-  "tracksSubtitle": "11 courses from foundations to deep dives, ordered as a roadmap. \"Take first\" is a recommendation — every course is open.",
+  "tracksSubtitle": "{{count}} courses from foundations to deep dives, ordered as a roadmap. \"Take first\" is a recommendation — every course is open.",
   "trackNotFound": "This track doesn't exist.",
   "modulesTitle": "Modules",
   "practiceLabel": "Practice",
@@ -18,28 +18,6 @@
     "advanced": "Advanced"
   },
   "stageLabel": "Stage {{n}}",
-  "stages": {
-    "1": {
-      "title": "Foundations",
-      "body": "Start here: the AWS building blocks you use daily and how to connect them."
-    },
-    "2": {
-      "title": "Deep dives by area",
-      "body": "Go deep on one area at a time: security, networking, compute, data."
-    },
-    "3": {
-      "title": "Across areas",
-      "body": "Serverless, reliability and cost — they combine several areas."
-    },
-    "4": {
-      "title": "Operations & data",
-      "body": "Ship safely to production and get value from data."
-    },
-    "5": {
-      "title": "Capstone",
-      "body": "Design real systems end to end."
-    }
-  },
   "hours_one": "~{{count}} hour",
   "hours_other": "~{{count}} hours",
   "lessonsReady": "{{ready}}/{{total}} lessons ready",

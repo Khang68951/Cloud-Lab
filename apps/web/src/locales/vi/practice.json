@@ -33,10 +33,7 @@
   "filters": {
     "kind": "Loại bài",
     "kinds": {
-      "all": "Tất cả",
-      "quiz": "Quiz",
-      "estimation": "Ước tính",
-      "challenge": "Thiết kế (Lab)"
+      "all": "Tất cả"
     },
     "status": "Trạng thái",
     "statuses": {

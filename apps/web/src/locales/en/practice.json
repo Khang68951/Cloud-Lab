@@ -33,10 +33,7 @@
   "filters": {
     "kind": "Exercise type",
     "kinds": {
-      "all": "All",
-      "quiz": "Quiz",
-      "estimation": "Estimation",
-      "challenge": "Design (Lab)"
+      "all": "All"
     },
     "status": "Status",
     "statuses": {

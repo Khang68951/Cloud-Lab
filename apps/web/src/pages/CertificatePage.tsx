@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useCourseProgress } from '@/features/progress/course';
 import { useSettings } from '@/features/settings/useSettings';
 import { currentLocale } from '@/i18n';
+import { coursePath } from '@/app/paths';
+import { useDomain } from '@/domains/useDomain';
 import NotFoundPage from './NotFoundPage';
 
 /** Printable certificate of completion (local — it certifies to yourself). */
@@ -16,9 +18,10 @@ export default function CertificatePage() {
   const { t } = useTranslation('learn');
   const locale = currentLocale();
   const settings = useSettings();
-  const { byCourse } = useCourseProgress();
+  const domain = useDomain();
+  const { byCourse } = useCourseProgress(domain.id);
   const track = getTrack(trackSlug);
-  if (!track) return <NotFoundPage message={t('trackNotFound')} />;
+  if (!track || track.domain !== domain.id) return <NotFoundPage message={t('trackNotFound')} />;
   const p = byCourse[track.slug]!;
 
   if (!p.completed) {
@@ -39,7 +42,7 @@ export default function CertificatePage() {
           ))}
         </ul>
         <Button asChild className="mt-6">
-          <Link to={`/learn/${track.slug}`}>{localize(track.title, locale)}</Link>
+          <Link to={coursePath(track)}>{localize(track.title, locale)}</Link>
         </Button>
       </div>
     );
@@ -56,7 +59,7 @@ export default function CertificatePage() {
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex flex-wrap justify-between gap-2 print:hidden">
         <Button asChild variant="ghost">
-          <Link to={`/learn/${track.slug}`}>{localize(track.title, locale)}</Link>
+          <Link to={coursePath(track)}>{localize(track.title, locale)}</Link>
         </Button>
         <Button onClick={() => window.print()}>
           <Printer />

@@ -1,6 +1,4 @@
 import { glossaryOf } from '@learninglab/content';
-
-const GLOSSARY = glossaryOf('cloud');
 import { localize } from '@learninglab/shared';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,22 +7,24 @@ import { useLocation } from 'react-router';
 import { PageHeader } from '@/components/PageHeader';
 import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
-import { termId } from '@/features/search/searchIndex';
+import { useDomain } from '@/domains/useDomain';
+import { termId } from '@/features/search/entry';
 
-
-
+/** Glossary of the current domain. */
 export default function GlossaryPage() {
   const { t } = useTranslation('glossary');
   const locale = currentLocale();
   const { hash } = useLocation();
   const [query, setQuery] = useState('');
+  const domain = useDomain();
+  const GLOSSARY = glossaryOf(domain.id);
 
   const terms = useMemo(() => {
     const q = query.trim().toLowerCase();
     return [...GLOSSARY]
       .sort((a, b) => a.term.localeCompare(b.term))
       .filter((g) => !q || `${g.term} ${g.def.en} ${g.def.vi ?? ''} ${(g.see ?? []).join(' ')}`.toLowerCase().includes(q));
-  }, [query]);
+  }, [query, GLOSSARY]);
 
   // Deep links (#term-…) from search scroll the term into view.
   useEffect(() => {
