@@ -1,4 +1,4 @@
-import { requirementLabel, splitRequirements, type CanvasChallenge } from '@learninglab/exercise-kit';
+import { requirementLabel, splitRequirements, type CanvasChallenge } from '@learninglab/cloud-challenges';
 import { localize } from '@learninglab/shared';
 import { ArrowRight, Lock, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

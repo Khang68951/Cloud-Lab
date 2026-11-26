@@ -1,0 +1,17 @@
+{
+  "name": "@learninglab/cloud-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud domain: AWS service catalog, reference pricing, templates.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@learninglab/shared": "*",
+    "zod": "^4.6.7"
+  }
+}

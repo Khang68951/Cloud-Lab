@@ -1,4 +1,4 @@
-import { designSchema } from '@learninglab/catalog';
+import { designSchema } from '@learninglab/cloud-catalog';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';

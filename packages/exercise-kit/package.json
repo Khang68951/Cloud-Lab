@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Exercise kinds shared by every domain (quiz, estimation) and their pure graders.",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -10,8 +11,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@learninglab/catalog": "*",
-    "@learninglab/shared": "*",
-    "@learninglab/sim-engine": "*"
+    "@learninglab/shared": "*"
   }
 }

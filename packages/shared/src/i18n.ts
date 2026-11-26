@@ -39,3 +39,6 @@ export function localize(text: LocalizedText, locale: Locale): string {
 export function hasTranslation(text: LocalizedText, locale: Locale): boolean {
   return Boolean(text[locale]);
 }
+
+/** Bilingual text in data is written as `tx(english, vietnamese)`. */
+export const tx = (en: string, vi: string): LocalizedText => ({ en, vi });

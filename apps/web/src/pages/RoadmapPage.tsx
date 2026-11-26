@@ -14,7 +14,7 @@ export default function RoadmapPage() {
   const { t } = useTranslation('learn');
   const locale = currentLocale();
   const { byCourse, recommended } = useCourseProgress();
-  const stages = roadmapStages();
+  const stages = roadmapStages('cloud');
   const totalHours = stages.flatMap((s) => s.courses).reduce((a, c) => a + (c.estHours ?? 0), 0);
   const completed = Object.values(byCourse).filter((p) => p.completed).length;
   const rec = recommended ? byCourse[recommended.slug] : undefined;

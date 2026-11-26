@@ -4,7 +4,7 @@
  * Usage: npm run challenges:report [-- <course-slug>]
  */
 import { allExercises } from '@learninglab/content';
-import { gradeCanvas, type CanvasChallenge } from '@learninglab/exercise-kit';
+import { gradeCanvas, type CanvasChallenge } from '@learninglab/cloud-challenges';
 
 const only = process.argv[2];
 const challenges = allExercises

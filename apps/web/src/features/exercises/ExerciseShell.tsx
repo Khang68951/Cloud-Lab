@@ -1,4 +1,4 @@
-import type { Exercise } from '@learninglab/exercise-kit';
+import type { Exercise } from '@learninglab/content';
 import { localize, type LocalizedText } from '@learninglab/shared';
 import { CircleCheck, Lightbulb } from 'lucide-react';
 import type { ReactNode } from 'react';

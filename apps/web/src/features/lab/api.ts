@@ -1,4 +1,4 @@
-import type { Design } from '@learninglab/catalog';
+import type { Design } from '@learninglab/cloud-catalog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/lib/api';
 

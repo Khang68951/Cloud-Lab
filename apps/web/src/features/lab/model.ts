@@ -1,4 +1,4 @@
-import type { Design, NetworkConfig, Scenario, ServiceConfig } from '@learninglab/catalog';
+import type { Design, NetworkConfig, Scenario, ServiceConfig } from '@learninglab/cloud-catalog';
 import type { Edge, Node } from '@xyflow/react';
 
 export interface ServiceNodeData extends Record<string, unknown> {

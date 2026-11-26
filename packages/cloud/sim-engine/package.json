@@ -1,0 +1,17 @@
+{
+  "name": "@learninglab/cloud-sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud domain: traffic/cost/latency/availability simulator and Well-Architected linter.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@learninglab/cloud-catalog": "*",
+    "@learninglab/shared": "*"
+  }
+}

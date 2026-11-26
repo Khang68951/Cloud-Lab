@@ -27,7 +27,7 @@ export default function TracksPage() {
         }
       />
       <div className="flex flex-col gap-10">
-        {roadmapStages().map(({ stage, courses }) => (
+        {roadmapStages('cloud').map(({ stage, courses }) => (
           <section key={stage} aria-labelledby={`stage-${stage}`}>
             <h2 id={`stage-${stage}`} className="mb-1 text-lg font-semibold tracking-tight">
               {t('stageLabel', { n: stage })} · {t(`stages.${stage}.title` as 'stages.1.title')}

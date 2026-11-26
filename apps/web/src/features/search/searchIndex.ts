@@ -1,5 +1,5 @@
-import { allExercises, GLOSSARY, lessonsOf, tracks } from '@learninglab/content';
-import { SERVICES } from '@learninglab/catalog';
+import { allExercises, glossaryOf, lessonsOf, tracks } from '@learninglab/content';
+import { SERVICES } from '@learninglab/cloud-catalog';
 import { localize, type Locale } from '@learninglab/shared';
 
 export type SearchKind = 'course' | 'lesson' | 'challenge' | 'service' | 'term';
@@ -63,7 +63,7 @@ export function buildIndex(locale: Locale): SearchEntry[] {
     ...SERVICES.filter((s) => s.behavior !== 'client').map((s) =>
       e('service', s.short, `${s.name} — ${localize(s.description, locale)}`, `/explore?service=${s.id}`, s.equivalents ? `${s.equivalents.azure} ${s.equivalents.gcp}` : ''),
     ),
-    ...GLOSSARY.map((g) => e('term', g.term, localize(g.def, locale), `/glossary#${termId(g.term)}`, (g.see ?? []).join(' '))),
+    ...glossaryOf('cloud').map((g) => e('term', g.term, localize(g.def, locale), `/glossary#${termId(g.term)}`, (g.see ?? []).join(' '))),
   ];
   cache.set(locale, entries);
   return entries;

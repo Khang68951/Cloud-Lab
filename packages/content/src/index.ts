@@ -1,94 +1,38 @@
-import type { Exercise } from '@learninglab/exercise-kit';
-import type { LessonMeta, ModuleMeta, TrackMeta } from '@learninglab/shared';
-import * as analytics from './tracks/aws-analytics/index.ts';
-import * as compute from './tracks/aws-compute/index.ts';
-import * as cost from './tracks/aws-cost/index.ts';
-import * as data from './tracks/aws-data/index.ts';
-import * as devops from './tracks/aws-devops/index.ts';
-import * as labPractice from './tracks/aws-lab-practice/index.ts';
-import * as networking from './tracks/aws-networking/index.ts';
-import * as reliability from './tracks/aws-reliability/index.ts';
-import * as security from './tracks/aws-security/index.ts';
-import * as serverless from './tracks/aws-serverless/index.ts';
-import * as systemDesign from './tracks/aws-system-design/index.ts';
-import * as core from './tracks/aws/index.ts';
+import { cloudContent } from '@learninglab/cloud-content';
+import type { CloudExercise } from '@learninglab/cloud-challenges';
+import { lessonsOf, type DomainContent, type GlossaryTerm, type LessonRef, type RoadmapStage } from '@learninglab/course-kit';
+import type { TrackMeta } from '@learninglab/shared';
 
-import { buildCourse, type CourseExercises, type CourseInput } from './define.ts';
-
-export { defineTrack, MIN_EXERCISES } from './define.ts';
-export { GLOSSARY, type GlossaryTerm } from './glossary.ts';
-
-interface CourseModule {
-  track: CourseInput;
-  exercises: CourseExercises;
-}
+export { availableLessonsOf, lessonKey, lessonsOf, MIN_EXERCISES, type GlossaryTerm, type LessonRef, type RoadmapStage } from '@learninglab/course-kit';
 
 /**
- * Every course, in roadmap order. A new course = a folder under tracks/
- * exporting { track, exercises } + one line here.
+ * Course registry of the whole app: every domain's courses and exercises.
+ * A new domain = a content package exporting a `DomainContent` + one line in
+ * DOMAINS + its exercise type in `Exercise`.
  */
-const COURSES: CourseModule[] = [core, security, networking, compute, data, labPractice, serverless, reliability, cost, devops, analytics, systemDesign];
+export type Exercise = CloudExercise;
 
-export const tracks: readonly TrackMeta[] = COURSES.map((c) => buildCourse(c.track, c.exercises));
+const DOMAINS: DomainContent<Exercise>[] = [cloudContent];
 
-/**
- * Security groups in Lab challenges start empty (the learner writes every
- * rule) once security groups have been studied: from this lesson on in its
- * course, and in every course that builds on that course. Earlier challenges
- * keep each port pre-opened so beginners can focus on the design.
- */
-const SG_LESSON = { track: 'aws-networking', module: 'vpc-design', lesson: 'security-groups' };
+/** Domain ids that have content, in display order. */
+export const contentDomains: readonly string[] = DOMAINS.map((d) => d.id);
 
-const requires = (slug: string, target: string): boolean => {
-  const t = tracks.find((x) => x.slug === slug);
-  return !!t && t.prerequisites.some((p) => p === target || requires(p, target));
-};
+/** Every course of every domain. */
+export const tracks: readonly TrackMeta[] = DOMAINS.flatMap((d) => d.tracks);
 
-function withSgMode(track: TrackMeta, exercises: CourseExercises): CourseExercises {
-  const lessons = track.modules.flatMap((m) => m.lessons.map((l) => [m.slug, l.slug] as const));
-  const from = track.slug === SG_LESSON.track ? lessons.findIndex(([m, l]) => m === SG_LESSON.module && l === SG_LESSON.lesson) : -1;
-  const whole = requires(track.slug, SG_LESSON.track);
-  if (!whole && from < 0) return exercises;
-  return Object.fromEntries(
-    track.modules.map((m) => [
-      m.slug,
-      Object.fromEntries(
-        m.lessons.map((l) => {
-          const manual = whole || lessons.findIndex(([mm, ll]) => mm === m.slug && ll === l.slug) >= from;
-          const list = exercises[m.slug]?.[l.slug] ?? [];
-          return [l.slug, manual ? list.map((e) => (e.kind === 'canvas-design' || e.kind === 'canvas-fix' ? { ...e, manualSg: true } : e)) : list];
-        }),
-      ),
-    ]),
-  );
+const EXERCISES = Object.assign({}, ...DOMAINS.map((d) => d.exercises)) as DomainContent<Exercise>['exercises'];
+
+/** Courses of one domain, in roadmap order. */
+export function tracksOf(domain: string): readonly TrackMeta[] {
+  return tracks.filter((t) => t.domain === domain);
 }
-
-const EXERCISES: Record<string, CourseExercises> = Object.fromEntries(COURSES.map((c, i) => [c.track.slug, withSgMode(tracks[i]!, c.exercises)]));
 
 export function getTrack(slug: string): TrackMeta | undefined {
   return tracks.find((t) => t.slug === slug);
 }
 
-export const lessonKey = (track: string, module: string, lesson: string) => `${track}/${module}/${lesson}`;
-
-export interface LessonRef {
-  track: TrackMeta;
-  module: ModuleMeta;
-  moduleIndex: number;
-  lesson: LessonMeta;
-  key: string;
-}
-
-/** Every lesson of a course in reading order. */
-export function lessonsOf(track: TrackMeta): LessonRef[] {
-  return track.modules.flatMap((module, moduleIndex) =>
-    module.lessons.map((lesson) => ({ track, module, moduleIndex, lesson, key: lessonKey(track.slug, module.slug, lesson.slug) })),
-  );
-}
-
-/** Lessons whose content is written (planned ones are shown as "being written"). */
-export function availableLessonsOf(track: TrackMeta): LessonRef[] {
-  return lessonsOf(track).filter((l) => l.lesson.status === 'available');
+export function glossaryOf(domain: string): readonly GlossaryTerm[] {
+  return DOMAINS.find((d) => d.id === domain)?.glossary ?? [];
 }
 
 /** A lesson plus its previous/next *available* lessons for navigation. */
@@ -121,14 +65,23 @@ export const allExercises: ExerciseEntry[] = tracks.flatMap((track) =>
   ),
 );
 
+/** Exercises of one domain's courses. */
+export function exercisesOf(domain: string): ExerciseEntry[] {
+  return allExercises.filter((e) => e.ref.track.domain === domain);
+}
+
 const BY_ID = new Map(allExercises.map((e) => [e.exercise.id, e]));
 
 export function getExercise(id: string): ExerciseEntry | undefined {
   return BY_ID.get(id);
 }
 
-/** Courses grouped by roadmap stage. */
-export function roadmapStages(): { stage: number; courses: TrackMeta[] }[] {
-  const stages = [...new Set(tracks.map((t) => t.stage))].sort((a, b) => a - b);
-  return stages.map((stage) => ({ stage, courses: tracks.filter((t) => t.stage === stage) }));
+/** A domain's courses grouped by roadmap stage (only stages that have courses). */
+export function roadmapStages(domain: string): (RoadmapStage & { courses: TrackMeta[] })[] {
+  const d = DOMAINS.find((x) => x.id === domain);
+  if (!d) return [];
+  return [...d.stages]
+    .sort((a, b) => a.stage - b.stage)
+    .map((s) => ({ ...s, courses: d.tracks.filter((t) => t.stage === s.stage) }))
+    .filter((s) => s.courses.length > 0);
 }

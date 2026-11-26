@@ -1,4 +1,4 @@
-// Generated from the icon names used in @learninglab/catalog services.
+// Generated from the icon names used in @learninglab/cloud-catalog services.
 // Add an icon: use its lucide kebab-case name in the service def, import it here.
 import {
   Activity,

@@ -1,7 +1,7 @@
-import type { Design } from '@learninglab/catalog';
-import { challengeDesign, checkRequirement, revealedOptimizations, splitRequirements, type CanvasChallenge, type GradeResult } from '@learninglab/exercise-kit';
+import type { Design } from '@learninglab/cloud-catalog';
+import { challengeDesign, checkRequirement, revealedOptimizations, splitRequirements, type CanvasChallenge, type GradeResult } from '@learninglab/cloud-challenges';
 import { localize } from '@learninglab/shared';
-import type { SimResult } from '@learninglab/sim-engine';
+import type { SimResult } from '@learninglab/cloud-sim';
 import { ArrowLeft, CircleCheck, CircleX, Eye, Lightbulb, Lock, Send, ShieldAlert } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';

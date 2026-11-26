@@ -1,4 +1,4 @@
-import type { SimResult } from '@learninglab/sim-engine';
+import type { SimResult } from '@learninglab/cloud-sim';
 import { Activity, Gauge, ShieldCheck, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

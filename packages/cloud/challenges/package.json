@@ -1,0 +1,19 @@
+{
+  "name": "@learninglab/cloud-challenges",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud domain: canvas design challenges (requirements, flow checks, grading on the simulator).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@learninglab/cloud-catalog": "*",
+    "@learninglab/cloud-sim": "*",
+    "@learninglab/exercise-kit": "*",
+    "@learninglab/shared": "*"
+  }
+}

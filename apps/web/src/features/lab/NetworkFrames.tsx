@@ -1,4 +1,4 @@
-import { getService, placementOf, type NetworkConfig, type Placement } from '@learninglab/catalog';
+import { getService, placementOf, type NetworkConfig, type Placement } from '@learninglab/cloud-catalog';
 import { Panel, useNodes, ViewportPortal } from '@xyflow/react';
 import { Network } from 'lucide-react';
 import { useState } from 'react';

@@ -5,12 +5,13 @@ import { exerciseKindSchema } from './exercises.ts';
 /**
  * Content model. Learning Lab is organised as:
  *
- *   Track (e.g. "aws", later "kubernetes", "databases", ...)
+ *   Domain (e.g. "cloud") — a subject area with its own tools and pages
+ *   └─ Track = course (e.g. "aws", "aws-networking")
  *     └─ Module (e.g. "networking")
  *          └─ Lesson (short theory + several exercises)
  *
- * Nothing in the app is AWS-specific at this level: a new subject is just a
- * new Track registered in `@learninglab/content`.
+ * Nothing here is AWS-specific: a new course is a Track in its domain's
+ * content package, a new subject is a new domain (see README).
  */
 
 const slug = z
@@ -58,6 +59,8 @@ export type ModuleMeta = z.infer<typeof moduleMetaSchema>;
 export const trackMetaSchema = z
   .object({
     slug,
+    /** Domain (subject area) the course belongs to, e.g. "cloud". Set by the domain's content package. */
+    domain: slug,
     title: localizedTextSchema,
     tagline: localizedTextSchema,
     description: localizedTextSchema,

@@ -6,7 +6,8 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "packages/cloud/*"
   ],
   "engines": {
     "node": ">=22.13.0"

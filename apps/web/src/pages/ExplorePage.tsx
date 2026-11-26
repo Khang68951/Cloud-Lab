@@ -1,4 +1,4 @@
-import { CATEGORIES, CATEGORY_LABELS, SERVICES, type ServiceDef } from '@learninglab/catalog';
+import { CATEGORIES, CATEGORY_LABELS, SERVICES, type ServiceDef } from '@learninglab/cloud-catalog';
 import { localize, type LocalizedText } from '@learninglab/shared';
 import { Columns3, Search, X } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';

@@ -2,8 +2,8 @@
  * Prints the simulator's numbers for every template — a quick sanity check
  * after changing prices or engine logic.  Usage: npm run sim:report
  */
-import { TEMPLATES } from '@learninglab/catalog';
-import { simulate } from '@learninglab/sim-engine';
+import { TEMPLATES } from '@learninglab/cloud-catalog';
+import { simulate } from '@learninglab/cloud-sim';
 
 for (const t of TEMPLATES) {
   const r = simulate(t.design);

@@ -1,4 +1,4 @@
-import { getTemplate, type Design } from '@learninglab/catalog';
+import { getTemplate, type Design } from '@learninglab/cloud-catalog';
 import { localize } from '@learninglab/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

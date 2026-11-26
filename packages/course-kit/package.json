@@ -1,0 +1,17 @@
+{
+  "name": "@learninglab/course-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Authoring kit for courses of any domain: outline builders, validation, derived status.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@learninglab/exercise-kit": "*",
+    "@learninglab/shared": "*"
+  }
+}

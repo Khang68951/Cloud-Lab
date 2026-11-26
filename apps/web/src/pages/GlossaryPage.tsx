@@ -1,4 +1,6 @@
-import { GLOSSARY } from '@learninglab/content';
+import { glossaryOf } from '@learninglab/content';
+
+const GLOSSARY = glossaryOf('cloud');
 import { localize } from '@learninglab/shared';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';

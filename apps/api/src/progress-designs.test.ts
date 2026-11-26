@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { getTemplate } from '@learninglab/catalog';
+import { getTemplate } from '@learninglab/cloud-catalog';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.ts';
 import { adoptLegacyDb, createDb } from './db/client.ts';

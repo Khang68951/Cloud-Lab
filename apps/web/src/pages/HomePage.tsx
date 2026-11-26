@@ -130,7 +130,7 @@ export default function HomePage() {
           </Button>
         </div>
         <ol className="mt-4 grid gap-3 sm:grid-cols-5">
-          {roadmapStages().map(({ stage, courses }) => (
+          {roadmapStages('cloud').map(({ stage, courses }) => (
             <li key={stage} className="rounded-xl border bg-card p-3">
               <div className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">{t('roadmap.stage', { n: stage })}</div>
               <ul className="mt-2 flex flex-col gap-1.5">

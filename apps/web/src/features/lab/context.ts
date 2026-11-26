@@ -1,4 +1,4 @@
-import type { SimResult } from '@learninglab/sim-engine';
+import type { SimResult } from '@learninglab/cloud-sim';
 import { createContext, useContext } from 'react';
 
 export interface LabContextValue {

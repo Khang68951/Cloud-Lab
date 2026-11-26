@@ -1,0 +1,82 @@
+import type { CanvasChallenge, Requirement } from '@learninglab/cloud-challenges';
+import { buildDesign, getService, IN_VPC, listenPort, placementOf, SG_KEY, tx, type Design, type Scenario } from '@learninglab/cloud-catalog';
+import type { Severity } from '@learninglab/cloud-sim';
+import { commonBuilders, lesson, mod } from '@learninglab/course-kit';
+
+/**
+ * Exercise builders for Cloud courses: the common kinds (quiz, estimate) plus
+ * canvas challenges. `prefix` namespaces ids per course so progress stays
+ * stable (e.g. "aws-networking" → "aws-networking.cidr-size").
+ */
+export function exerciseBuilders(prefix: string) {
+  /** Canvas challenge; `id` is written without the course prefix. */
+  const challenge = (c: CanvasChallenge): CanvasChallenge => ({ ...c, id: `${prefix}.${c.id}` });
+  return { ...commonBuilders(prefix), challenge };
+}
+
+/** Traffic for a challenge: defaults overridden by what the challenge cares about. */
+export const scenario = (s: Partial<Scenario> = {}): Scenario => ({
+  rps: 100,
+  peakMultiplier: 3,
+  readRatio: 0.8,
+  payloadKB: 5,
+  region: 'us-east-1',
+  ...s,
+});
+
+/** Empty canvas (just the users) — the usual starter for a canvas-design challenge. */
+export const usersOnly = (s: Scenario) => buildDesign([['users', 'users', 0, 1]], [], s);
+
+/**
+ * Least-privilege security groups for a reference design: each resource opens
+ * its port only to the security groups of the nodes wired into it (or to
+ * 0.0.0.0/0 for callers outside the VPC, e.g. users → a public ALB). Rules
+ * written by hand in the design are kept.
+ */
+export function withSecurityGroups(design: Design): Design {
+  const byId = new Map(design.nodes.map((n) => [n.id, n]));
+  const where = (id: string) => {
+    const n = byId.get(id);
+    const def = n && getService(n.service);
+    return def ? placementOf(def, n.config) : 'managed';
+  };
+  const nodes = design.nodes.map((n) => {
+    const def = getService(n.service);
+    if (!def || typeof n.config[SG_KEY] === 'string' || !IN_VPC.has(where(n.id)) || def.id === 'lambda') return n;
+    const port = listenPort(def, n.config);
+    if (port === null) return n;
+    const sources = design.edges
+      .filter((e) => e.target === n.id)
+      .map((e) => (IN_VPC.has(where(e.source)) ? `sg:${e.source}` : where(n.id) === 'public' ? '0.0.0.0/0' : null))
+      .filter((s): s is string => s !== null);
+    const rules = [...new Set(sources)].map((src) => `${port}<${src}`).join(',');
+    return { ...n, config: { ...n.config, [SG_KEY]: rules } };
+  });
+  return { ...design, nodes };
+}
+
+/** Common challenge requirements. */
+export const R = {
+  cost: (max: number): Requirement => ({ type: 'metric', metric: 'monthlyUsd', op: '<=', value: max }),
+  p95: (max: number): Requirement => ({ type: 'metric', metric: 'p95Ms', op: '<=', value: max }),
+  availability: (min: number): Requirement => ({ type: 'metric', metric: 'availability', op: '>=', value: min }),
+  errors: (max = 0.01): Requirement => ({ type: 'metric', metric: 'errorRate', op: '<=', value: max }),
+  survivesAz: (
+    label = tx('Keeps serving users when one Availability Zone goes down', 'Vẫn phục vụ người dùng khi một Availability Zone bị sập'),
+  ): Requirement => ({ type: 'survives', chaos: { azDown: true }, label }),
+  noFindings: (severity: Severity = 'error', pillar?: 'reliability' | 'performance' | 'cost' | 'security' | 'operational'): Requirement =>
+    pillar ? { type: 'no-findings', severity, pillar } : { type: 'no-findings', severity },
+  /** Every connection gets through (no blocked route or security group). */
+  connected: (): Requirement => ({
+    type: 'no-finding',
+    prefix: 'blocked-edge',
+    label: tx('Every connection gets through the network and security groups', 'Mọi kết nối đều qua được mạng và security group'),
+  }),
+  noServers: (): Requirement => ({
+    type: 'not-uses',
+    services: ['ec2', 'fargate', 'eks', 'ecs-ec2', 'lightsail', 'beanstalk'],
+    label: tx('No servers or containers to manage', 'Không có server hay container nào phải quản lý'),
+  }),
+};
+
+export { lesson, mod };

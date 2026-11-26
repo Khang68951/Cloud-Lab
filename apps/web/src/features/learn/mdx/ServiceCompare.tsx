@@ -1,4 +1,4 @@
-import { getService } from '@learninglab/catalog';
+import { getService } from '@learninglab/cloud-catalog';
 import { localize, type LocalizedText } from '@learninglab/shared';
 import { Check, Coins, X } from 'lucide-react';
 import type { CSSProperties } from 'react';

@@ -1,0 +1,21 @@
+{
+  "name": "@learninglab/cloud-content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloud domain: AWS courses (outline, MDX lessons, exercises), glossary and roadmap stages.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@learninglab/cloud-catalog": "*",
+    "@learninglab/cloud-challenges": "*",
+    "@learninglab/cloud-sim": "*",
+    "@learninglab/course-kit": "*",
+    "@learninglab/exercise-kit": "*",
+    "@learninglab/shared": "*"
+  }
+}

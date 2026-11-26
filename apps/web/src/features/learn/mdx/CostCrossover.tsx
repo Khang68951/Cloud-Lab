@@ -1,5 +1,5 @@
-import { buildDesign, DEFAULT_SCENARIO } from '@learninglab/catalog';
-import { simulate } from '@learninglab/sim-engine';
+import { buildDesign, DEFAULT_SCENARIO } from '@learninglab/cloud-catalog';
+import { simulate } from '@learninglab/cloud-sim';
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { currentLocale } from '@/i18n';

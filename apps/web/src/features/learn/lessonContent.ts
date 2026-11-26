@@ -3,10 +3,11 @@ import type { MDXContent } from 'mdx/types';
 
 /**
  * All lesson MDX files, lazily loaded:
- *   packages/content/src/tracks/<track>/lessons/<module>/<lesson>.<locale>.mdx
+ *   packages/<domain>/content/src/tracks/<track>/lessons/<module>/<lesson>.<locale>.mdx
+ * Track slugs are unique across domains, so the key stays "<track>/<module>/<lesson>".
  * A missing translation falls back to English.
  */
-const files = import.meta.glob<{ default: MDXContent }>('../../../../../packages/content/src/tracks/*/lessons/*/*.mdx');
+const files = import.meta.glob<{ default: MDXContent }>('../../../../../packages/*/content/src/tracks/*/lessons/*/*.mdx');
 
 const index = new Map<string, () => Promise<{ default: MDXContent }>>();
 for (const [path, load] of Object.entries(files)) {

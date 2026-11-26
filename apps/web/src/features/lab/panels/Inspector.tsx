@@ -1,6 +1,6 @@
-import { getService, REGIONS, type FieldSpec, type NetworkConfig, type RegionId, type Scenario, type ServiceConfig } from '@learninglab/catalog';
+import { getService, REGIONS, type FieldSpec, type NetworkConfig, type RegionId, type Scenario, type ServiceConfig } from '@learninglab/cloud-catalog';
 import { localize, type LocalizedText } from '@learninglab/shared';
-import type { NodeResult, SimResult } from '@learninglab/sim-engine';
+import type { NodeResult, SimResult } from '@learninglab/cloud-sim';
 import { Copy, Lock, Power, Trash2 } from 'lucide-react';
 import { useId, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

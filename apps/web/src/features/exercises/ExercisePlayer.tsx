@@ -1,4 +1,4 @@
-import type { Exercise } from '@learninglab/exercise-kit';
+import type { Exercise } from '@learninglab/content';
 import { ChallengeCard } from './ChallengeCard';
 import { EstimationPlayer } from './EstimationPlayer';
 import { QuizPlayer } from './QuizPlayer';

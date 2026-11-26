@@ -26,7 +26,7 @@ export interface ExerciseSummary {
 
 /**
  * Learning progress. Grading happens in the browser with the same pure
- * functions (@learninglab/exercise-kit); this is a single-user local app, so the
+ * functions (@learninglab/exercise-kit and each domain's challenge package); this is a single-user local app, so the
  * server just records results.
  */
 export function progressRoutes(db: Db) {
