@@ -1,4 +1,4 @@
-import { DEFAULT_NETWORK, DEFAULT_SCENARIO, getTemplate, TEMPLATES, type Design, type ServiceConfig } from '@cloudlab/catalog';
+import { DEFAULT_NETWORK, DEFAULT_SCENARIO, getTemplate, TEMPLATES, type Design, type ServiceConfig } from '@learninglab/catalog';
 import { describe, expect, it } from 'vitest';
 import { simulate } from './simulate.ts';
 

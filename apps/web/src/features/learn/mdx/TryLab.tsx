@@ -1,4 +1,4 @@
-import { getExercise } from '@cloudlab/content';
+import { getExercise } from '@learninglab/content';
 import { Workflow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';

@@ -1,5 +1,5 @@
-import { lessonKey } from '@cloudlab/content';
-import { localize, type TrackMeta } from '@cloudlab/shared';
+import { lessonKey } from '@learninglab/content';
+import { localize, type TrackMeta } from '@learninglab/shared';
 import { CircleCheck, Circle, CircleDashed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';

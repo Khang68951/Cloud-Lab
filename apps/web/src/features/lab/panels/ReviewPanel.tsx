@@ -1,5 +1,5 @@
-import { localize } from '@cloudlab/shared';
-import type { Finding, SimResult } from '@cloudlab/sim-engine';
+import { localize } from '@learninglab/shared';
+import type { Finding, SimResult } from '@learninglab/sim-engine';
 import { CircleAlert, CircleCheck, Info, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';

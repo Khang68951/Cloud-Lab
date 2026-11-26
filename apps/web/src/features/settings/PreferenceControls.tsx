@@ -1,4 +1,4 @@
-import { LOCALES, type Locale, type ThemePreference } from '@cloudlab/shared';
+import { LOCALES, type Locale, type ThemePreference } from '@learninglab/shared';
 import { Languages, Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';

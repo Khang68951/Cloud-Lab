@@ -3,14 +3,14 @@ import { localizedTextSchema } from './i18n.ts';
 import { exerciseKindSchema } from './exercises.ts';
 
 /**
- * Content model. CloudLab is organised as:
+ * Content model. Learning Lab is organised as:
  *
  *   Track (e.g. "aws", later "kubernetes", "databases", ...)
  *     └─ Module (e.g. "networking")
  *          └─ Lesson (short theory + several exercises)
  *
  * Nothing in the app is AWS-specific at this level: a new subject is just a
- * new Track registered in `@cloudlab/content`.
+ * new Track registered in `@learninglab/content`.
  */
 
 const slug = z

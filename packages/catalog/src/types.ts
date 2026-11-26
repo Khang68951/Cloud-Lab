@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@cloudlab/shared';
+import type { LocalizedText } from '@learninglab/shared';
 
 /** Shorthand for bilingual text in catalog data. */
 export const tx = (en: string, vi: string): LocalizedText => ({ en, vi });

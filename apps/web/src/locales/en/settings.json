@@ -11,7 +11,7 @@
     "showVnd": "Show VND equivalent",
     "showVndHint": "AWS bills in USD. Turn this on to also see an estimated VND amount.",
     "rate": "Exchange rate (VND per 1 USD)",
-    "rateHint": "Entered by you — CloudLab doesn't call any exchange-rate API.",
+    "rateHint": "Entered by you — Learning Lab doesn't call any exchange-rate API.",
     "preview": "Example"
   },
   "data": {

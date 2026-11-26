@@ -1,5 +1,5 @@
-import { grade, type GradeResult, type ScenarioQuiz } from '@cloudlab/exercise-kit';
-import { localize } from '@cloudlab/shared';
+import { grade, type GradeResult, type ScenarioQuiz } from '@learninglab/exercise-kit';
+import { localize } from '@learninglab/shared';
 import { CircleCheck, CircleX, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

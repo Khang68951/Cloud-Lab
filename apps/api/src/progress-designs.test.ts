@@ -1,7 +1,10 @@
-import { getTemplate } from '@cloudlab/catalog';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { getTemplate } from '@learninglab/catalog';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.ts';
-import { createDb } from './db/client.ts';
+import { adoptLegacyDb, createDb } from './db/client.ts';
 
 const json = (body: unknown, method = 'POST') => ({
   method,
@@ -92,8 +95,29 @@ describe('data backup', () => {
     });
   });
 
-  it('rejects files that are not CloudLab backups', async () => {
+  it('accepts backups made before the rename (app: "cloudlab")', async () => {
+    const backup = (await (await setup().request('/api/data/export')).json()) as Record<string, unknown>;
+    expect(backup.app).toBe('learninglab');
+    const res = await setup().request('/api/data/import', json({ ...backup, app: 'cloudlab' }));
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects files that are not Learning Lab backups', async () => {
     const res = await setup().request('/api/data/import', json({ hello: 'world' }));
     expect(res.status).toBe(400);
+  });
+});
+
+describe('legacy database file', () => {
+  it('moves the old file and its side files to the new name, once', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'll-db-'));
+    const legacy = join(dir, 'cloudlab.db');
+    const next = join(dir, 'learninglab.db');
+    writeFileSync(legacy, 'x');
+    writeFileSync(`${legacy}-wal`, 'w');
+    expect(adoptLegacyDb(legacy, next)).toBe(true);
+    expect([existsSync(next), existsSync(`${next}-wal`), existsSync(legacy)]).toEqual([true, true, false]);
+    writeFileSync(legacy, 'y');
+    expect(adoptLegacyDb(legacy, next)).toBe(false); // never overwrites the current file
   });
 });

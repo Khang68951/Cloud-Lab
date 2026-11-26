@@ -1,5 +1,5 @@
-import { grade, type Estimation, type GradeResult } from '@cloudlab/exercise-kit';
-import { localize } from '@cloudlab/shared';
+import { grade, type Estimation, type GradeResult } from '@learninglab/exercise-kit';
+import { localize } from '@learninglab/shared';
 import { RotateCcw } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';

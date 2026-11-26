@@ -1,5 +1,5 @@
-import { getService } from '@cloudlab/catalog';
-import { localize, type LocalizedText } from '@cloudlab/shared';
+import { getService } from '@learninglab/catalog';
+import { localize, type LocalizedText } from '@learninglab/shared';
 import { Check, Coins, X } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';

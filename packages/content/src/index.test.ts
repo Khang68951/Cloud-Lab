@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { grade, gradeCanvas } from '@cloudlab/exercise-kit';
+import { grade, gradeCanvas } from '@learninglab/exercise-kit';
 import { describe, expect, it } from 'vitest';
 import { buildCourse } from './define.ts';
 import { allExercises, defineTrack, MIN_EXERCISES, findLesson, getExercise, getTrack, lessonExercises, lessonsOf, tracks } from './index.ts';

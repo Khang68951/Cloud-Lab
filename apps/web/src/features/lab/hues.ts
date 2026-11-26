@@ -1,4 +1,4 @@
-import type { Category, Placement } from '@cloudlab/catalog';
+import type { Category, Placement } from '@learninglab/catalog';
 import { Cloud, Globe, Lock, RadioTower, type LucideIcon } from 'lucide-react';
 
 /** Category colour (OKLCH hue), loosely following AWS architecture-icon colours. */

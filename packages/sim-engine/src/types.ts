@@ -1,5 +1,5 @@
-import type { CostKind, CostLine, Flow, NodeModel, Placement, SgRule } from '@cloudlab/catalog';
-import type { LocalizedText } from '@cloudlab/shared';
+import type { CostKind, CostLine, Flow, NodeModel, Placement, SgRule } from '@learninglab/catalog';
+import type { LocalizedText } from '@learninglab/shared';
 
 export const ENGINE_VERSION = 1;
 

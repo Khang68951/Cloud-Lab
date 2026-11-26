@@ -25,8 +25,8 @@ import {
   type NodeModel,
   type ServiceConfig,
   type ServiceDef,
-} from '@cloudlab/catalog';
-import { tx } from '@cloudlab/catalog';
+} from '@learninglab/catalog';
+import { tx } from '@learninglab/catalog';
 import { lint } from './lint.ts';
 import {
   ENGINE_VERSION,
@@ -163,7 +163,7 @@ function topoOrder(g: Graph): { order: GraphNode[]; cyclic: string[] } {
 
 /**
  * How a node passes its inbound traffic to each outgoing edge.
- * See `Behavior` in @cloudlab/catalog for the meaning of each behaviour.
+ * See `Behavior` in @learninglab/catalog for the meaning of each behaviour.
  */
 function distribute(n: GraphNode, inflow: Flow, nodes: Map<string, GraphNode>, payloadKB: number): Map<GraphEdge, Flow> {
   const out = new Map<GraphEdge, Flow>();

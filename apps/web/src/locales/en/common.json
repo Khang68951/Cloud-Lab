@@ -1,6 +1,6 @@
 {
-  "appName": "CloudLab",
-  "tagline": "Learn cloud by doing",
+  "appName": "Learning Lab",
+  "tagline": "Learn by doing",
   "actions": {
     "start": "Start",
     "continue": "Continue",

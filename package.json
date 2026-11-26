@@ -1,8 +1,8 @@
 {
-  "name": "cloudlab",
+  "name": "learninglab",
   "private": true,
   "version": "0.1.0",
-  "description": "Local-first, practice-heavy platform for learning AWS / cloud system design (and more tracks later).",
+  "description": "Local-first, practice-heavy learning hub. Each subject (Cloud first) is a domain with its own tools.",
   "type": "module",
   "workspaces": [
     "apps/*",
@@ -12,16 +12,16 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev -w @cloudlab/api\" \"npm run dev -w @cloudlab/web\"",
-    "build": "npm run build -w @cloudlab/web",
-    "start": "npm run start -w @cloudlab/api",
+    "dev": "concurrently -k -n api,web -c blue,green \"npm run dev -w @learninglab/api\" \"npm run dev -w @learninglab/web\"",
+    "build": "npm run build -w @learninglab/web",
+    "start": "npm run start -w @learninglab/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
     "e2e": "npm run build && playwright test",
     "i18n:check": "tsx scripts/check-i18n.ts",
-    "db:generate": "npm run db:generate -w @cloudlab/api --",
+    "db:generate": "npm run db:generate -w @learninglab/api --",
     "check": "npm run typecheck && npm run lint && npm run test && npm run i18n:check",
     "sim:report": "tsx scripts/sim-report.ts",
     "challenges:report": "tsx scripts/challenges-report.ts"

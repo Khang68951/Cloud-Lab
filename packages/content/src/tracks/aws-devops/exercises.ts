@@ -1,4 +1,4 @@
-import { tx } from '@cloudlab/catalog';
+import { tx } from '@learninglab/catalog';
 import type { CourseExercises } from '../../define.ts';
 import { exerciseBuilders } from '../../helpers.ts';
 

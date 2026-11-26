@@ -1,4 +1,4 @@
-import type { Locale } from '@cloudlab/shared';
+import type { Locale } from '@learninglab/shared';
 
 const INTL_LOCALE: Record<Locale, string> = { en: 'en-US', vi: 'vi-VN' };
 

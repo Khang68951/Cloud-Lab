@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from '@cloudlab/shared';
+import { DEFAULT_SETTINGS } from '@learninglab/shared';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.ts';
 import { createDb } from './db/client.ts';

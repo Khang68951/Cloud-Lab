@@ -1,11 +1,11 @@
-import type { Exercise } from '@cloudlab/exercise-kit';
+import type { Exercise } from '@learninglab/exercise-kit';
 import {
   EXERCISE_KINDS,
   trackMetaSchema,
   type ContentStatus,
   type TrackMeta,
   type TrackMetaInput,
-} from '@cloudlab/shared';
+} from '@learninglab/shared';
 
 /** Exercises of one course, keyed module slug → lesson slug. Order = order shown. */
 export type CourseExercises = Record<string, Record<string, Exercise[]>>;

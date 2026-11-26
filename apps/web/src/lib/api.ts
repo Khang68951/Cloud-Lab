@@ -1,4 +1,4 @@
-import type { AppType } from '@cloudlab/api/app';
+import type { AppType } from '@learninglab/api/app';
 import { hc } from 'hono/client';
 
 /**

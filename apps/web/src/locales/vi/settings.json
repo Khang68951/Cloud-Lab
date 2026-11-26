@@ -11,7 +11,7 @@
     "showVnd": "Hiện giá quy đổi VND",
     "showVndHint": "AWS tính tiền bằng USD. Bật lên để xem thêm số tiền VND ước tính.",
     "rate": "Tỉ giá (VND cho 1 USD)",
-    "rateHint": "Tự nhập — CloudLab không gọi API tỉ giá nào.",
+    "rateHint": "Tự nhập — Learning Lab không gọi API tỉ giá nào.",
     "preview": "Ví dụ"
   },
   "data": {

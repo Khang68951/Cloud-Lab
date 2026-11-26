@@ -1,4 +1,4 @@
-import type { ThemePreference } from '@cloudlab/shared';
+import type { ThemePreference } from '@learninglab/shared';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { ThemeContext } from './context.ts';
 import { applyTheme, onSystemThemeChange, readStoredTheme, storeTheme, systemTheme } from './theme.ts';

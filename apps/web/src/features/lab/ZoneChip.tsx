@@ -1,4 +1,4 @@
-import type { AzLayout, Placement } from '@cloudlab/catalog';
+import type { AzLayout, Placement } from '@learninglab/catalog';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { ZONE_ICON } from './hues';

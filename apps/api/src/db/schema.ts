@@ -3,7 +3,7 @@ import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core
 
 /**
  * Key/value settings. Values are JSON so new settings never need a migration;
- * shape and defaults live in `settingsSchema` (@cloudlab/shared).
+ * shape and defaults live in `settingsSchema` (@learninglab/shared).
  */
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),

@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@cloudlab/shared';
+import { DEFAULT_SETTINGS, type Settings, type SettingsPatch } from '@learninglab/shared';
 import { useIsMutating, useMutation, useMutationState, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/lib/api';
 

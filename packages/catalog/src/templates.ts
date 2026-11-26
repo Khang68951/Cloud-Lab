@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@cloudlab/shared';
+import type { LocalizedText } from '@learninglab/shared';
 import { DEFAULT_SCENARIO, type Design, type DesignEdge, type DesignNode } from './design.ts';
 import { tx, type Scenario, type ServiceConfig } from './types.ts';
 

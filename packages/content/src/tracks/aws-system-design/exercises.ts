@@ -1,4 +1,4 @@
-import { buildDesign, tx } from '@cloudlab/catalog';
+import { buildDesign, tx } from '@learninglab/catalog';
 import type { CourseExercises } from '../../define.ts';
 import { exerciseBuilders, R, scenario, usersOnly, withSecurityGroups } from '../../helpers.ts';
 

@@ -1,8 +1,8 @@
 import '@xyflow/react/dist/style.css';
-import { DEFAULT_NETWORK, designSchema, getService, TEMPLATES, type Design } from '@cloudlab/catalog';
-import { challengeDesign, gradeCanvas, type CanvasChallenge, type GradeResult } from '@cloudlab/exercise-kit';
-import { localize } from '@cloudlab/shared';
-import { simulate, type Finding } from '@cloudlab/sim-engine';
+import { DEFAULT_NETWORK, designSchema, getService, TEMPLATES, type Design } from '@learninglab/catalog';
+import { challengeDesign, gradeCanvas, type CanvasChallenge, type GradeResult } from '@learninglab/exercise-kit';
+import { localize } from '@learninglab/shared';
+import { simulate, type Finding } from '@learninglab/sim-engine';
 import {
   Background,
   BackgroundVariant,

@@ -1,5 +1,5 @@
-import type { Exercise } from '@cloudlab/exercise-kit';
-import type { LessonMeta, ModuleMeta, TrackMeta } from '@cloudlab/shared';
+import type { Exercise } from '@learninglab/exercise-kit';
+import type { LessonMeta, ModuleMeta, TrackMeta } from '@learninglab/shared';
 import * as analytics from './tracks/aws-analytics/index.ts';
 import * as compute from './tracks/aws-compute/index.ts';
 import * as cost from './tracks/aws-cost/index.ts';

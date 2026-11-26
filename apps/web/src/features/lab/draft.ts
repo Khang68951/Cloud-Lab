@@ -1,4 +1,4 @@
-import { designSchema, type Design } from '@cloudlab/catalog';
+import { designSchema, type Design } from '@learninglab/catalog';
 
 /** The free Lab autosaves here so a refresh never loses work. */
 export const DRAFT_KEY = 'cloudlab.lab.draft';

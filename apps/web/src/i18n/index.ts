@@ -1,14 +1,16 @@
-import { DEFAULT_LOCALE, FALLBACK_LOCALE, isLocale, LOCALES, type Locale } from '@cloudlab/shared';
+import { DEFAULT_LOCALE, FALLBACK_LOCALE, isLocale, LOCALES, type Locale } from '@learninglab/shared';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { resources } from './resources.ts';
 
 /** Must match the inline script in index.html. */
-export const LOCALE_STORAGE_KEY = 'cloudlab.locale';
+export const LOCALE_STORAGE_KEY = 'learninglab.locale';
+/** Key used before the app was renamed; still read so the choice survives. */
+const LEGACY_LOCALE_KEY = 'cloudlab.locale';
 
 function initialLocale(): Locale {
   try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+    const stored = localStorage.getItem(LOCALE_STORAGE_KEY) ?? localStorage.getItem(LEGACY_LOCALE_KEY);
     if (isLocale(stored)) return stored;
   } catch {
     /* storage unavailable */

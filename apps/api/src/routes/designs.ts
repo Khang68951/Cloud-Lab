@@ -1,4 +1,4 @@
-import { designSchema } from '@cloudlab/catalog';
+import { designSchema } from '@learninglab/catalog';
 import { zValidator } from '@hono/zod-validator';
 import { desc, eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';

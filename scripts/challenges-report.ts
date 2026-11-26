@@ -3,8 +3,8 @@
  * reference solution score against every requirement, for every course.
  * Usage: npm run challenges:report [-- <course-slug>]
  */
-import { allExercises } from '@cloudlab/content';
-import { gradeCanvas, type CanvasChallenge } from '@cloudlab/exercise-kit';
+import { allExercises } from '@learninglab/content';
+import { gradeCanvas, type CanvasChallenge } from '@learninglab/exercise-kit';
 
 const only = process.argv[2];
 const challenges = allExercises

@@ -1,4 +1,4 @@
-import type { ThemePreference } from '@cloudlab/shared';
+import type { ThemePreference } from '@learninglab/shared';
 import { createContext, useContext } from 'react';
 import type { ResolvedTheme } from './theme.ts';
 

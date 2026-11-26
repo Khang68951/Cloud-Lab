@@ -1,5 +1,5 @@
-import { getTrack, lessonExercises, lessonKey } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { getTrack, lessonExercises, lessonKey } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { ArrowLeft, ArrowRight, Award, BookOpen, Check, CircleCheck, Circle, CircleDashed, Clock, Target, TriangleAlert } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';

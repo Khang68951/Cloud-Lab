@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@cloudlab/shared';
+import type { LocalizedText } from '@learninglab/shared';
 import { IN_VPC, type Placement } from './placement.ts';
 import { tx, type ServiceConfig, type ServiceDef } from './types.ts';
 

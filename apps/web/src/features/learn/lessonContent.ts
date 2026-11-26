@@ -1,4 +1,4 @@
-import type { Locale } from '@cloudlab/shared';
+import type { Locale } from '@learninglab/shared';
 import type { MDXContent } from 'mdx/types';
 
 /**

@@ -1,5 +1,5 @@
-import { getService, tx, type Design, type ServiceDef } from '@cloudlab/catalog';
-import type { LocalizedText } from '@cloudlab/shared';
+import { getService, tx, type Design, type ServiceDef } from '@learninglab/catalog';
+import type { LocalizedText } from '@learninglab/shared';
 import type { FlowRole, FlowStep } from './types.ts';
 
 /**

@@ -1,5 +1,5 @@
-import { availableLessonsOf, courseExercises, lessonsOf, tracks } from '@cloudlab/content';
-import type { TrackMeta } from '@cloudlab/shared';
+import { availableLessonsOf, courseExercises, lessonsOf, tracks } from '@learninglab/content';
+import type { TrackMeta } from '@learninglab/shared';
 import { useMemo } from 'react';
 import { useProgress, type Progress } from './api';
 

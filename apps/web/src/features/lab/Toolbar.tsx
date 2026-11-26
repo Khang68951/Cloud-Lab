@@ -1,5 +1,5 @@
-import { TEMPLATES, type Design } from '@cloudlab/catalog';
-import { localize } from '@cloudlab/shared';
+import { TEMPLATES, type Design } from '@learninglab/catalog';
+import { localize } from '@learninglab/shared';
 import { DropdownMenu as DM } from 'radix-ui';
 import {
   ArrowLeft,

@@ -1,5 +1,5 @@
-import { getTemplate, type Design } from '@cloudlab/catalog';
-import { localize } from '@cloudlab/shared';
+import { getTemplate, type Design } from '@learninglab/catalog';
+import { localize } from '@learninglab/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';

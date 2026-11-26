@@ -1,6 +1,6 @@
-import { findLesson, getExercise } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
-import type { Locale } from '@cloudlab/shared';
+import { findLesson, getExercise } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
+import type { Locale } from '@learninglab/shared';
 
 /** Only same-app paths are accepted from `?from=` (no protocol-relative or external URLs). */
 export function safeFrom(v: string | null): string | null {

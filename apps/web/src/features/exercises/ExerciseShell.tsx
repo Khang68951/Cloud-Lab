@@ -1,5 +1,5 @@
-import type { Exercise } from '@cloudlab/exercise-kit';
-import { localize, type LocalizedText } from '@cloudlab/shared';
+import type { Exercise } from '@learninglab/exercise-kit';
+import { localize, type LocalizedText } from '@learninglab/shared';
 import { CircleCheck, Lightbulb } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

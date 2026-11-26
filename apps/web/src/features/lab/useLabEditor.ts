@@ -1,4 +1,4 @@
-import { defaultConfig, getService, type Design, type NetworkConfig, type Scenario, type ServiceConfig } from '@cloudlab/catalog';
+import { defaultConfig, getService, type Design, type NetworkConfig, type Scenario, type ServiceConfig } from '@learninglab/catalog';
 import { addEdge, useEdgesState, useNodesState, type Connection, type XYPosition } from '@xyflow/react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { newId, toDesign, toFlow, type LabEdge, type LabNode } from './model';

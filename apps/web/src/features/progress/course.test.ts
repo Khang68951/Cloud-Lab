@@ -1,4 +1,4 @@
-import { getTrack, lessonsOf } from '@cloudlab/content';
+import { getTrack, lessonsOf } from '@learninglab/content';
 import { describe, expect, it } from 'vitest';
 import type { Progress } from './api';
 import { courseProgress, recommendedCourse, type CourseProgress } from './course';

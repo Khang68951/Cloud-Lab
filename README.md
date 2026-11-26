@@ -1,6 +1,6 @@
-# CloudLab
+# Learning Lab
 
-Web học **AWS / Cloud System Design** theo hướng **thực hành là chính**. Chạy 100% trên máy, miễn phí, song ngữ Việt/Anh, có theme sáng/tối.
+Web học theo hướng **thực hành là chính**, gồm nhiều mảng (domain). Mảng đầu tiên là **CloudLab**: học AWS / Cloud System Design. Chạy 100% trên máy, miễn phí, song ngữ Việt/Anh, có theme sáng/tối.
 Kế hoạch đầy đủ nằm trong [PLAN.md](PLAN.md).
 
 ## Chạy app
@@ -39,7 +39,7 @@ Mở http://localhost:5173
 | `npm run sim:report` | In số liệu mô phỏng của các template (kiểm tra sau khi sửa giá hoặc engine) |
 | `npm run challenges:report` | Hiệu chỉnh challenge: xem starter và lời giải đạt hay trượt từng yêu cầu |
 
-**Dữ liệu học** nằm trong `data/cloudlab.db`. Để backup, dùng **Cài đặt → Xuất dữ liệu** (một file JSON, nhập lại được trên máy khác), hoặc copy file `.db`.
+**Dữ liệu học** nằm trong `data/learninglab.db`. Để backup, dùng **Cài đặt → Xuất dữ liệu** (một file JSON, nhập lại được trên máy khác), hoặc copy file `.db`.
 
 ## Cấu trúc
 

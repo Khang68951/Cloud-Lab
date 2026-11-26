@@ -1,5 +1,5 @@
-import { allExercises, getTrack, roadmapStages, tracks } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { allExercises, getTrack, roadmapStages, tracks } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { ArrowRight, Award, BookA, BookOpen, Compass, Dumbbell, Map, Target, Workflow } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

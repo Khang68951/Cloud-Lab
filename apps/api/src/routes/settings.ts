@@ -1,4 +1,4 @@
-import { settingsPatchSchema } from '@cloudlab/shared';
+import { settingsPatchSchema } from '@learninglab/shared';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import type { Db } from '../db/client.ts';

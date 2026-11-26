@@ -8,7 +8,7 @@ import { ADVANCED_SERVICES } from './services/advanced.ts';
 import { MORE_INFRA } from './services/more-infra.ts';
 import { MORE_PLATFORM } from './services/more-platform.ts';
 import { tx, type ServiceDef } from './types.ts';
-import type { LocalizedText } from '@cloudlab/shared';
+import type { LocalizedText } from '@learninglab/shared';
 
 /**
  * All services, in palette order (core first, then advanced — the palette groups

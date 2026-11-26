@@ -1,4 +1,4 @@
-import { settingsSchema, type Settings, type SettingsPatch } from '@cloudlab/shared';
+import { settingsSchema, type Settings, type SettingsPatch } from '@learninglab/shared';
 import { sql } from 'drizzle-orm';
 import type { Db } from '../db/client.ts';
 import { settings as settingsTable } from '../db/schema.ts';

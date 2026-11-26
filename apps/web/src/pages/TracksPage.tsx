@@ -1,4 +1,4 @@
-import { roadmapStages } from '@cloudlab/content';
+import { roadmapStages } from '@learninglab/content';
 import { Map } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';

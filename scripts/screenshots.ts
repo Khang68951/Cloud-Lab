@@ -29,8 +29,8 @@ for (const [name, path, theme, lang, w, h] of shots) {
   const page = await ctx.newPage();
   await page.addInitScript(
     ([t, l]) => {
-      localStorage.setItem('cloudlab.theme', t!);
-      localStorage.setItem('cloudlab.locale', l!);
+      localStorage.setItem('learninglab.theme', t!);
+      localStorage.setItem('learninglab.locale', l!);
     },
     [theme, lang],
   );

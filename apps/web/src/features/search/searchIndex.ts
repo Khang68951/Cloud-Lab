@@ -1,6 +1,6 @@
-import { allExercises, GLOSSARY, lessonsOf, tracks } from '@cloudlab/content';
-import { SERVICES } from '@cloudlab/catalog';
-import { localize, type Locale } from '@cloudlab/shared';
+import { allExercises, GLOSSARY, lessonsOf, tracks } from '@learninglab/content';
+import { SERVICES } from '@learninglab/catalog';
+import { localize, type Locale } from '@learninglab/shared';
 
 export type SearchKind = 'course' | 'lesson' | 'challenge' | 'service' | 'term';
 

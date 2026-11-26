@@ -1,6 +1,6 @@
 # CloudLab: Kế hoạch xây dựng web học AWS / Cloud System Design (thực hành là chính)
 
-> Tên "CloudLab" là tạm thời. Đây là tài liệu tham chiếu chính khi build. Khi đổi quyết định thì cập nhật ở đây.
+> App đã đổi tên thành **Learning Lab**; CloudLab giờ là mảng (domain) Cloud bên trong nó. Tài liệu này mô tả mảng Cloud. Đây là tài liệu tham chiếu chính khi build. Khi đổi quyết định thì cập nhật ở đây.
 > **Hệ thống khoá học và hoàn thiện web: xem [COURSE-PLAN.md](COURSE-PLAN.md).**
 > Phiên bản 2 (2026-11-18): chuyển sang **100% local, $0, không cài thêm gì, thực hành > lý thuyết**.
 

@@ -1,4 +1,4 @@
-import { buildDesign, tx } from '@cloudlab/catalog';
+import { buildDesign, tx } from '@learninglab/catalog';
 import { exerciseBuilders, R, scenario, usersOnly } from '../../helpers.ts';
 
 const { challenge } = exerciseBuilders('aws');

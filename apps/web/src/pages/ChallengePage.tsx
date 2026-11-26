@@ -1,4 +1,4 @@
-import { getExercise } from '@cloudlab/content';
+import { getExercise } from '@learninglab/content';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router';
 import { resolveBackTo } from '@/features/lab/backTo';

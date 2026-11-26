@@ -4,9 +4,13 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { createApp } from './app.ts';
-import { createDb } from './db/client.ts';
+import { adoptLegacyDb, createDb } from './db/client.ts';
 import { env } from './env.ts';
 
+// The default data file was renamed (cloudlab.db → learninglab.db): keep existing progress.
+if (!process.env.DB_PATH && adoptLegacyDb(env.legacyDbPath, env.dbPath)) {
+  console.log(`Moved ${env.legacyDbPath} → ${env.dbPath}`);
+}
 const db = createDb(env.dbPath);
 const api = createApp({ db });
 
@@ -20,6 +24,6 @@ if (existsSync(env.webDist)) {
 }
 
 serve({ fetch: server.fetch, port: env.port, hostname: env.host }, (info) => {
-  console.log(`CloudLab API  → http://${info.address}:${info.port}/api/health`);
+  console.log(`Learning Lab API  → http://${info.address}:${info.port}/api/health`);
   console.log(`Database      → ${env.dbPath}`);
 });

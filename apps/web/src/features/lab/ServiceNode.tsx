@@ -1,4 +1,4 @@
-import { getService, placementOf } from '@cloudlab/catalog';
+import { getService, placementOf } from '@learninglab/catalog';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Inbox } from 'lucide-react';
 import { ZoneChip } from './ZoneChip';

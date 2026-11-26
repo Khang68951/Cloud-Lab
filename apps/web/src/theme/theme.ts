@@ -1,7 +1,9 @@
-import type { ThemePreference } from '@cloudlab/shared';
+import type { ThemePreference } from '@learninglab/shared';
 
 /** Must match the inline script in index.html. */
-export const THEME_STORAGE_KEY = 'cloudlab.theme';
+export const THEME_STORAGE_KEY = 'learninglab.theme';
+/** Key used before the app was renamed; still read so the choice survives. */
+const LEGACY_THEME_KEY = 'cloudlab.theme';
 
 export type ResolvedTheme = 'light' | 'dark';
 
@@ -23,7 +25,7 @@ export function applyTheme(resolved: ResolvedTheme) {
 
 export function readStoredTheme(): ThemePreference {
   try {
-    const v = localStorage.getItem(THEME_STORAGE_KEY);
+    const v = localStorage.getItem(THEME_STORAGE_KEY) ?? localStorage.getItem(LEGACY_THEME_KEY);
     if (v === 'light' || v === 'dark' || v === 'system') return v;
   } catch {
     /* storage unavailable */

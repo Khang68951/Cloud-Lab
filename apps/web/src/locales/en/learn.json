@@ -70,7 +70,7 @@
     "settings": "Settings",
     "heading": "Certificate of completion",
     "awardedTo": "This certifies that",
-    "learner": "CloudLab learner",
+    "learner": "Learning Lab learner",
     "forCompleting": "has completed the course",
     "stats": "{{lessons}} lessons · {{exercises}} exercises passed · {{challenges}} Lab design challenges"
   }

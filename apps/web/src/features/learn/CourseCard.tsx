@@ -1,4 +1,4 @@
-import { localize, type TrackMeta } from '@cloudlab/shared';
+import { localize, type TrackMeta } from '@learninglab/shared';
 import { BookOpen, CircleCheck, Clock, Sparkles, Target } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';

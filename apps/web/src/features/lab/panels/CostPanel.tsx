@@ -1,6 +1,6 @@
-import { getService, PRICING_AS_OF, REGIONS, type CostKind } from '@cloudlab/catalog';
-import { localize } from '@cloudlab/shared';
-import type { SimResult } from '@cloudlab/sim-engine';
+import { getService, PRICING_AS_OF, REGIONS, type CostKind } from '@learninglab/catalog';
+import { localize } from '@learninglab/shared';
+import type { SimResult } from '@learninglab/sim-engine';
 import { ChevronRight } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';

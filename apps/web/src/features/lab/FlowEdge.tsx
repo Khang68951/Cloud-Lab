@@ -1,5 +1,5 @@
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react';
-import { localize } from '@cloudlab/shared';
+import { localize } from '@learninglab/shared';
 import { Ban } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';

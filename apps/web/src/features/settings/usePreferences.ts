@@ -1,4 +1,4 @@
-import type { Locale, ThemePreference } from '@cloudlab/shared';
+import type { Locale, ThemePreference } from '@learninglab/shared';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { currentLocale, storeLocale } from '@/i18n';

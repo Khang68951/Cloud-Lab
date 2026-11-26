@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Every kind of hands-on practice CloudLab knows about. Each kind gets a
+ * Every kind of hands-on practice Learning Lab knows about. Each kind gets a
  * Player (UI) + a pure `grade()` function in the Exercise Kit (Phase 1+).
  * New subjects can add new kinds (e.g. `sql-query`, `k8s-manifest`) here.
  */

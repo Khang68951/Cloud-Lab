@@ -1,5 +1,5 @@
-import { getTrack, roadmapStages } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { getTrack, roadmapStages } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { ArrowRight, CircleCheck, Circle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';

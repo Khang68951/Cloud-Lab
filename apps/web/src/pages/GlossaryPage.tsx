@@ -1,5 +1,5 @@
-import { GLOSSARY } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { GLOSSARY } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';

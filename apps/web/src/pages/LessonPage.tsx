@@ -1,5 +1,5 @@
-import { findLesson, lessonExercises } from '@cloudlab/content';
-import { localize, type Locale } from '@cloudlab/shared';
+import { findLesson, lessonExercises } from '@learninglab/content';
+import { localize, type Locale } from '@learninglab/shared';
 import { MDXProvider } from '@mdx-js/react';
 import type { MDXContent } from 'mdx/types';
 import { ArrowLeft, ArrowRight, CircleCheck, Clock, Languages } from 'lucide-react';

@@ -1,5 +1,5 @@
-import { getTrack } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { getTrack } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { Award, Check, Printer, X } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -86,7 +86,7 @@ export default function CertificatePage() {
           {t('certificate.stats', { lessons: p.lessonsTotal, exercises: p.exercisesPassed, challenges: p.challengesPassed })}
         </p>
         <p className="mt-10 font-mono text-sm">{date}</p>
-        <p className="mt-1 text-xs text-muted-foreground">CloudLab</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('appName', { ns: 'common' })}</p>
       </article>
     </div>
   );

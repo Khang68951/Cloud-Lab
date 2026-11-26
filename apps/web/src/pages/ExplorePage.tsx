@@ -1,5 +1,5 @@
-import { CATEGORIES, CATEGORY_LABELS, SERVICES, type ServiceDef } from '@cloudlab/catalog';
-import { localize, type LocalizedText } from '@cloudlab/shared';
+import { CATEGORIES, CATEGORY_LABELS, SERVICES, type ServiceDef } from '@learninglab/catalog';
+import { localize, type LocalizedText } from '@learninglab/shared';
 import { Columns3, Search, X } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import type { ContentStatus } from '@cloudlab/shared';
+import type { ContentStatus } from '@learninglab/shared';
 import { CircleCheck, CircleDashed, Hammer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';

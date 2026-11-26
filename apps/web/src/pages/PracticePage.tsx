@@ -1,5 +1,5 @@
-import { allExercises, tracks } from '@cloudlab/content';
-import { localize } from '@cloudlab/shared';
+import { allExercises, tracks } from '@learninglab/content';
+import { localize } from '@learninglab/shared';
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';

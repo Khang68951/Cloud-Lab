@@ -1,7 +1,7 @@
-import { buildDesign, getService, IN_VPC, listenPort, placementOf, SG_KEY, tx, type Design, type Scenario } from '@cloudlab/catalog';
-import type { CanvasChallenge, Estimation, Requirement, ScenarioQuiz } from '@cloudlab/exercise-kit';
-import type { Severity } from '@cloudlab/sim-engine';
-import type { LocalizedText, SkillTag } from '@cloudlab/shared';
+import { buildDesign, getService, IN_VPC, listenPort, placementOf, SG_KEY, tx, type Design, type Scenario } from '@learninglab/catalog';
+import type { CanvasChallenge, Estimation, Requirement, ScenarioQuiz } from '@learninglab/exercise-kit';
+import type { Severity } from '@learninglab/sim-engine';
+import type { LocalizedText, SkillTag } from '@learninglab/shared';
 
 /** Bilingual text everywhere in content is written as `tx(english, vietnamese)`. */
 type T = LocalizedText;

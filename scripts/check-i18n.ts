@@ -10,7 +10,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LOCALES } from '@cloudlab/shared';
+import { LOCALES } from '@learninglab/shared';
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 

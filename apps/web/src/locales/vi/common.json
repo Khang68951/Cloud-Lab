@@ -1,6 +1,6 @@
 {
-  "appName": "CloudLab",
-  "tagline": "Học cloud bằng cách làm",
+  "appName": "Learning Lab",
+  "tagline": "Học bằng cách làm",
   "actions": {
     "start": "Bắt đầu",
     "continue": "Tiếp tục",

@@ -1,4 +1,4 @@
-import { getService } from '@cloudlab/catalog';
+import { getService } from '@learninglab/catalog';
 import type { FlowRole, FlowStep, Requirement } from './types.ts';
 
 /**

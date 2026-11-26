@@ -1,4 +1,4 @@
-import { tx } from '@cloudlab/catalog';
+import { tx } from '@learninglab/catalog';
 import { defineCourse } from '../../define.ts';
 import { lesson, mod } from '../../helpers.ts';
 

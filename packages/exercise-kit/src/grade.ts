@@ -1,6 +1,6 @@
-import { DEFAULT_NETWORK, tx, type Design } from '@cloudlab/catalog';
-import type { LocalizedText } from '@cloudlab/shared';
-import { simulate, type SimResult } from '@cloudlab/sim-engine';
+import { DEFAULT_NETWORK, tx, type Design } from '@learninglab/catalog';
+import type { LocalizedText } from '@learninglab/shared';
+import { simulate, type SimResult } from '@learninglab/sim-engine';
 import { flowLabel, hasFlow } from './flow.ts';
 import type { Answer, CanvasChallenge, CheckResult, Exercise, GradeResult, MetricKey, Requirement } from './types.ts';
 

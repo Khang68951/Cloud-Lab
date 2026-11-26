@@ -1,4 +1,4 @@
-import { designSchema } from '@cloudlab/catalog';
+import { designSchema } from '@learninglab/catalog';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -8,7 +8,8 @@ import { designs, exerciseAttempts, lessonProgress, settings } from '../db/schem
 export const BACKUP_VERSION = 1;
 
 const backupSchema = z.object({
-  app: z.literal('cloudlab'),
+  /** "cloudlab" = backups made before the app was renamed; still accepted. */
+  app: z.enum(['learninglab', 'cloudlab']),
   version: z.literal(BACKUP_VERSION),
   exportedAt: z.number(),
   settings: z.array(z.object({ key: z.string(), value: z.unknown() })),
@@ -45,7 +46,7 @@ export function dataRoutes(db: Db) {
   return new Hono()
     .get('/export', (c) => {
       const backup: Backup = {
-        app: 'cloudlab',
+        app: 'learninglab',
         version: BACKUP_VERSION,
         exportedAt: Date.now(),
         settings: db.select().from(settings).all().map((r) => ({ key: r.key, value: r.value })),

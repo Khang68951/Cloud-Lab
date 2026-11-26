@@ -1,4 +1,4 @@
-import type { LocalizedText } from '@cloudlab/shared';
+import type { LocalizedText } from '@learninglab/shared';
 import { PRICES } from '../pricing.ts';
 import { tx, type ServiceDef, type ServiceDocs } from '../types.ts';
 import { bool, gbPerMonth, hours, line, millionsPerMonth, num, p, str, total } from '../util.ts';

@@ -1,5 +1,5 @@
 {
-  "name": "@cloudlab/content",
+  "name": "@learninglab/content",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@cloudlab/shared": "*",
-    "@cloudlab/catalog": "*",
-    "@cloudlab/exercise-kit": "*",
-    "@cloudlab/sim-engine": "*"
+    "@learninglab/shared": "*",
+    "@learninglab/catalog": "*",
+    "@learninglab/exercise-kit": "*",
+    "@learninglab/sim-engine": "*"
   }
 }

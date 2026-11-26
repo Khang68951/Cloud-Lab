@@ -1,4 +1,4 @@
-import { buildDesign, DEFAULT_SCENARIO } from '@cloudlab/catalog';
+import { buildDesign, DEFAULT_SCENARIO } from '@learninglab/catalog';
 import { describe, expect, it } from 'vitest';
 import { flowLabel, hasFlow } from './flow.ts';
 import type { FlowStep } from './types.ts';

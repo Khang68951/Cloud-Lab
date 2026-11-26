@@ -1,4 +1,4 @@
-import { ANYWHERE, portLabel, tx, type Flow, type Scenario } from '@cloudlab/catalog';
+import { ANYWHERE, portLabel, tx, type Flow, type Scenario } from '@learninglab/catalog';
 import type { Graph, GraphEdge, GraphNode } from './simulate.ts';
 import type { Finding, NodeResult, SimTotals } from './types.ts';
 

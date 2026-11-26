@@ -14,9 +14,9 @@ import {
   type Placement,
   type ServiceConfig,
   type SgRule,
-} from '@cloudlab/catalog';
-import { localize } from '@cloudlab/shared';
-import type { SimResult } from '@cloudlab/sim-engine';
+} from '@learninglab/catalog';
+import { localize } from '@learninglab/shared';
+import type { SimResult } from '@learninglab/sim-engine';
 import { Ban, Check, Plus, RotateCcw, X } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';

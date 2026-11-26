@@ -1,6 +1,6 @@
-import type { Design, Scenario } from '@cloudlab/catalog';
-import type { LocalizedText, SkillTag } from '@cloudlab/shared';
-import type { ChaosOptions, Severity } from '@cloudlab/sim-engine';
+import type { Design, Scenario } from '@learninglab/catalog';
+import type { LocalizedText, SkillTag } from '@learninglab/shared';
+import type { ChaosOptions, Severity } from '@learninglab/sim-engine';
 
 interface Base {
   /** Globally unique, stable id (progress is stored against it). */

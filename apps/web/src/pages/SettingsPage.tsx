@@ -1,4 +1,4 @@
-import { LOCALES, type Locale, type ThemePreference } from '@cloudlab/shared';
+import { LOCALES, type Locale, type ThemePreference } from '@learninglab/shared';
 import { Check, Coins, Database, Loader2, Palette, UserRound, WifiOff } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';

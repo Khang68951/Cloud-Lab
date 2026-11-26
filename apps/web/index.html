@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>CloudLab</title>
+    <title>Learning Lab</title>
     <script>
       // Apply theme + language before first paint (no flash of the wrong theme).
       // Keys must match src/theme/theme.ts and src/i18n/index.ts.
       (function () {
         try {
-          var pref = localStorage.getItem('cloudlab.theme') || 'system';
+          var pref = localStorage.getItem('learninglab.theme') || localStorage.getItem('cloudlab.theme') || 'system';
           var dark =
             pref === 'dark' ||
             (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           var root = document.documentElement;
           root.classList.toggle('dark', dark);
           root.style.colorScheme = dark ? 'dark' : 'light';
-          var lang = localStorage.getItem('cloudlab.locale');
+          var lang = localStorage.getItem('learninglab.locale') || localStorage.getItem('cloudlab.locale');
           if (lang === 'vi' || lang === 'en') root.lang = lang;
         } catch (e) {}
       })();

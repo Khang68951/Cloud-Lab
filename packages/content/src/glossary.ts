@@ -1,5 +1,5 @@
-import { tx } from '@cloudlab/catalog';
-import type { LocalizedText } from '@cloudlab/shared';
+import { tx } from '@learninglab/catalog';
+import type { LocalizedText } from '@learninglab/shared';
 
 export interface GlossaryTerm {
   term: string;
