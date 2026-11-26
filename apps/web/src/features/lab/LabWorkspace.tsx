@@ -1,6 +1,6 @@
 import '@xyflow/react/dist/style.css';
-import { designSchema, getService, TEMPLATES, type Design } from '@cloudlab/catalog';
-import { gradeCanvas, type CanvasChallenge, type GradeResult } from '@cloudlab/exercise-kit';
+import { DEFAULT_NETWORK, designSchema, getService, TEMPLATES, type Design } from '@cloudlab/catalog';
+import { challengeDesign, gradeCanvas, type CanvasChallenge, type GradeResult } from '@cloudlab/exercise-kit';
 import { localize } from '@cloudlab/shared';
 import { simulate, type Finding } from '@cloudlab/sim-engine';
 import {
@@ -40,10 +40,12 @@ import { DND_TYPE, Palette } from './Palette';
 import { ChallengePanel } from './panels/ChallengePanel';
 import { CostPanel } from './panels/CostPanel';
 import { NodeInspector, ScenarioEditor } from './panels/Inspector';
+import { VpcEditor } from './panels/NetworkPanel';
 import { ReviewPanel } from './panels/ReviewPanel';
 import { SummaryCard } from './panels/SummaryCard';
 import { ServiceNode } from './ServiceNode';
 import { LabToolbar } from './Toolbar';
+import { NetworkFrames } from './NetworkFrames';
 import { useLabEditor } from './useLabEditor';
 
 const nodeTypes: NodeTypes = { service: ServiceNode };
@@ -97,9 +99,9 @@ function Workspace({ initial, initialTitle = '', initialDesignId = null, challen
   // --- Simulation (re-run only when structure/config/scenario changes, not on drag).
   /** Exact current diagram, including node positions (for saving/exporting). */
   const liveDesign = useMemo(() => {
-    const d = toDesign(editor.nodes, editor.edges, editor.scenario);
-    return challenge ? { ...d, scenario: challenge.scenario } : d;
-  }, [editor.nodes, editor.edges, editor.scenario, challenge]);
+    const d = toDesign(editor.nodes, editor.edges, editor.scenario, editor.network);
+    return challenge ? challengeDesign(challenge, d) : d;
+  }, [editor.nodes, editor.edges, editor.scenario, editor.network, challenge]);
   const key = structuralKey(liveDesign);
   /** Changes only when structure/config/scenario change — not while dragging. */
   // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the structural key on purpose
@@ -209,7 +211,7 @@ function Workspace({ initial, initialTitle = '', initialDesignId = null, challen
       if (opts.title !== undefined) setTitle(opts.title);
       if (opts.id !== undefined) setDesignId(opts.id);
       setKilled(new Set());
-      window.setTimeout(() => void flow.fitView({ duration: 300, padding: 0.15, maxZoom: 1, minZoom: 0.7 }), 50);
+      window.setTimeout(() => void flow.fitView({ duration: 300, padding: 0.15, maxZoom: 1, minZoom: 0.5 }), 50);
     },
     [editor, flow],
   );
@@ -346,7 +348,7 @@ function Workspace({ initial, initialTitle = '', initialDesignId = null, challen
               defaultEdgeOptions={{ type: 'flow' }}
               colorMode={theme}
               fitView
-              fitViewOptions={{ padding: 0.15, maxZoom: 1, minZoom: 0.7 }}
+              fitViewOptions={{ padding: 0.15, maxZoom: 1, minZoom: 0.5 }}
               minZoom={0.2}
               maxZoom={2}
               snapToGrid
@@ -355,6 +357,7 @@ function Workspace({ initial, initialTitle = '', initialDesignId = null, challen
               proOptions={{ hideAttribution: true }}
             >
               <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} />
+              <NetworkFrames network={design.network ?? DEFAULT_NETWORK} />
               <Controls showInteractive={false} position="bottom-left" />
               <MiniMap pannable zoomable position="bottom-right" className="hidden! xl:block!" style={{ width: 160, height: 100 }} />
             </ReactFlow>
@@ -410,13 +413,21 @@ function Workspace({ initial, initialTitle = '', initialDesignId = null, challen
                       result={result.nodes[selectedNode.id]}
                       killed={killed.has(selectedNode.id)}
                       onConfig={(k, v) => editor.updateConfig(selectedNode.id, k, v)}
+                      onClearConfig={(k) => editor.clearConfig(selectedNode.id, k)}
+                      nodes={editor.nodes}
+                      edges={editor.edges}
+                      sim={result}
+                      network={design.network ?? DEFAULT_NETWORK}
                       onRename={(l) => editor.renameNode(selectedNode.id, l)}
                       onDelete={() => editor.removeNodes([selectedNode.id])}
                       onDuplicate={() => editor.duplicateNode(selectedNode.id)}
                       onToggleKill={() => toggleKill(selectedNode.id)}
                     />
                   ) : (
-                    <ScenarioEditor scenario={design.scenario} locked={Boolean(challenge)} onChange={editor.setScenario} />
+                    <>
+                      <ScenarioEditor scenario={design.scenario} locked={Boolean(challenge)} onChange={editor.setScenario} />
+                      <VpcEditor network={design.network ?? DEFAULT_NETWORK} sim={result} nodes={editor.nodes} onChange={editor.setNetwork} />
+                    </>
                   )}
                 </Tabs.Content>
                 <Tabs.Content value="review">

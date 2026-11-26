@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { grade, gradeCanvas } from '@cloudlab/exercise-kit';
 import { describe, expect, it } from 'vitest';
-import { AWS_EXERCISES } from './tracks/aws/exercises.ts';
-import { allExercises, defineTrack, findLesson, getExercise, getTrack, lessonExercises, lessonsOf, tracks } from './index.ts';
+import { buildCourse } from './define.ts';
+import { allExercises, defineTrack, MIN_EXERCISES, findLesson, getExercise, getTrack, lessonExercises, lessonsOf, tracks } from './index.ts';
 
 describe('content registry', () => {
   it('has unique track slugs', () => {
@@ -37,11 +37,16 @@ describe('content registry', () => {
     expect(findLesson('aws', all.at(-1)!.module.slug, all.at(-1)!.lesson.slug)!.next).toBeUndefined();
   });
 
-  it('every exercise map entry points to a real lesson', () => {
-    const aws = getTrack('aws')!;
-    for (const [module, lessons] of Object.entries(AWS_EXERCISES)) {
-      for (const lesson of Object.keys(lessons)) {
-        expect(aws.modules.find((m) => m.slug === module)?.lessons.find((l) => l.slug === lesson), `${module}/${lesson}`).toBeDefined();
+  it('rejects exercises filed under a lesson that does not exist', () => {
+    const outline = { slug: 'x', title: { en: 'x' }, tagline: { en: 'x' }, description: { en: 'x' }, modules: [] };
+    expect(() => buildCourse(outline, { nope: { missing: [] } })).toThrowError(/unknown lesson "nope\/missing"/);
+  });
+
+  it('module practice badges match the exercise kinds it really uses', () => {
+    for (const t of tracks) {
+      for (const m of t.modules) {
+        const kinds = new Set(m.lessons.flatMap((l) => lessonExercises(t.slug, m.slug, l.slug).map((e) => e.kind)));
+        expect(new Set(m.practice), `${t.slug}/${m.slug}`).toEqual(kinds);
       }
     }
   });
@@ -82,7 +87,17 @@ describe('content registry', () => {
     }
   });
 
-  it('every available lesson has MDX in both languages; planned lessons have no exercises yet', () => {
+  it('security groups start empty only after the security-groups lesson, and those challenges check every connection', () => {
+    const manual = allExercises.filter((e) => e.exercise.kind.startsWith('canvas') && (e.exercise as { manualSg?: boolean }).manualSg);
+    expect(manual.every((e) => ['aws-networking', 'aws-reliability', 'aws-system-design'].includes(e.ref.track.slug))).toBe(true);
+    expect(allExercises.filter((e) => e.ref.track.slug === 'aws' && (e.exercise as { manualSg?: boolean }).manualSg)).toEqual([]);
+    for (const { exercise: ex } of manual) {
+      if (ex.kind !== 'canvas-design' && ex.kind !== 'canvas-fix') continue;
+      expect(ex.requirements.some((r) => r.type === 'no-finding' && r.prefix === 'blocked-edge'), ex.id).toBe(true);
+    }
+  });
+
+  it('every available lesson has MDX in both languages; a lesson with exercises has enough of them', () => {
     const dir = resolve(fileURLToPath(import.meta.url), '../tracks');
     const problems: string[] = [];
     for (const t of tracks) {
@@ -91,7 +106,7 @@ describe('content registry', () => {
         if (ref.lesson.status === 'available') {
           for (const lang of ['vi', 'en']) if (!existsSync(`${base}.${lang}.mdx`)) problems.push(`missing ${base}.${lang}.mdx`);
         } else if (lessonExercises(t.slug, ref.module.slug, ref.lesson.slug).length > 0) {
-          problems.push(`${ref.key} is planned but already has exercises — mark it available`);
+          problems.push(`${ref.key} has only ${lessonExercises(t.slug, ref.module.slug, ref.lesson.slug).length} exercises — needs ${MIN_EXERCISES}`);
         }
       }
     }
@@ -113,16 +128,6 @@ describe('content registry', () => {
       }
     }
     expect(bad).toEqual([]);
-  });
-
-  it('every available lesson has at least 3 exercises', () => {
-    const thin = tracks.flatMap((t) =>
-      lessonsOf(t)
-        .filter((l) => l.lesson.status === 'available')
-        .filter((l) => lessonExercises(t.slug, l.module.slug, l.lesson.slug).length < 3)
-        .map((l) => l.key),
-    );
-    expect(thin).toEqual([]);
   });
 
   it('roadmap: prerequisites exist and come from an earlier stage (so there are no cycles)', () => {

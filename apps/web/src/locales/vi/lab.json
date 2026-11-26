@@ -7,6 +7,8 @@
   },
   "utilizationAtPeak": "Mức tải lúc cao điểm",
   "autoScales": "Tự scale",
+  "queuePiling": "+{{rps}}/s đang dồn",
+  "queuePilingHelp": "Consumer chỉ lấy {{drain}} msg/s; phần còn lại nằm chờ trong queue thay vì làm quá tải phía sau.",
   "emptyHint": "Kéo dịch vụ từ cột bên trái vào đây, rồi nối chúng bằng cách kéo từ chấm tròn của một node sang node khác.",
   "mobileHint": "Lab hoạt động tốt nhất trên màn hình rộng (máy tính).",
   "panel": {
@@ -78,6 +80,8 @@
     "delete": "Xoá",
     "traffic": "Traffic (TB / đỉnh)",
     "capacity": "Sức chứa",
+    "queueDrain": "Consumer đang lấy",
+    "queueBacklog": "Đang dồn vào queue",
     "latency": "Độ trễ thêm vào",
     "cost": "Chi phí/tháng",
     "layout": "Vị trí",
@@ -135,6 +139,7 @@
     "canvas-fix": "Sửa kiến trúc"
   },
   "challenge": {
+    "manualSg": "Ở bài này security group bắt đầu trống, giống SG mới tạo trên AWS: chưa thêm rule inbound thì không gì kết nối được. Chọn node → Mạng → Thêm rule.",
     "requirements": "Yêu cầu (kiểm tra trực tiếp)",
     "met": "Đạt",
     "notMet": "Chưa đạt",
@@ -144,6 +149,11 @@
     "passed": "Đạt! Bài đã được lưu vào tiến độ.",
     "failed": "Chưa đạt ({{score}}%). Xem các yêu cầu còn đỏ.",
     "reference": "Xem lời giải tham khảo",
+    "optimization": "Tối ưu",
+    "hiddenOptimizations_one": "Còn {{count}} yêu cầu tối ưu đang ẩn (cache, queue…). Bấm Gợi ý để mở.",
+    "hiddenOptimizations_other": "Còn {{count}} yêu cầu tối ưu đang ẩn (cache, queue…). Bấm Gợi ý để mở.",
+    "needsOptimization_one": "Các yêu cầu chính đã đạt, nhưng hệ thống chưa được tối ưu: còn {{count}} yêu cầu ẩn chưa đạt. Xem lại các con số (độ trễ, chi phí, đỉnh tải) hoặc bấm Gợi ý.",
+    "needsOptimization_other": "Các yêu cầu chính đã đạt, nhưng hệ thống chưa được tối ưu: còn {{count}} yêu cầu ẩn chưa đạt. Xem lại các con số (độ trễ, chi phí, đỉnh tải) hoặc bấm Gợi ý.",
     "notFound": "Không tìm thấy bài tập này."
   },
   "toolbar": {
@@ -180,5 +190,69 @@
     "short": "Về bài",
     "title": "Quay về bài học: {{title}}",
     "afterPass": "Quay về xem kết quả"
+  },
+  "zone": {
+    "internet": "Internet",
+    "edge": "Edge AWS",
+    "public": "Public subnet",
+    "private": "Private subnet",
+    "managed": "AWS quản lý",
+    "vpc": "VPC",
+    "az1": "1 AZ",
+    "azMulti": "2 AZ",
+    "help": {
+      "internet": "Bên ngoài AWS: người dùng của bạn trên internet.",
+      "edge": "Chạy tại các edge location của AWS trên toàn cầu, nằm ngoài VPC.",
+      "public": "Trong VPC, ở public subnet: có route tới Internet Gateway và có thể có IP public.",
+      "private": "Trong VPC, ở private subnet: internet không vào trực tiếp được. Đi ra ngoài phải qua NAT hoặc VPC Endpoint.",
+      "managed": "Dịch vụ regional do AWS quản lý, nằm ngoài VPC. Truy cập qua mạng AWS (hoặc qua VPC Endpoint)."
+    },
+    "short": {
+      "internet": "Internet",
+      "edge": "Edge",
+      "public": "Public",
+      "private": "Private",
+      "managed": "AWS quản lý"
+    }
+  },
+  "subnet": {
+    "label": "Subnet",
+    "help": "Tài nguyên này chạy ở đâu trong VPC. Thử đổi chỗ rồi xem tab Đánh giá."
+  },
+  "networkView": "Xem mạng",
+  "networkViewHelp": "Hiện VPC, public subnet và private subnet phía sau sơ đồ",
+  "net": {
+    "title": "Mạng",
+    "blockedSg": "SG chặn",
+    "blockedRoute": "Không có route",
+    "viaNat": "qua NAT",
+    "viaEndpoint": "qua endpoint",
+    "privateIp": "IP private",
+    "noIp": "không có (subnet đã đầy)",
+    "publicIp": "IP public",
+    "publicIpYes": "có (public subnet)",
+    "publicIpNo": "không có",
+    "listens": "Đang nghe ở",
+    "sgTitle": "Security group",
+    "sgHelp": "Rule inbound: ai được mở kết nối vào port này. Security group làm việc ở tầng TCP: \"HTTP\" chỉ là tên gọi của TCP port 80. Gói tin phản hồi luôn được cho về (stateful).",
+    "noRules": "Không có rule inbound: không ai kết nối vào được.",
+    "port": "Port",
+    "source": "Nguồn",
+    "anywhere": "Mọi nơi 0.0.0.0/0",
+    "deletedSg": "SG đã xoá",
+    "addRule": "Thêm rule",
+    "removeRule": "Xoá rule",
+    "resetRules": "Mặc định",
+    "resetRulesHelp": "Quay về rule mặc định",
+    "incoming": "Kết nối đi vào",
+    "vpcTitle": "VPC",
+    "vpcHint": "Dải địa chỉ của VPC và hai subnet. Mỗi tài nguyên trong subnet được cấp một IP private lấy từ dải của subnet đó.",
+    "usable": "{{usable}} IP dùng được",
+    "usableUsed": "{{usable}} IP dùng được · đang dùng {{used}}",
+    "rtPublic": "Route table: public subnet",
+    "rtPrivate": "Route table: private subnet",
+    "rtHint": "Thêm NAT Gateway hoặc VPC Endpoint vào canvas thì route của nó sẽ hiện ở đây. Kết nối từ private subnet ra dịch vụ ngoài VPC đi theo các route này.",
+    "awsServices": "Dịch vụ AWS",
+    "noRoute": "(không có route — hãy thêm NAT Gateway)"
   }
 }

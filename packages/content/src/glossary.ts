@@ -1,3 +1,4 @@
+import { tx } from '@cloudlab/catalog';
 import type { LocalizedText } from '@cloudlab/shared';
 
 export interface GlossaryTerm {
@@ -8,7 +9,7 @@ export interface GlossaryTerm {
   see?: string[];
 }
 
-const g = (term: string, en: string, vi: string, see?: string[]): GlossaryTerm => ({ term, def: { en, vi }, ...(see ? { see } : {}) });
+const g = (term: string, en: string, vi: string, see?: string[]): GlossaryTerm => ({ term, def: tx(en, vi), ...(see ? { see } : {}) });
 
 /** Bilingual glossary. Terms stay in English (that's what you'll read in AWS docs). */
 export const GLOSSARY: GlossaryTerm[] = [

@@ -1,5 +1,9 @@
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '@xyflow/react';
+import { localize } from '@cloudlab/shared';
+import { Ban } from 'lucide-react';
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { currentLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { useLab } from './context';
 
@@ -68,12 +72,18 @@ function FlowDots({ path, length, rps, async }: { path: string; length: number; 
   );
 }
 
-/** Edge that shows traffic (req/s), dashes for async delivery, red for invalid. */
+/**
+ * Edge that shows traffic (req/s), dashes for async delivery, red for invalid
+ * or network-blocked connections, and which NAT/endpoint a routed call uses.
+ */
 function FlowEdgeImpl({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected }: EdgeProps) {
+  const { t } = useTranslation('lab');
   const { result } = useLab();
   const r = result?.edges[id];
   const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, borderRadius: 12 });
-  const invalid = r?.valid === false;
+  const blocked = r?.blocked;
+  const invalid = r?.valid === false || Boolean(blocked);
+  const via = r?.via;
   const rps = r ? r.avg.r + r.avg.w : 0;
   const stroke = invalid ? 'var(--danger)' : selected ? 'var(--primary)' : 'var(--muted-foreground)';
 
@@ -93,16 +103,32 @@ function FlowEdgeImpl({ id, sourceX, sourceY, targetX, targetY, sourcePosition, 
       {!invalid && (
         <FlowDots path={path} length={Math.abs(targetX - sourceX) + Math.abs(targetY - sourceY)} rps={rps} async={!!r?.async} />
       )}
-      {(rps > 0 || invalid) && (
+      {(rps > 0 || invalid || via) && (
         <EdgeLabelRenderer>
           <div
             className={cn(
-              'nodrag nopan pointer-events-none absolute rounded-full border bg-card px-1.5 py-px font-mono text-[10px] tabular-nums shadow-sm',
-              invalid ? 'border-danger text-danger' : 'text-muted-foreground',
+              'nodrag nopan absolute flex items-center gap-1 rounded-full border bg-card px-1.5 py-px font-mono text-[10px] tabular-nums shadow-sm',
+              blocked ? 'pointer-events-auto cursor-help border-danger font-sans font-semibold text-danger' : 'pointer-events-none',
+              invalid && !blocked && 'border-danger text-danger',
+              !invalid && 'text-muted-foreground',
             )}
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            title={blocked ? localize(blocked.reason, currentLocale()) : undefined}
+            data-testid={blocked ? 'edge-blocked' : undefined}
           >
-            {invalid ? '✕' : formatRps(rps)}
+            {blocked ? (
+              <>
+                <Ban className="size-3" aria-hidden />
+                {t(blocked.kind === 'sg' ? 'net.blockedSg' : 'net.blockedRoute')}
+              </>
+            ) : invalid ? (
+              '✕'
+            ) : (
+              <>
+                {rps > 0 && formatRps(rps)}
+                {via && <span className="font-sans text-[9px] text-(--zc) zone" data-zone={via.kind === 'nat' ? 'public' : 'private'}>{t(via.kind === 'nat' ? 'net.viaNat' : 'net.viaEndpoint')}</span>}
+              </>
+            )}
           </div>
         </EdgeLabelRenderer>
       )}

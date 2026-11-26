@@ -1,0 +1,17 @@
+These three challenges are **real** problems that large products had to solve, described publicly in the [System Design Primer](https://github.com/donnemartin/system-design-primer) and the AWS Solutions Library.
+
+| Challenge | Source | The hardest part |
+|---|---|---|
+| **Twitter home timeline** | System Design Primer | 20× more reads than writes → precompute timelines (fan-out on write) |
+| **Video on demand** | AWS Solution "Video on Demand on AWS" | Transcode once, deliver millions of times → the CDN decides the bill |
+| **Virtual waiting room** | AWS Solution "Virtual Waiting Room on AWS" | Traffic jumps 30× in seconds → admit at a steady pace through a queue |
+
+## The first question is always: read/write ratio and traffic shape
+
+- **Reads ≫ writes** (timelines, video): do the heavy work **at write time** so reads are cheap — caches, CDNs, precomputed data.
+- **Sharp, short peaks** (ticket drops): do not scale the backend for the peak — **flatten** it with a queue.
+- **Slow work** (transcoding): take it off the request path with events (dashed edges).
+
+<Callout type="tip">
+After passing each challenge, read the original (the primer or the AWS Solution page): you will see the parts CloudLab left out — that is your next step in learning.
+</Callout>

@@ -71,6 +71,11 @@ export interface CanvasChallenge extends Base {
   debrief: LocalizedText;
   /** A design that passes — verified by tests. */
   reference: Design;
+  /**
+   * Security groups start empty and the learner writes every rule. Set by the
+   * content registry once the learner has studied security groups.
+   */
+  manualSg?: boolean;
 }
 
 export type Exercise = ScenarioQuiz | Estimation | CanvasChallenge;

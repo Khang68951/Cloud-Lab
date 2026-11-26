@@ -1,0 +1,26 @@
+AWS có hàng trăm workshop thực hành **miễn phí** tại [workshops.aws](https://workshops.aws) và các sample mã nguồn mở trên [github.com/aws-samples](https://github.com/aws-samples). Ba bài dưới đây dựng lại các bài nổi tiếng nhất trên canvas, để bạn hiểu kiến trúc **trước** khi (nếu muốn) làm bản thật trong tài khoản AWS.
+
+| Thử thách | Nguồn gốc | Ý chính |
+|---|---|---|
+| **Wild Rydes** | Workshop "Build a Serverless Web Application" | Bốn khối của mọi web app serverless: hosting, danh tính, API, dữ liệu |
+| **Phòng chat WebSocket** | Sample `simple-websockets-chat-app` của AWS | API được quản lý giữ kết nối, code chỉ chạy theo từng tin nhắn |
+| **Saga đơn hàng** | Saga pattern trên [Serverless Land](https://serverlessland.com) và workshop Step Functions | Bộ điều phối giữ trạng thái và chạy bước bù trừ khi lỗi |
+
+## Một app serverless có những khối nào
+
+```
+Users ─► Amplify / CloudFront+S3      (tải web tĩnh)
+Users ─► Cognito                      (đăng nhập, nhận JWT)
+Users ─► API Gateway ─► Lambda ─► DynamoDB   (gọi API kèm JWT)
+```
+
+Ba đường này **độc lập**: tải trang không chạm tới Lambda, đăng nhập không chạm tới database. Đó là lý do chi phí của app serverless gần như bằng 0 khi không có ai dùng.
+
+## Orchestration và choreography
+
+- **Choreography** (SNS/EventBridge): mỗi service tự phản ứng với sự kiện. Linh hoạt, nhưng khó trả lời "đơn #123 đang ở bước nào?".
+- **Orchestration** (Step Functions): một workflow gọi từng bước, retry, và hoàn tác khi lỗi. Dễ theo dõi, phù hợp khi các bước phải đúng thứ tự.
+
+<Callout type="tip">
+Nếu muốn làm bản thật, hầu hết các workshop này chạy được trong **Free Tier**. Nhớ xoá stack khi làm xong — CloudLab không thay thế được thói quen dọn dẹp đó.
+</Callout>

@@ -1,9 +1,22 @@
-import { trackMetaSchema, type ContentStatus, type TrackMeta, type TrackMetaInput } from '@cloudlab/shared';
+import type { Exercise } from '@cloudlab/exercise-kit';
+import {
+  EXERCISE_KINDS,
+  trackMetaSchema,
+  type ContentStatus,
+  type TrackMeta,
+  type TrackMetaInput,
+} from '@cloudlab/shared';
+
+/** Exercises of one course, keyed module slug → lesson slug. Order = order shown. */
+export type CourseExercises = Record<string, Record<string, Exercise[]>>;
+
+/** A lesson becomes "available" once it has at least this many exercises. */
+export const MIN_EXERCISES = 3;
 
 /**
- * Declare a track. Validation runs at import time, so a typo in content
- * (bad slug, duplicate module, unknown exercise kind) fails fast in dev,
- * in tests and in `npm run check`.
+ * Validate a track. Runs at import time, so a typo in content (bad slug,
+ * duplicate module, unknown exercise kind) fails fast in dev, tests and
+ * `npm run check`.
  */
 export function defineTrack(input: TrackMetaInput): TrackMeta {
   const parsed = trackMetaSchema.safeParse(input);
@@ -14,6 +27,11 @@ export function defineTrack(input: TrackMetaInput): TrackMeta {
   return parsed.data;
 }
 
+/** Course outline as written in `track.ts`: no status or practice badges — those are derived. */
+export type CourseInput = Omit<TrackMetaInput, 'status'>;
+
+export const defineCourse = (input: CourseInput): CourseInput => input;
+
 /** "available" if every item is, "planned" if none is, otherwise "in-progress". */
 function rollUp(statuses: ContentStatus[]): ContentStatus {
   if (statuses.length === 0) return 'planned';
@@ -23,12 +41,33 @@ function rollUp(statuses: ContentStatus[]): ContentStatus {
 }
 
 /**
- * Declare a course. Module and course status are derived from lesson status,
- * so marking a lesson `available` (once its MDX + exercises exist) is the only
- * thing to change when content ships.
+ * Join a course outline with its exercises and derive everything else:
+ * - lesson status: `available` once it has ≥ MIN_EXERCISES exercises
+ *   (content tests check the MDX files exist),
+ * - module practice badges: the exercise kinds it actually uses,
+ * - module and course status: rolled up from the lessons.
+ * Exercises filed under a module/lesson that does not exist throw.
  */
-export function defineCourse(input: Omit<TrackMetaInput, 'status'>): TrackMeta {
+export function buildCourse(input: CourseInput, exercises: CourseExercises): TrackMeta {
   const track = defineTrack({ ...input, status: 'planned' });
-  const modules = track.modules.map((m) => ({ ...m, status: rollUp(m.lessons.map((l) => l.status)) }));
+  for (const [m, lessons] of Object.entries(exercises)) {
+    for (const l of Object.keys(lessons)) {
+      const ok = track.modules.find((x) => x.slug === m)?.lessons.some((x) => x.slug === l);
+      if (!ok) throw new Error(`Course "${track.slug}": exercises filed under unknown lesson "${m}/${l}"`);
+    }
+  }
+  const modules = track.modules.map((m) => {
+    const lessons = m.lessons.map((l) => {
+      const count = exercises[m.slug]?.[l.slug]?.length ?? 0;
+      return { ...l, status: count >= MIN_EXERCISES ? ('available' as const) : ('planned' as const) };
+    });
+    const kinds = new Set<string>(lessons.flatMap((l) => (exercises[m.slug]?.[l.slug] ?? []).map((e) => e.kind)));
+    return {
+      ...m,
+      lessons,
+      practice: EXERCISE_KINDS.filter((k) => kinds.has(k)),
+      status: rollUp(lessons.map((l) => l.status)),
+    };
+  });
   return { ...track, modules, status: rollUp(modules.map((m) => m.status)) };
 }

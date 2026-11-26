@@ -1,0 +1,24 @@
+[AWS Solutions Library](https://aws.amazon.com/solutions/) là các kiến trúc đã được AWS dựng sẵn, có mã nguồn và hướng dẫn triển khai, được nhiều công ty dùng trong production. Ba bài này lấy từ đó và từ các kiến trúc tham chiếu về dữ liệu.
+
+| Thử thách | Nguồn gốc | Ý chính |
+|---|---|---|
+| **Clickstream** | AWS Solution "Clickstream Analytics on AWS" | Stream → Firehose → data lake S3 → Athena |
+| **Telemetry IoT** | Các workshop AWS IoT, kiến trúc "IoT data ingestion" | Đường nóng (time-series) và đường lạnh (lưu trữ) |
+| **Tìm kiếm sản phẩm** | Tích hợp DynamoDB → OpenSearch (blog AWS, zero-ETL) | Một nguồn sự thật, index đồng bộ qua change stream |
+
+## Dữ liệu ghi một lần, đọc hàng loạt
+
+Sự kiện click hay số đo cảm biến **không bao giờ bị sửa**, và được đọc theo lô lớn về sau. Đưa chúng vào database giao dịch (RDS) là trả tiền cho thứ bạn không dùng: transaction, index, kết nối.
+
+```
+Giao dịch:   app ─► RDS            (mỗi sự kiện một INSERT)
+Data lake:   API ─► Kinesis ─► Firehose ┄┄► S3 ◄── Athena (SQL)
+```
+
+## Mỗi kho làm một việc
+
+DynamoDB tra theo key cực nhanh nhưng không biết "tìm giày đỏ". OpenSearch tìm văn bản giỏi nhưng không nên là nguồn sự thật. Mẫu chuẩn: **ghi vào một nơi**, rồi để **stream** đồng bộ sang nơi kia.
+
+<Callout type="warning">
+Đừng để API tự ghi vào cả hai kho ("dual write"): chỉ cần một lần ghi thứ hai lỗi là hai kho lệch nhau mãi mãi.
+</Callout>

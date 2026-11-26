@@ -7,6 +7,8 @@
   },
   "utilizationAtPeak": "Utilisation at peak",
   "autoScales": "Scales automatically",
+  "queuePiling": "+{{rps}}/s piling up",
+  "queuePilingHelp": "Consumers pull only {{drain}} msg/s; the rest waits in the queue instead of overloading what is behind it.",
   "emptyHint": "Drag services from the left onto the canvas, then connect them by dragging from one node's dot to another.",
   "mobileHint": "The Lab works best on a wide screen (desktop).",
   "panel": {
@@ -78,6 +80,8 @@
     "delete": "Delete",
     "traffic": "Traffic (avg / peak)",
     "capacity": "Capacity",
+    "queueDrain": "Consumers pulling",
+    "queueBacklog": "Piling up in queue",
     "latency": "Added latency",
     "cost": "Cost/month",
     "layout": "Placement",
@@ -135,6 +139,7 @@
     "canvas-fix": "Fix the architecture"
   },
   "challenge": {
+    "manualSg": "Security groups start empty here, like a new one in AWS: nothing can connect until you add inbound rules. Select a node → Network → Add rule.",
     "requirements": "Requirements (checked live)",
     "met": "Met",
     "notMet": "Not met",
@@ -144,6 +149,11 @@
     "passed": "Passed! Saved to your progress.",
     "failed": "Not yet ({{score}}%). Check the red requirements.",
     "reference": "Show reference solution",
+    "optimization": "Optimisation",
+    "hiddenOptimizations_one": "{{count}} optimisation requirement is hidden (cache, queue…). Use a hint to reveal it.",
+    "hiddenOptimizations_other": "{{count}} optimisation requirements are hidden (cache, queue…). Use hints to reveal them.",
+    "needsOptimization_one": "The core requirements are met, but the system is not optimised yet: {{count}} hidden requirement is still failing. Look at the numbers (latency, cost, peak load) or use a hint.",
+    "needsOptimization_other": "The core requirements are met, but the system is not optimised yet: {{count}} hidden requirements are still failing. Look at the numbers (latency, cost, peak load) or use a hint.",
     "notFound": "This exercise doesn't exist."
   },
   "toolbar": {
@@ -180,5 +190,69 @@
     "short": "Back",
     "title": "Back to lesson: {{title}}",
     "afterPass": "Back to see your result"
+  },
+  "zone": {
+    "internet": "Internet",
+    "edge": "AWS edge",
+    "public": "Public subnet",
+    "private": "Private subnet",
+    "managed": "AWS managed",
+    "vpc": "VPC",
+    "az1": "1 AZ",
+    "azMulti": "2 AZ",
+    "help": {
+      "internet": "Outside AWS: your users on the internet.",
+      "edge": "Runs at AWS edge locations worldwide, outside your VPC.",
+      "public": "Inside your VPC, in a public subnet: has a route to the Internet Gateway and can get a public IP.",
+      "private": "Inside your VPC, in a private subnet: no inbound route from the internet. Outbound goes through NAT or a VPC Endpoint.",
+      "managed": "Regional AWS-managed service, outside your VPC. Reached over the AWS network (or a VPC Endpoint)."
+    },
+    "short": {
+      "internet": "Internet",
+      "edge": "Edge",
+      "public": "Public",
+      "private": "Private",
+      "managed": "AWS managed"
+    }
+  },
+  "subnet": {
+    "label": "Subnet",
+    "help": "Where this resource runs inside the VPC. Try moving it and watch the Review tab."
+  },
+  "networkView": "Network view",
+  "networkViewHelp": "Show the VPC, public and private subnets behind the diagram",
+  "net": {
+    "title": "Network",
+    "blockedSg": "SG blocks",
+    "blockedRoute": "No route",
+    "viaNat": "via NAT",
+    "viaEndpoint": "via endpoint",
+    "privateIp": "Private IP",
+    "noIp": "none (subnet full)",
+    "publicIp": "Public IP",
+    "publicIpYes": "yes (public subnet)",
+    "publicIpNo": "none",
+    "listens": "Listens on",
+    "sgTitle": "Security group",
+    "sgHelp": "Inbound rules: who may open a connection to this port. Security groups work at the TCP level: \"HTTP\" is just a name for TCP port 80. Replies are always allowed back (stateful).",
+    "noRules": "No inbound rules: nothing can connect to it.",
+    "port": "Port",
+    "source": "Source",
+    "anywhere": "Anywhere 0.0.0.0/0",
+    "deletedSg": "deleted SG",
+    "addRule": "Add rule",
+    "removeRule": "Remove rule",
+    "resetRules": "Default",
+    "resetRulesHelp": "Go back to the default rules",
+    "incoming": "Incoming connections",
+    "vpcTitle": "VPC",
+    "vpcHint": "Address ranges of your VPC and its two subnets. Each resource in a subnet takes a private IP from its range.",
+    "usable": "{{usable}} usable IPs",
+    "usableUsed": "{{usable}} usable IPs · {{used}} in use",
+    "rtPublic": "Route table: public subnet",
+    "rtPrivate": "Route table: private subnet",
+    "rtHint": "Add a NAT Gateway or VPC Endpoint to the canvas and its route appears here. Connections from the private subnet to services outside the VPC use these routes.",
+    "awsServices": "AWS services",
+    "noRoute": "(no route — add a NAT Gateway)"
   }
 }

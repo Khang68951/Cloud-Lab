@@ -1,6 +1,6 @@
-import { requirementLabel, type CanvasChallenge } from '@cloudlab/exercise-kit';
+import { requirementLabel, splitRequirements, type CanvasChallenge } from '@cloudlab/exercise-kit';
 import { localize } from '@cloudlab/shared';
-import { ArrowRight, Target } from 'lucide-react';
+import { ArrowRight, Lock, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ export function ChallengeCard({ exercise, index }: { exercise: CanvasChallenge; 
   const { t } = useTranslation('practice');
   const locale = currentLocale();
   const { pathname } = useLocation();
+  const { core, optimizations } = splitRequirements(exercise.requirements);
   return (
     <ExerciseShell exercise={{ ...exercise, hints: [] }} index={index} hintsShown={0} onHint={() => {}}>
       <h3 className="font-semibold">{localize(exercise.title, locale)}</h3>
@@ -23,10 +24,16 @@ export function ChallengeCard({ exercise, index }: { exercise: CanvasChallenge; 
           {t('challenge.requirements')}
         </h4>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-[13px]">
-          {exercise.requirements.map((r, i) => (
+          {core.map((r, i) => (
             <li key={i}>{localize(requirementLabel(r), locale)}</li>
           ))}
         </ul>
+        {optimizations.length > 0 && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <Lock className="size-3.5 shrink-0" aria-hidden />
+            {t('challenge.hiddenOptimizations', { count: optimizations.length })}
+          </p>
+        )}
       </div>
       <Button asChild className="mt-4">
         <Link to={`/lab/challenge/${exercise.id}?${fromParam(pathname, exerciseAnchor(exercise.id))}`}>

@@ -1,4 +1,4 @@
-import { defaultConfig, getService, type Design, type Scenario, type ServiceConfig } from '@cloudlab/catalog';
+import { defaultConfig, getService, type Design, type NetworkConfig, type Scenario, type ServiceConfig } from '@cloudlab/catalog';
 import { addEdge, useEdgesState, useNodesState, type Connection, type XYPosition } from '@xyflow/react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { newId, toDesign, toFlow, type LabEdge, type LabNode } from './model';
@@ -19,11 +19,13 @@ export function useLabEditor(initial: Design) {
   const [nodes, setNodes, onNodesChange] = useNodesState<LabNode>(init.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<LabEdge>(init.edges);
   const [scenario, setScenarioState] = useState<Scenario>(initial.scenario);
+  /** VPC layout; undefined = the defaults (kept out of saved designs until edited). */
+  const [network, setNetworkState] = useState<NetworkConfig | undefined>(initial.network);
   const [history, setHistory] = useState<History>({ past: [], future: [] });
   /** Merges rapid edits of the same field (typing) into one undo step. Only read in callbacks. */
   const coalesce = useRef<{ key: string; at: number } | null>(null);
 
-  const snapshot = useCallback(() => toDesign(nodes, edges, scenario), [nodes, edges, scenario]);
+  const snapshot = useCallback(() => toDesign(nodes, edges, scenario, network), [nodes, edges, scenario, network]);
 
   const checkpoint = useCallback(
     (coalesceKey?: string) => {
@@ -46,6 +48,7 @@ export function useLabEditor(initial: Design) {
       setNodes(f.nodes);
       setEdges(f.edges);
       setScenarioState(d.scenario);
+      setNetworkState(d.network);
     },
     [setNodes, setEdges],
   );
@@ -109,6 +112,21 @@ export function useLabEditor(initial: Design) {
     [checkpoint, setNodes],
   );
 
+  /** Removes a config key so the service default applies again. */
+  const clearConfig = useCallback(
+    (nodeId: string, key: string) => {
+      checkpoint();
+      setNodes((ns) =>
+        ns.map((n) => {
+          if (n.id !== nodeId) return n;
+          const { [key]: _removed, ...config } = n.data.config;
+          return { ...n, data: { ...n.data, config } };
+        }),
+      );
+    },
+    [checkpoint, setNodes],
+  );
+
   const renameNode = useCallback(
     (nodeId: string, label: string) => {
       checkpoint(`label:${nodeId}`);
@@ -164,6 +182,14 @@ export function useLabEditor(initial: Design) {
     [checkpoint],
   );
 
+  const setNetwork = useCallback(
+    (next: NetworkConfig) => {
+      checkpoint('network');
+      setNetworkState(next);
+    },
+    [checkpoint],
+  );
+
   const selectOnly = useCallback(
     (ids: string[]) => {
       const set = new Set(ids);
@@ -177,6 +203,7 @@ export function useLabEditor(initial: Design) {
     nodes,
     edges,
     scenario,
+    network,
     onNodesChange,
     onEdgesChange,
     checkpoint,
@@ -188,10 +215,12 @@ export function useLabEditor(initial: Design) {
     addService,
     connect,
     updateConfig,
+    clearConfig,
     renameNode,
     removeNodes,
     duplicateNode,
     setScenario,
+    setNetwork,
     selectOnly,
   };
 }

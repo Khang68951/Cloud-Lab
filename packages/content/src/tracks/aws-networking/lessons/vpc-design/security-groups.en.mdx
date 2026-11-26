@@ -1,0 +1,88 @@
+A connection in AWS only succeeds when it passes **two checks**:
+
+1. **Route**: is there a path to the destination? (route tables, previous lesson)
+2. **Security group**: does the receiver **allow** that connection?
+
+Most "the page spins and times out" bugs on AWS are one of these two. This lesson covers the second layer and the ideas that come with it: IPs, ports and protocols.
+
+## Private and public IPs
+
+| | Private IP | Public IP |
+|---|---|---|
+| Comes from | The subnet's CIDR block (e.g. `10.0.2.14`) | AWS's pool (or an Elastic IP) |
+| Who has one? | Every resource in the VPC | Only resources in a **public subnet** with public IP assignment on |
+| Used for | Talking inside the VPC | Being reached from the internet (via the Internet Gateway) |
+
+Common mix-ups:
+
+- An instance in a **private subnet** has no public IP, so the internet cannot call it directly. To serve users, put a **load balancer in the public subnet** in front of it.
+- **A Lambda function attached to a VPC never gets a public IP**, even in a public subnet. For internet access it has to sit in a private subnet behind NAT.
+- RDS has a *Publicly accessible* option. Turn it on in a public subnet and your database gets an internet address. You almost never want that.
+
+## Ports and protocols: how is HTTP different from TCP?
+
+They live on **different layers**:
+
+| Layer | Protocol | What it does |
+|---|---|---|
+| Application (L7) | HTTP, HTTPS, PostgreSQL, Redis… | The *content*: URLs, headers, SQL queries… |
+| Transport (L4) | **TCP**, UDP | Opens a connection to **a port** and delivers bytes completely and in order |
+| Network (L3) | IP | Gets packets to the right **address** |
+
+HTTP runs **on top of** TCP. When a browser opens `https://shop.example.com`, it opens a **TCP connection to port 443** and speaks HTTPS inside it.
+
+**Security groups only look at layer 4**: protocol (TCP/UDP), port and source address. Picking type "HTTP" in the console is just a preset for **TCP 80**. A security group never reads URLs or headers. That is the job of the ALB (L7 routing) and WAF (content filtering).
+
+Ports you will see all the time:
+
+| Port | Service |
+|---|---|
+| 22 | SSH |
+| 80 / 443 | HTTP / HTTPS |
+| 3306 | MySQL, Aurora MySQL |
+| 5432 | PostgreSQL, Aurora PostgreSQL |
+| 6379 | Redis (ElastiCache, MemoryDB) |
+| 2049 | NFS (EFS) |
+
+## How a security group works
+
+A security group is an **allow-list** attached to each resource (strictly, to its ENI). Each inbound rule is:
+
+```
+Protocol + port   ←   Source
+TCP 5432          ←   sg-app            (the app tier's security group)
+TCP 443           ←   0.0.0.0/0         (anywhere on the internet)
+TCP 80            ←   10.0.0.0/16       (anything in the VPC)
+```
+
+- **Allow only**: no matching rule means the connection is dropped. A new SG has no inbound rules, so nothing gets in.
+- **Stateful**: once a connection is allowed in, its replies are allowed out. No need to open the other direction.
+- **The source can be another security group**. This is the best option: "RDS accepts 5432 only from `sg-app`" stays correct when the app scales from 2 to 20 instances with ever-changing IPs.
+
+<Callout type="key">
+The classic 3-tier SG chain: **internet → `sg-alb` (443 from 0.0.0.0/0) → `sg-app` (80 from `sg-alb`) → `sg-db` (5432 from `sg-app`)**. Each tier trusts only the tier right in front of it.
+</Callout>
+
+## Compared with Network ACLs
+
+| | Security group | Network ACL |
+|---|---|---|
+| Attached to | A resource (ENI) | A whole subnet |
+| State | Stateful | **Stateless**: you must also open the reply direction (ephemeral ports 1024–65535) |
+| Rules | Allow only | Allow and Deny, evaluated by rule number |
+| Use it for | Always: it is the main fence | Coarse blocking of bad IP ranges at subnet level |
+
+## Try it in the Lab
+
+Click a node inside the VPC: its **Network** section shows the subnet, private IP, the port it listens on, its security group rules and its **incoming connections** (✓ allowed / ✗ blocked, with the reason). Blocked edges turn red with a **"SG blocks"** or **"No route"** label, and requests sent into them fail. Deselect all nodes to see the VPC CIDR blocks and route tables.
+
+<Callout type="tip">
+When debugging a connection, follow the order AWS checks: **route first** (which subnet is the target in, is there a path?), **security group second** (right port, right source?).
+</Callout>
+
+## Common mistakes
+
+- Opening a database port to `0.0.0.0/0` "just to test" and forgetting to close it.
+- Opening SSH 22 to the whole internet. Use Systems Manager Session Manager instead.
+- Right source, wrong port: e.g. opening 3306 (MySQL) for a PostgreSQL database (5432).
+- Using the whole VPC range as a database's source instead of the app's security group.

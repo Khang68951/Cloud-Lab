@@ -1,6 +1,19 @@
 import {
+  assignIps,
   canConnect,
+  checkReach,
+  DEFAULT_NETWORK,
   defaultConfig,
+  ipToString,
+  listenPort,
+  placementOf,
+  sgRulesOf,
+  validateNetwork,
+  privateRoutes,
+  type NetEndpoint,
+  type NetworkConfig,
+  type Placement,
+  type SgRule,
   getService,
   isAsyncEdge,
   REGIONS,
@@ -41,21 +54,35 @@ export interface GraphNode {
   cfg: ServiceConfig;
   out: GraphEdge[];
   in: GraphEdge[];
+  /** Display name (label or short service name). */
+  name: string;
+  /** Where it runs: public/private subnet, edge, AWS-managed... */
+  placement: Placement;
+  /** Private IP inside the VPC (numeric), null outside it or when the subnet is full. */
+  ip: number | null;
+  /** Inbound security group rules (empty when the node has no security group). */
+  sg: SgRule[];
 }
 export interface GraphEdge {
   id: string;
   source: GraphNode;
   target: GraphNode;
   async: boolean;
+  /** Set when the network stops this connection (no route, or the security group drops it). */
+  blocked?: { kind: 'route' | 'sg'; reason: Finding['detail'] };
+  /** Leaves the VPC through this NAT Gateway / VPC endpoint (picked from the private route table). */
+  via?: { id: string; kind: 'nat' | 'endpoint' };
 }
 export interface Graph {
   nodes: Map<string, GraphNode>;
   edges: GraphEdge[];
   invalidEdges: { id: string; source: string; target: string; reason: Finding['detail'] }[];
   unknownNodes: string[];
+  network: NetworkConfig;
 }
 
 export function buildGraph(design: Design): Graph {
+  const network = design.network ?? DEFAULT_NETWORK;
   const nodes = new Map<string, GraphNode>();
   const unknownNodes: string[] = [];
   for (const n of design.nodes) {
@@ -64,8 +91,22 @@ export function buildGraph(design: Design): Graph {
       unknownNodes.push(n.id);
       continue;
     }
-    nodes.set(n.id, { id: n.id, def, cfg: { ...defaultConfig(def), ...n.config }, out: [], in: [] });
+    const cfg = { ...defaultConfig(def), ...n.config };
+    const placement = placementOf(def, cfg);
+    nodes.set(n.id, {
+      id: n.id,
+      def,
+      cfg,
+      out: [],
+      in: [],
+      name: n.label || def.short,
+      placement,
+      ip: null,
+      sg: sgRulesOf(def, cfg, placement, network),
+    });
   }
+  const ips = assignIps([...nodes.values()], network);
+  for (const n of nodes.values()) n.ip = ips.get(n.id) ?? null;
   const edges: GraphEdge[] = [];
   const invalidEdges: Graph['invalidEdges'] = [];
   const seen = new Set<string>();
@@ -86,7 +127,18 @@ export function buildGraph(design: Design): Graph {
     t.in.push(ge);
     edges.push(ge);
   }
-  return { nodes, edges, invalidEdges, unknownNodes };
+
+  // Network: can each connection actually be opened? (route table + security group)
+  const endpoints = new Map<string, NetEndpoint>();
+  for (const n of nodes.values())
+    endpoints.set(n.id, { id: n.id, name: n.name, def: n.def, cfg: n.cfg, placement: n.placement, ip: n.ip, sg: n.sg });
+  const routes = privateRoutes([...endpoints.values()]);
+  for (const e of edges) {
+    const r = checkReach(endpoints.get(e.source.id)!, endpoints.get(e.target.id)!, { async: e.async, routes });
+    if (!r.ok) e.blocked = { kind: r.kind, reason: r.reason };
+    else if (r.via) e.via = r.via;
+  }
+  return { nodes, edges, invalidEdges, unknownNodes, network };
 }
 
 /** Kahn topological order; nodes stuck in cycles are appended at the end. */
@@ -183,19 +235,37 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
   const killed = new Set(chaos.killed ?? []);
   const { order, cyclic } = topoOrder(g);
 
-  // 1) Traffic propagation (average rate).
-  const inflow = new Map<string, Flow>();
-  const edgeFlow = new Map<GraphEdge, Flow>();
+  // 1) Traffic propagation (average rate). `drain` caps what each queue hands
+  // to its consumers (share of its inflow, 1 = everything).
   const clients = order.filter((n) => n.def.behavior === 'client');
   const perClient = (scenario.rps * mult) / Math.max(clients.length, 1);
-  for (const c of clients) inflow.set(c.id, { r: perClient * scenario.readRatio, w: perClient * (1 - scenario.readRatio) });
-  for (const n of order) {
-    const f = inflow.get(n.id) ?? ZERO;
-    for (const [e, ef] of distribute(n, f, g.nodes, scenario.payloadKB)) {
-      edgeFlow.set(e, ef);
-      inflow.set(e.target.id, add(inflow.get(e.target.id) ?? ZERO, ef));
+  const propagate = (drain: Map<string, number>) => {
+    const inflow = new Map<string, Flow>();
+    const edgeFlow = new Map<GraphEdge, Flow>();
+    /** Traffic sent into connections the network blocks: those requests fail. */
+    const lost = new Map<GraphEdge, Flow>();
+    /** Traffic a NAT Gateway / endpoint carries for routed (not drawn) connections. */
+    const routed = new Map<string, Flow>();
+    for (const c of clients) inflow.set(c.id, { r: perClient * scenario.readRatio, w: perClient * (1 - scenario.readRatio) });
+    for (const n of order) {
+      const f = inflow.get(n.id) ?? ZERO;
+      const k = drain.get(n.id) ?? 1;
+      for (const [e, raw] of distribute(n, f, g.nodes, scenario.payloadKB)) {
+        const ef = k === 1 ? raw : scale(raw, k);
+        if (e.blocked) {
+          lost.set(e, ef);
+          edgeFlow.set(e, ZERO);
+          continue;
+        }
+        edgeFlow.set(e, ef);
+        inflow.set(e.target.id, add(inflow.get(e.target.id) ?? ZERO, ef));
+        if (e.via) routed.set(e.via.id, add(routed.get(e.via.id) ?? ZERO, ef));
+      }
     }
-  }
+    // Added after the walk so it is billed on the NAT/endpoint without being forwarded again.
+    for (const [id, f] of routed) inflow.set(id, add(inflow.get(id) ?? ZERO, f));
+    return { inflow, edgeFlow, lost };
+  };
 
   // Load levelling: a node fed only through queues (directly or via other
   // levelled nodes) works at its own pace, so it only needs the AVERAGE rate.
@@ -212,46 +282,103 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
     scenario,
     region,
   });
-  const results: Record<string, NodeResult> = {};
-  for (const n of order) {
-    const avg = inflow.get(n.id) ?? ZERO;
-    const ctx = ctxFor(n, avg);
-    const model: NodeModel = n.def.model(ctx);
-    let capacity = model.capacityRps;
-    let down = killed.has(n.id);
-    if (chaos.azDown) {
-      if (model.azLayout === 'single-az') down = true;
-      if (model.azLayout === 'multi-az' && n.def.behavior === 'app' && Number.isFinite(capacity)) {
-        // A fixed fleet loses the instances in the failed AZ. With Auto Scaling,
-        // replacements launch in the healthy AZ (after a few minutes) up to the maximum.
-        capacity = n.cfg.autoscaling === true ? n.def.model(ctxFor(n, avg, 1000)).capacityRps : capacity / 2;
+  const evaluate = (inflow: Map<string, Flow>) => {
+    const results: Record<string, NodeResult> = {};
+    for (const n of order) {
+      const avg = inflow.get(n.id) ?? ZERO;
+      const ctx = ctxFor(n, avg);
+      const model: NodeModel = n.def.model(ctx);
+      let capacity = model.capacityRps;
+      let down = killed.has(n.id);
+      if (chaos.azDown) {
+        if (model.azLayout === 'single-az') down = true;
+        if (model.azLayout === 'multi-az' && n.def.behavior === 'app' && Number.isFinite(capacity)) {
+          // A fixed fleet loses the instances in the failed AZ. With Auto Scaling,
+          // replacements launch in the healthy AZ (after a few minutes) up to the maximum.
+          capacity = n.cfg.autoscaling === true ? n.def.model(ctxFor(n, avg, 1000)).capacityRps : capacity / 2;
+        }
       }
+      const peakLoad = sum(ctx.peak);
+      const utilization = Number.isFinite(capacity) && capacity > 0 ? peakLoad / capacity : 0;
+      let status: NodeStatus = 'ok';
+      if (down) status = 'down';
+      else if (sum(avg) === 0 && n.def.behavior !== 'client') status = 'idle';
+      else if (utilization >= 1) status = 'saturated';
+      else if (utilization >= BUSY) status = 'busy';
+      // Queueing delay, approximating a multi-server queue: negligible at low load,
+      // explodes near saturation (1 + ρ⁴/(1−ρ): ×1.1 at 50%, ×1.6 at 67%, ×7.6 at 90%).
+      const rho = Math.min(utilization, 0.95);
+      const latencyMs = model.baseLatencyMs * (1 + rho ** 4 / (1 - rho)) * (utilization >= 1 ? 3 : 1);
+      const errorRate = down ? 1 : utilization > 1 ? 1 - 1 / utilization : 0;
+      results[n.id] = {
+        id: n.id,
+        service: n.def.id,
+        avg,
+        peak: ctx.peak,
+        model: { ...model, capacityRps: capacity },
+        utilization,
+        status,
+        costs: [...model.costs],
+        monthlyUsd: 0,
+        latencyMs,
+        errorRate,
+        net: {
+          placement: n.placement,
+          ip: n.ip === null ? null : ipToString(n.ip),
+          port: n.placement === 'public' || n.placement === 'private' ? listenPort(n.def, n.cfg) : null,
+          sg: n.sg,
+        },
+      };
     }
-    const peakLoad = sum(ctx.peak);
-    const utilization = Number.isFinite(capacity) && capacity > 0 ? peakLoad / capacity : 0;
-    let status: NodeStatus = 'ok';
-    if (down) status = 'down';
-    else if (sum(avg) === 0 && n.def.behavior !== 'client') status = 'idle';
-    else if (utilization >= 1) status = 'saturated';
-    else if (utilization >= BUSY) status = 'busy';
-    // Queueing delay, approximating a multi-server queue: negligible at low load,
-    // explodes near saturation (1 + ρ⁴/(1−ρ): ×1.1 at 50%, ×1.6 at 67%, ×7.6 at 90%).
-    const rho = Math.min(utilization, 0.95);
-    const latencyMs = model.baseLatencyMs * (1 + rho ** 4 / (1 - rho)) * (utilization >= 1 ? 3 : 1);
-    const errorRate = down ? 1 : utilization > 1 ? 1 - 1 / utilization : 0;
-    results[n.id] = {
-      id: n.id,
-      service: n.def.id,
-      avg,
-      peak: ctx.peak,
-      model: { ...model, capacityRps: capacity },
-      utilization,
-      status,
-      costs: [...model.costs],
-      monthlyUsd: 0,
-      latencyMs,
-      errorRate,
-    };
+    return results;
+  };
+
+  // Queues buffer what their consumers cannot take. Consumers pull only as fast
+  // as the slowest levelled node behind the queue allows (Lambda maximum
+  // concurrency / worker count tuned to protect the database); the rest waits
+  // in the queue as a backlog instead of overloading anything.
+  const consumersOf = (q: GraphNode): GraphNode[] => {
+    const seen = new Set<string>();
+    const stack = q.out.map((e) => e.target);
+    const found: GraphNode[] = [];
+    while (stack.length) {
+      const n = stack.pop()!;
+      if (seen.has(n.id) || !levelled.has(n.id)) continue;
+      seen.add(n.id);
+      found.push(n);
+      for (const e of n.out) stack.push(e.target);
+    }
+    return found;
+  };
+  const queues = order.filter((n) => n.def.behavior === 'queue' && n.def.id !== 'firehose' && n.out.length > 0);
+  const drain = new Map<string, number>();
+  let { inflow, edgeFlow, lost } = propagate(drain);
+  let results = evaluate(inflow);
+  for (let round = 0; round < 4 && queues.length; round++) {
+    let changed = false;
+    for (const q of queues) {
+      if (sum(inflow.get(q.id) ?? ZERO) <= 0) continue;
+      let worst = 1;
+      for (const c of consumersOf(q)) {
+        const r = results[c.id]!;
+        if (r.status === 'down') worst = Infinity;
+        else if (r.utilization > worst) worst = r.utilization;
+      }
+      if (worst <= 1) continue;
+      const k = worst === Infinity ? 0 : (drain.get(q.id) ?? 1) * (0.95 / worst);
+      drain.set(q.id, k);
+      changed = true;
+    }
+    if (!changed) break;
+    ({ inflow, edgeFlow, lost } = propagate(drain));
+    results = evaluate(inflow);
+  }
+  for (const q of queues) {
+    const k = drain.get(q.id);
+    if (k === undefined) continue;
+    const r = results[q.id]!;
+    const inRps = sum(r.avg);
+    r.queue = { drainRps: inRps * k, backlogRps: inRps * (1 - k), normalInRps: mult > 0 ? inRps / mult : inRps };
   }
 
   // 3) Engine-level data transfer: internet egress and cross-AZ traffic.
@@ -306,13 +433,24 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
     const share = userRps > 0 ? Math.min(1, sum(r.avg) / userRps) : 0;
     success *= 1 - r.errorRate * share;
   }
+  // Requests sent into a blocked connection time out. A blocked call from an app
+  // fails every request that app handles (except a cache: misses go to the DB).
+  for (const [e, f] of lost) {
+    if (e.async || userRps <= 0) continue;
+    const src = e.source;
+    if (src.def.behavior === 'app' && e.target.def.behavior === 'cache') continue;
+    const failed = src.def.behavior === 'app' ? sum(inflow.get(src.id) ?? ZERO) : sum(f);
+    success *= 1 - Math.min(1, failed / userRps);
+  }
   if (survives === false) success = 0;
 
   // 8) Max peak RPS before the first bottleneck (capacity at max scale-out).
   let maxPeakRps: number | null = null;
   const userPeak = userRps * scenario.peakMultiplier;
+  const buffered = new Set(queues.filter((q) => drain.has(q.id)).flatMap((q) => consumersOf(q).map((c) => c.id)));
   if (userPeak > 0) {
     for (const n of order) {
+      if (buffered.has(n.id)) continue;
       const r = results[n.id]!;
       const load = sum(r.peak);
       if (load <= 0 || r.status === 'down') continue;
@@ -326,7 +464,15 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
   }
 
   const edges: Record<string, EdgeResult> = {};
-  for (const e of g.edges) edges[e.id] = { id: e.id, avg: edgeFlow.get(e) ?? ZERO, async: e.async, valid: true };
+  for (const e of g.edges)
+    edges[e.id] = {
+      id: e.id,
+      avg: edgeFlow.get(e) ?? ZERO,
+      async: e.async,
+      valid: true,
+      ...(e.blocked ? { blocked: e.blocked } : {}),
+      ...(e.via ? { via: e.via } : {}),
+    };
   for (const e of g.invalidEdges) edges[e.id] = { id: e.id, avg: ZERO, async: false, valid: false };
 
   const totals = {
@@ -358,6 +504,20 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
       title: tx('Invalid connection', 'Kết nối không hợp lệ'),
       detail: e.reason,
     })),
+    ...g.edges
+      .filter((e) => e.blocked)
+      .map((e) => ({
+        id: `blocked-edge-${e.id}`,
+        severity: 'error' as const,
+        pillar: 'reliability' as const,
+        nodeIds: [e.source.id, e.target.id],
+        title:
+          e.blocked!.kind === 'sg'
+            ? tx('Connection dropped by a security group', 'Kết nối bị security group chặn')
+            : tx('No network route for this connection', 'Không có route mạng cho kết nối này'),
+        detail: e.blocked!.reason,
+      })),
+    ...networkFindings(g),
     ...(cyclic.length
       ? [
           {
@@ -381,11 +541,44 @@ export function simulate(design: Design, chaos: ChaosOptions = {}): SimResult {
 
 type AzMode = 'none' | 'one-az-down' | 'chaos';
 
+/** Invalid CIDR layout, and subnets too small for what runs in them. */
+function networkFindings(g: Graph): Finding[] {
+  const out: Finding[] = validateNetwork(g.network).map((detail, i) => ({
+    id: `network-invalid-${i}`,
+    severity: 'error' as const,
+    pillar: 'operational' as const,
+    nodeIds: [],
+    title: tx('Invalid VPC layout', 'Cấu hình VPC không hợp lệ'),
+    detail,
+  }));
+  const full = [...g.nodes.values()].filter((n) => (n.placement === 'public' || n.placement === 'private') && n.ip === null);
+  if (full.length && !out.length)
+    out.push({
+      id: 'subnet-full',
+      severity: 'error',
+      pillar: 'operational',
+      nodeIds: full.map((n) => n.id),
+      title: tx('Subnet out of IP addresses', 'Subnet hết địa chỉ IP'),
+      detail: tx(
+        'These resources got no private IP: their subnet is too small. Use a bigger CIDR block (a smaller number after the /).',
+        'Các tài nguyên này không được cấp IP private vì subnet quá nhỏ. Hãy dùng CIDR lớn hơn (số sau dấu / nhỏ hơn).',
+      ),
+    });
+  return out;
+}
+
 /** Probability that the user path works, evaluated recursively from the clients. */
 function systemOk(clients: GraphNode[], results: Record<string, NodeResult>, mode: AzMode): number {
   const memo = new Map<string, number>();
   const up = (n: GraphNode): number => {
     const r = results[n.id]!;
+    if (mode === 'chaos') return r.status === 'down' ? 0 : 1;
+    if (mode === 'one-az-down' && r.model.azLayout === 'single-az') return 0;
+    return r.model.availability;
+  };
+  const upId = (id: string): number => {
+    const r = results[id];
+    if (!r) return 1;
     if (mode === 'chaos') return r.status === 'down' ? 0 : 1;
     if (mode === 'one-az-down' && r.model.azLayout === 'single-az') return 0;
     return r.model.availability;
@@ -396,15 +589,17 @@ function systemOk(clients: GraphNode[], results: Record<string, NodeResult>, mod
     stack.add(n.id);
     const sync = n.out.filter((e) => !e.async);
     const b = n.def.behavior;
+    // A routed connection also needs its NAT Gateway / endpoint to be up.
+    const okVia = (e: GraphEdge) => (e.blocked ? 0 : ok(e.target, stack) * (e.via ? upId(e.via.id) : 1));
     let v: number;
     if (b === 'client' || b === 'router' || b === 'cdn' || b === 'nat' || b === 'endpoint') {
       // Any healthy target is enough (load balancing / routing).
       // Users connected to nothing are not being served at all.
-      const anyOk = sync.length ? 1 - sync.reduce((a, e) => a * (1 - ok(e.target, stack)), 1) : b === 'client' ? 0 : 1;
+      const anyOk = sync.length ? 1 - sync.reduce((a, e) => a * (1 - okVia(e)), 1) : b === 'client' ? 0 : 1;
       v = (b === 'client' ? 1 : up(n)) * anyOk;
     } else if (b === 'app') {
       // Every dependency is needed — except caches (we can fall back to the DB).
-      v = up(n) * sync.filter((e) => e.target.def.behavior !== 'cache').reduce((a, e) => a * ok(e.target, stack), 1);
+      v = up(n) * sync.filter((e) => e.target.def.behavior !== 'cache').reduce((a, e) => a * okVia(e), 1);
     } else {
       v = up(n);
     }

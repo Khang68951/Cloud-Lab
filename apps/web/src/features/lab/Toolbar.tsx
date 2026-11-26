@@ -39,7 +39,7 @@ function Menu({ trigger, children, label }: { trigger: ReactNode; children: Reac
         <DM.Content
           sideOffset={6}
           align="start"
-          className="z-50 min-w-56 max-w-80 rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg"
+          className="z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-56 max-w-96 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg"
         >
           {children}
         </DM.Content>

@@ -1,6 +1,6 @@
-import { getService, REGIONS, type FieldSpec, type RegionId, type Scenario, type ServiceConfig } from '@cloudlab/catalog';
+import { getService, REGIONS, type FieldSpec, type NetworkConfig, type RegionId, type Scenario, type ServiceConfig } from '@cloudlab/catalog';
 import { localize, type LocalizedText } from '@cloudlab/shared';
-import type { NodeResult } from '@cloudlab/sim-engine';
+import type { NodeResult, SimResult } from '@cloudlab/sim-engine';
 import { Copy, Lock, Power, Trash2 } from 'lucide-react';
 import { useId, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,9 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { currentLocale } from '@/i18n';
 import { formatNumber, formatUsd } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { LabNode } from '../model';
+import type { LabEdge, LabNode } from '../model';
 import { CATEGORY_HUE } from '../hues';
 import { ServiceIcon } from '../visuals';
+import { NodeNetwork } from './NetworkPanel';
 
 const inputCls = 'h-8 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-60';
 
@@ -126,15 +127,25 @@ export function NodeInspector({
   result,
   killed,
   onConfig,
+  onClearConfig,
   onRename,
   onDelete,
   onDuplicate,
   onToggleKill,
+  nodes,
+  edges,
+  sim,
+  network,
 }: {
+  nodes: LabNode[];
+  edges: LabEdge[];
+  sim: SimResult;
+  network: NetworkConfig;
   node: LabNode;
   result: NodeResult | undefined;
   killed: boolean;
   onConfig: (key: string, value: ServiceConfig[string]) => void;
+  onClearConfig: (key: string) => void;
   onRename: (label: string) => void;
   onDelete: () => void;
   onDuplicate: () => void;
@@ -212,6 +223,18 @@ export function NodeInspector({
             <dt className="text-muted-foreground">{t('inspector.cost')}</dt>
             <dd className="font-mono tabular-nums">{formatUsd(result.monthlyUsd, locale)}</dd>
           </div>
+          {result.queue && (
+            <>
+              <div>
+                <dt className="text-muted-foreground">{t('inspector.queueDrain')}</dt>
+                <dd className="font-mono tabular-nums">{formatNumber(result.queue.drainRps, locale, { maximumFractionDigits: 0 })} msg/s</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">{t('inspector.queueBacklog')}</dt>
+                <dd className="font-mono tabular-nums text-warning">+{formatNumber(result.queue.backlogRps, locale, { maximumFractionDigits: 0 })} msg/s</dd>
+              </div>
+            </>
+          )}
           <div>
             <dt className="text-muted-foreground">{t('inspector.layout')}</dt>
             <dd>{t(`layout.${result.model.azLayout}`)}</dd>
@@ -238,6 +261,8 @@ export function NodeInspector({
           ))}
         </div>
       )}
+
+      {!isUsers && <NodeNetwork node={node} nodes={nodes} edges={edges} sim={sim} network={network} onConfig={onConfig} onClearConfig={onClearConfig} />}
 
       <details className="group rounded-lg border p-2.5" open={!isUsers}>
         <summary className="cursor-pointer text-xs font-semibold">{t('inspector.guide')}</summary>

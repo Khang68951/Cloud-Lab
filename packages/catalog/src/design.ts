@@ -31,10 +31,19 @@ export const designEdgeSchema = z.object({
   targetHandle: z.string().nullish(),
 });
 
+/** VPC layout (CIDR blocks). Optional: designs without it use DEFAULT_NETWORK. */
+export const networkSchema = z.object({
+  vpcCidr: z.string().max(20),
+  publicCidr: z.string().max(20),
+  privateCidr: z.string().max(20),
+  manualSg: z.boolean().optional(),
+});
+
 export const designSchema = z.object({
   nodes: z.array(designNodeSchema),
   edges: z.array(designEdgeSchema),
   scenario: scenarioSchema,
+  network: networkSchema.optional(),
 });
 
 export type DesignNode = z.infer<typeof designNodeSchema>;

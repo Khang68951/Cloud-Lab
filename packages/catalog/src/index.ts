@@ -3,3 +3,5 @@ export * from './pricing.ts';
 export * from './design.ts';
 export * from './registry.ts';
 export * from './templates.ts';
+export * from './placement.ts';
+export * from './vpc.ts';

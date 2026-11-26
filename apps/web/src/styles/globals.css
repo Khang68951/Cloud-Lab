@@ -133,6 +133,29 @@
   --tc-soft: oklch(0.3 0.05 var(--hue));
 }
 
+/*
+ * Network placement colours in the Lab (public / private subnet, edge,
+ * AWS-managed). Set data-zone on an element with .zone, then use
+ * `text-(--zc)` / `bg-(--zc-soft)` / `border-(--zc)`.
+ */
+.zone {
+  --zc: oklch(0.56 0.14 var(--zh, 250));
+  --zc-soft: oklch(0.95 0.04 var(--zh, 250));
+}
+.dark .zone {
+  --zc: oklch(0.78 0.13 var(--zh, 250));
+  --zc-soft: oklch(0.3 0.06 var(--zh, 250));
+}
+.zone[data-zone='public'] { --zh: 55; }
+.zone[data-zone='private'] { --zh: 160; }
+.zone[data-zone='edge'] { --zh: 300; }
+.zone[data-zone='vpc'] { --zh: 255; }
+.zone[data-zone='managed'],
+.dark .zone[data-zone='managed'] {
+  --zc: var(--muted-foreground);
+  --zc-soft: var(--muted);
+}
+
 /* Lesson body (MDX). Components marked .not-prose opt out. */
 .lesson-prose {
   font-size: 1rem;
@@ -227,6 +250,18 @@
   to {
     stroke-dashoffset: -10;
   }
+}
+/* A queue node holding back a backlog: the bar keeps filling up. */
+@keyframes queue-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.queue-fill {
+  animation: queue-fill 2.4s ease-in infinite;
 }
 .react-flow {
   --xy-background-color: var(--background);

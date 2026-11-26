@@ -1,0 +1,88 @@
+Một kết nối trong AWS chỉ thành công khi qua được **hai lớp kiểm tra**:
+
+1. **Route**: gói tin có đường đi tới đích không? (route table, bài trước)
+2. **Security group**: bên nhận có **cho phép** kết nối đó không?
+
+Phần lớn lỗi "web cứ quay mãi rồi timeout" trên AWS là do một trong hai lớp này. Bài này nói về lớp thứ hai và những khái niệm đi kèm nó: IP, port và giao thức.
+
+## IP private và IP public
+
+| | IP private | IP public |
+|---|---|---|
+| Lấy từ | Dải CIDR của subnet (vd `10.0.2.14`) | Kho IP của AWS (hoặc Elastic IP) |
+| Ai cũng có? | Mọi tài nguyên trong VPC | Chỉ tài nguyên trong **public subnet** có bật cấp IP public |
+| Dùng để | Nói chuyện trong VPC | Được internet gọi tới (qua Internet Gateway) |
+
+Vài điều hay bị nhầm:
+
+- Instance trong **private subnet** không có IP public, nên internet không thể gọi thẳng vào. Muốn phục vụ người dùng thì đặt **load balancer ở public subnet** phía trước.
+- **Lambda gắn VPC không bao giờ có IP public**, kể cả khi đặt ở public subnet. Muốn ra internet thì phải đặt ở private subnet và đi qua NAT.
+- RDS có tuỳ chọn *Publicly accessible*. Bật lên kèm public subnet là database có địa chỉ internet. Gần như không bao giờ nên làm vậy.
+
+## Port và giao thức: HTTP với TCP khác nhau ở đâu?
+
+Hai thứ này nằm ở **hai tầng khác nhau**:
+
+| Tầng | Giao thức | Nó lo việc gì |
+|---|---|---|
+| Ứng dụng (L7) | HTTP, HTTPS, PostgreSQL, Redis… | *Nội dung* trao đổi: URL, header, câu SQL… |
+| Vận chuyển (L4) | **TCP**, UDP | Mở kết nối tới **một port**, giao byte đầy đủ và đúng thứ tự |
+| Mạng (L3) | IP | Đưa gói tin tới đúng **địa chỉ** |
+
+HTTP chạy **bên trên** TCP. Khi trình duyệt mở `https://shop.example.com`, nó mở một kết nối **TCP tới port 443** rồi nói chuyện bằng HTTPS bên trong kết nối đó.
+
+**Security group chỉ nhìn tới tầng 4**: giao thức (TCP/UDP), port và địa chỉ nguồn. Trên console, chọn type "HTTP" thực chất chỉ là đặt sẵn **TCP 80**. Security group không đọc URL hay header. Đó là việc của ALB (định tuyến L7) và WAF (lọc nội dung).
+
+Các port bạn sẽ gặp hoài:
+
+| Port | Dịch vụ |
+|---|---|
+| 22 | SSH |
+| 80 / 443 | HTTP / HTTPS |
+| 3306 | MySQL, Aurora MySQL |
+| 5432 | PostgreSQL, Aurora PostgreSQL |
+| 6379 | Redis (ElastiCache, MemoryDB) |
+| 2049 | NFS (EFS) |
+
+## Security group làm việc thế nào
+
+Security group là **danh sách cho phép** (allow-list) gắn vào từng tài nguyên (đúng ra là vào ENI của nó). Mỗi rule inbound gồm:
+
+```
+Giao thức + port   ←   Nguồn
+TCP 5432           ←   sg-app            (security group của tầng app)
+TCP 443            ←   0.0.0.0/0         (mọi nơi trên internet)
+TCP 80             ←   10.0.0.0/16       (mọi thứ trong VPC)
+```
+
+- **Chỉ có Allow**: không khớp rule nào thì bị chặn. SG mới tạo chưa có rule inbound nào, nên không ai vào được.
+- **Stateful**: đã cho kết nối đi vào thì gói tin phản hồi tự được cho ra. Không cần mở thêm chiều ngược lại.
+- **Nguồn có thể là một security group khác**. Đây là cách tốt nhất: "RDS chỉ nhận 5432 từ `sg-app`" vẫn đúng khi app scale từ 2 lên 20 instance và đổi IP liên tục.
+
+<Callout type="key">
+Chuỗi SG kinh điển cho web 3 tầng: **internet → `sg-alb` (443 từ 0.0.0.0/0) → `sg-app` (80 từ `sg-alb`) → `sg-db` (5432 từ `sg-app`)**. Mỗi tầng chỉ tin đúng tầng ngay trước nó.
+</Callout>
+
+## So với Network ACL
+
+| | Security group | Network ACL |
+|---|---|---|
+| Gắn vào | Tài nguyên (ENI) | Cả subnet |
+| Trạng thái | Stateful | **Stateless**: phải mở cả chiều phản hồi (ephemeral port 1024–65535) |
+| Rule | Chỉ Allow | Allow và Deny, xét theo số thứ tự |
+| Dùng khi | Luôn luôn: đây là hàng rào chính | Chặn thô một dải IP xấu ở cấp subnet |
+
+## Thử trong Lab
+
+Bấm vào một node trong VPC, mục **Mạng** sẽ hiện subnet, IP private, port nó đang nghe, các rule của security group và danh sách **kết nối đi vào** (✓ qua được / ✗ bị chặn và lý do). Cạnh bị chặn hiện màu đỏ với nhãn **"SG chặn"** hoặc **"Không có route"**, và request đi vào đó sẽ thành lỗi. Bỏ chọn mọi node để xem CIDR của VPC và route table.
+
+<Callout type="tip">
+Khi debug kết nối, đi đúng thứ tự AWS kiểm tra: **route trước** (đích ở subnet nào, có đường tới không?), **security group sau** (đúng port chưa, đúng nguồn chưa?).
+</Callout>
+
+## Sai lầm thường gặp
+
+- Mở `0.0.0.0/0` cho port database "để test" rồi quên đóng.
+- Mở SSH 22 cho cả internet. Hãy dùng Systems Manager Session Manager.
+- Rule đúng nguồn nhưng sai port, vd mở 3306 (MySQL) cho database PostgreSQL (5432).
+- Dùng cả dải VPC làm nguồn cho database, thay vì security group của app.

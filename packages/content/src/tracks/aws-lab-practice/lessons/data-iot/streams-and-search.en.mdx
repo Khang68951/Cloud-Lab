@@ -1,0 +1,24 @@
+The [AWS Solutions Library](https://aws.amazon.com/solutions/) is a set of architectures AWS has already built, with source code and deployment guides, used by many companies in production. These three challenges come from there and from AWS's data reference architectures.
+
+| Challenge | Source | Key idea |
+|---|---|---|
+| **Clickstream** | AWS Solution "Clickstream Analytics on AWS" | Stream → Firehose → S3 data lake → Athena |
+| **IoT telemetry** | AWS IoT workshops, the "IoT data ingestion" architecture | A hot path (time-series) and a cold path (archive) |
+| **Product search** | DynamoDB → OpenSearch integration (AWS blogs, zero-ETL) | One source of truth, index synced through a change stream |
+
+## Write once, read in bulk
+
+Click events and sensor readings are **never updated**, and are read in large batches later. Putting them in a transactional database (RDS) means paying for things you do not use: transactions, indexes, connections.
+
+```
+Transactional: app ─► RDS            (one INSERT per event)
+Data lake:     API ─► Kinesis ─► Firehose ┄┄► S3 ◄── Athena (SQL)
+```
+
+## One job per store
+
+DynamoDB looks up keys blazingly fast but cannot "find red shoes". OpenSearch is great at text search but should not be the source of truth. The standard pattern: **write to one place**, and let a **stream** sync it to the other.
+
+<Callout type="warning">
+Do not let the API write to both stores itself ("dual write"): a single failed second write leaves them out of sync forever.
+</Callout>

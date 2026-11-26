@@ -31,4 +31,4 @@ VPC 10.0.0.0/16
 Security Group có thể tham chiếu **Security Group khác** làm nguồn. "DB chỉ nhận kết nối từ app-sg" an toàn và dễ bảo trì hơn nhiều so với liệt kê địa chỉ IP.
 </Callout>
 
-Trong Lab, quy tắc "database phải nằm trong private subnet" được kiểm tra qua cảnh báo **"bị phơi ra phía internet"**: nếu bạn nối thẳng Users/ALB vào database, phần Đánh giá sẽ báo lỗi bảo mật.
+Lab mô phỏng điều này thật sự. Mỗi node trong VPC nằm ở public hoặc private subnet (hiện trên node và thành khung trên canvas), có IP private và có security group. Nối thẳng Users vào một thứ trong private subnet thì cạnh chuyển đỏ với nhãn **"Không có route"**: các request đó sẽ lỗi. Security group không có rule khớp thì hiện **"SG chặn"**. Bấm vào node và mở mục **Mạng** để đổi subnet và rule. Khoá Mạng chuyên sâu đi sâu hơn trong bài *Security group, port và giao thức*.

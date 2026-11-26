@@ -26,6 +26,8 @@
   },
   "challenge": {
     "requirements": "Requirements",
+    "hiddenOptimizations_one": "+ {{count}} optimisation requirement, revealed by hints in the Lab.",
+    "hiddenOptimizations_other": "+ {{count}} optimisation requirements, revealed by hints in the Lab.",
     "open": "Open in the Lab"
   },
   "filters": {

@@ -14,7 +14,7 @@ npm run dev        # API :8787 + web :5173
 
 Mở http://localhost:5173
 
-**Nội dung hiện có**: 11 khoá (Core + 9 khoá chuyên sâu + System Design), 82 bài học song ngữ, 272 bài tập và 28 thử thách trong Lab. Xem chương trình học đầy đủ trong [COURSE-PLAN.md](COURSE-PLAN.md).
+**Nội dung hiện có**: 12 khoá (Core + 9 khoá chuyên sâu + Lab Practice + System Design), 89 bài học song ngữ, 296 bài tập, trong đó có 47 thử thách trong Lab. Xem chương trình học đầy đủ trong [COURSE-PLAN.md](COURSE-PLAN.md).
 
 ## Học gì, ở đâu
 
@@ -23,8 +23,8 @@ Mở http://localhost:5173
 | **Lộ trình** (`/roadmap`) | 11 khoá xếp theo 5 giai đoạn, kèm khoá cần học trước, tiến độ và gợi ý khoá nên học tiếp |
 | **Khoá học** (`/learn`) | Danh mục khoá; mỗi khoá có module, bài học, bài tập và chứng nhận khi hoàn thành |
 | **Lab kiến trúc** (`/lab`) | Canvas kiểu draw.io: kéo dịch vụ AWS vào, nối lại; bảng giá, độ trễ, availability, điểm nghẽn và đánh giá Well-Architected hiện ở bên phải; menu Chaos để phá thử |
-| **Luyện tập** (`/practice`) | Chỉ làm bài, lọc được theo khoá: 189 quiz tình huống, 55 bài ước tính, 28 challenge thiết kế trong Lab |
-| **Service Explorer** (`/explore`) | Tra cứu và so sánh 28 dịch vụ AWS |
+| **Luyện tập** (`/practice`) | Chỉ làm bài, lọc được theo khoá: 194 quiz tình huống, 55 bài ước tính, 47 challenge thiết kế trong Lab |
+| **Service Explorer** (`/explore`) | Tra cứu và so sánh 201 dịch vụ AWS |
 | **Glossary** (`/glossary`) | Thuật ngữ cloud song ngữ |
 | **Tìm kiếm** (Ctrl+K) | Tìm khoá, bài, dịch vụ, thuật ngữ, thử thách |
 | **Cài đặt** | Ngôn ngữ, theme, tên hiển thị trên chứng nhận, xuất/nhập/đặt lại dữ liệu |
@@ -49,7 +49,7 @@ apps/
   api/        Hono + SQLite (better-sqlite3) + Drizzle ORM
 packages/
   shared/        Type và Zod schema dùng chung (i18n, settings, content model, exercise kinds)
-  catalog/       28 dịch vụ AWS: cấu hình, giá tham khảo, capacity, SLA, tài liệu song ngữ, template
+  catalog/       201 dịch vụ AWS: cấu hình, giá tham khảo, capacity, SLA, tài liệu song ngữ, template
   sim-engine/    Mô phỏng: traffic, chi phí, độ trễ, availability, chaos, linter Well-Architected
   exercise-kit/  Kiểu bài tập + hàm chấm điểm thuần (quiz, ước tính, challenge trên canvas)
   content/       Track, bài học (MDX vi/en), bài tập và challenge
@@ -62,15 +62,22 @@ FE gọi BE qua typed client của Hono (`hc<AppType>`). Đổi API ở `apps/ap
 ## Mở rộng
 
 **Thêm khoá học mới**:
-1. Tạo thư mục `packages/content/src/tracks/<slug>/` gồm `track.ts` (dùng `defineCourse`, `mod()`, `lesson()`), `exercises.ts` và `index.ts`.
+1. Tạo thư mục `packages/content/src/tracks/<slug>/` gồm `track.ts` (dùng `defineCourse`, `mod()`, `lesson()`), `exercises.ts` (dùng `exerciseBuilders('<slug>')`) và `index.ts`. Chép một khoá có sẵn, ví dụ `aws-compute`, là nhanh nhất: mọi khoá, kể cả Core, đều viết theo cùng một khuôn.
 2. Đăng ký khoá trong `COURSES` ở `packages/content/src/index.ts`, đặt `stage` và `prerequisites` để khoá xuất hiện đúng chỗ trên lộ trình.
-3. Bài mới tạo có trạng thái "Đang soạn"; viết xong cả 2 file MDX và ≥ 3 bài tập thì chạy `python scripts/mark-ready.py <slug>` để đổi sang `'available'`. Test nội dung sẽ kiểm tra việc này.
+3. Trạng thái tự tính, không phải sửa tay: bài có ≥ 3 bài tập thì là "available", chưa đủ thì hiện "Đang soạn". Badge loại bài tập của module cũng tự sinh từ bài tập thật. Test nội dung kiểm tra bài "available" phải có đủ 2 file MDX.
    Thử thách trên canvas: chạy `npm run challenges:report -- <slug>` để hiệu chỉnh (starter phải trượt, lời giải phải qua).
 4. Nếu khoá dùng icon mới thì thêm icon đó vào `apps/web/src/components/icon.tsx`.
 
 Thêm khoá không cần sửa route hay giao diện, vì lộ trình, danh mục, tìm kiếm và chứng nhận đều tự sinh từ dữ liệu.
 
-**Thêm bài học**: thêm metadata vào `packages/content/src/tracks/aws/lessons.ts`, viết `lessons/<module>/<bài>.vi.mdx` và `.en.mdx`, rồi thêm bài tập vào `exercises.ts`. Trong MDX dùng được `<Callout>`, `<TryLab>`, `<ServiceCompare ids="...">`, `<CostCrossover />`, `<AvailabilityCalculator />`.
+**Thêm bài học** (mọi khoá giống nhau):
+1. Thêm 1 dòng `lesson('<slug>', tx(...), tx(...), <phút>)` vào module trong `track.ts`.
+2. Viết `lessons/<module>/<slug>.vi.mdx` và `.en.mdx`.
+3. Thêm ≥ 3 bài tập vào `exercises.ts` dưới key `<module>: { '<slug>': [...] }`. Dùng `quiz()`, `estimate()` và `challenge()`. Với challenge, dùng thêm `scenario()`, `usersOnly()` và `R.cost()`, `R.p95()`, `R.errors()`, `R.survivesAz()`... trong `helpers.ts`.
+
+Security group trong challenge: ở các bài trước bài `aws-networking/vpc-design/security-groups`, mỗi node được mở sẵn port của nó cho cả VPC. Từ bài đó trở đi trong khoá Networking, và trong mọi khoá cần Networking làm tiền đề (Reliability, System Design...), SG bắt đầu trống và học viên phải tự thêm rule. Việc chọn chế độ diễn ra tự động (`SG_LESSON` trong `packages/content/src/index.ts`). Với các challenge đó, bọc lời giải bằng `withSecurityGroups(...)` để tự sinh rule theo quyền tối thiểu, và thêm `R.connected()` vào requirements.
+
+Quy ước: text song ngữ luôn viết `tx('english', 'tiếng Việt')`. Id bài tập viết không kèm prefix khoá, prefix được thêm tự động. Nếu xếp bài tập vào một module hoặc bài học không tồn tại thì app báo lỗi ngay lúc khởi động. Trong MDX dùng được `<Callout>`, `<TryLab>`, `<ServiceCompare ids="...">`, `<CostCrossover />`, `<AvailabilityCalculator />`.
 
 **Thêm dịch vụ AWS vào Lab**: viết `ServiceDef` trong `packages/catalog/src/services/*.ts` (gồm config, hàm `model` tính capacity/giá/SLA, và tài liệu), đăng ký trong `registry.ts`, rồi thêm icon trong `apps/web/src/features/lab/visuals.tsx`.
 

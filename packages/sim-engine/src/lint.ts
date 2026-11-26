@@ -1,4 +1,4 @@
-import { tx, type Flow, type Scenario } from '@cloudlab/catalog';
+import { ANYWHERE, portLabel, tx, type Flow, type Scenario } from '@cloudlab/catalog';
 import type { Graph, GraphEdge, GraphNode } from './simulate.ts';
 import type { Finding, NodeResult, SimTotals } from './types.ts';
 
@@ -42,12 +42,17 @@ export function lint({ graph, results, scenario }: LintInput): Finding[] {
     const n = stack.pop()!;
     if (reached.has(n.id)) continue;
     reached.add(n.id);
-    for (const e of n.out) stack.push(e.target);
+    for (const e of n.out) {
+      if (e.blocked) continue;
+      stack.push(e.target);
+      if (e.via) stack.push(graph.nodes.get(e.via.id)!);
+    }
   }
 
   for (const n of nodes) {
     const r = results[n.id]!;
     const b = n.def.behavior;
+    networkLint(n, out);
 
     if (b !== 'client' && !reached.has(n.id)) {
       out.push({
@@ -157,7 +162,9 @@ export function lint({ graph, results, scenario }: LintInput): Finding[] {
     }
 
     if (b === 'nat') {
-      const toAws = n.out.filter((e) => e.target.def.id === 's3' || e.target.def.id === 'dynamodb');
+      // Drawn NAT → S3 edges, and S3/DynamoDB calls the route table sends through this NAT.
+      const routedToAws = graph.edges.filter((e) => e.via?.id === n.id && (e.target.def.id === 's3' || e.target.def.id === 'dynamodb'));
+      const toAws = [...n.out.filter((e) => e.target.def.id === 's3' || e.target.def.id === 'dynamodb'), ...routedToAws];
       if (toAws.length) {
         const natData = r.costs.filter((c) => c.kind === 'transfer').reduce((a, c) => a + c.usd, 0);
         out.push({
@@ -188,7 +195,7 @@ export function lint({ graph, results, scenario }: LintInput): Finding[] {
     }
 
     // Databases / caches reachable straight from the internet-facing tier.
-    if ((b === 'db' || b === 'cache') && n.def.id !== 'cognito' && n.in.some((e) => PUBLIC_ENTRY.has(e.source.def.id) && !(e.source.def.id === 'apigw' && n.def.id === 'dynamodb'))) {
+    if ((b === 'db' || b === 'cache') && n.def.id !== 'cognito' && n.in.some((e) => !e.blocked && PUBLIC_ENTRY.has(e.source.def.id) && !(e.source.def.id === 'apigw' && n.def.id === 'dynamodb'))) {
       out.push({
         id: `public-db-${n.id}`,
         severity: 'error',
@@ -235,6 +242,41 @@ export function lint({ graph, results, scenario }: LintInput): Finding[] {
           detail: tx(
             `~${Math.round(concurrency)} concurrent executions at peak, each with its own connection. Put RDS Proxy in between or use DynamoDB.`,
             `~${Math.round(concurrency)} lượt chạy đồng thời lúc cao điểm, mỗi lượt giữ một kết nối riêng. Đặt RDS Proxy ở giữa hoặc dùng DynamoDB.`,
+          ),
+        });
+      }
+    }
+
+    const q = results[n.id]!.queue;
+    if (q && q.backlogRps > 0) {
+      const inRps = q.drainRps + q.backlogRps;
+      const fmt = (x: number) => Math.round(x).toLocaleString('en-US');
+      if (q.drainRps > q.normalInRps && inRps > q.normalInRps) {
+        // A spike (chaos traffic): the queue absorbs it and drains once it is over.
+        const perMinute = q.backlogRps * 60;
+        const clearMin = q.backlogRps / (q.drainRps - q.normalInRps);
+        const clear = clearMin < 1 ? '< 1' : clearMin.toFixed(clearMin < 10 ? 1 : 0);
+        out.push({
+          id: `queue-buffering-${n.id}`,
+          severity: 'info',
+          pillar: 'reliability',
+          nodeIds: [n.id],
+          title: tx(`${name(n)} is absorbing the spike`, `${name(n)} đang hứng đợt tăng traffic`),
+          detail: tx(
+            `${fmt(inRps)} msg/s arrive but consumers pull ${fmt(q.drainRps)} msg/s, as fast as the services behind them allow. The other ${fmt(q.backlogRps)} msg/s wait in the queue instead of overloading anything: ~${fmt(perMinute)} more messages per minute of spike. Once traffic is back to normal (${fmt(q.normalInRps)} msg/s) the backlog clears in ~${clear} min per minute of spike.`,
+            `${fmt(inRps)} msg/s đổ vào nhưng consumer chỉ lấy ${fmt(q.drainRps)} msg/s, đúng bằng sức của các dịch vụ phía sau. ${fmt(q.backlogRps)} msg/s còn lại nằm chờ trong queue thay vì làm quá tải hệ thống: mỗi phút spike dồn thêm ~${fmt(perMinute)} message. Khi traffic về bình thường (${fmt(q.normalInRps)} msg/s), cứ mỗi phút spike cần ~${clear} phút để xả hết.`,
+          ),
+        });
+      } else {
+        out.push({
+          id: `queue-backlog-${n.id}`,
+          severity: 'warning',
+          pillar: 'reliability',
+          nodeIds: [n.id],
+          title: tx(`Consumers cannot keep up with ${name(n)}`, `Consumer không theo kịp ${name(n)}`),
+          detail: tx(
+            `${fmt(inRps)} msg/s arrive but only ${fmt(q.drainRps)} msg/s can be processed, even at normal traffic. The backlog grows forever and messages expire (SQS keeps them 4 days by default, 14 at most). Add consumer capacity, or capacity behind it (database, downstream services).`,
+            `${fmt(inRps)} msg/s đổ vào nhưng chỉ xử lý được ${fmt(q.drainRps)} msg/s, kể cả lúc traffic bình thường. Backlog tăng mãi và message sẽ hết hạn (SQS mặc định giữ 4 ngày, tối đa 14 ngày). Hãy tăng sức consumer hoặc phần phía sau nó (database, dịch vụ downstream).`,
           ),
         });
       }
@@ -292,4 +334,99 @@ export function lint({ graph, results, scenario }: LintInput): Finding[] {
 
   const order = { error: 0, warning: 1, info: 2 } as const;
   return out.sort((a, b) => order[a.severity] - order[b.severity]);
+}
+
+/** Subnet and security-group mistakes: checked even for nodes that get no traffic. */
+function networkLint(n: GraphNode, out: Finding[]) {
+  const b = n.def.behavior;
+  const name = (x: GraphNode) => x.def.short;
+  // Subnet placement mistakes (the learner picked the subnet in the Inspector).
+  const where = n.placement;
+  const isData = b === 'db' || b === 'cache' || n.def.category === 'database' || n.def.category === 'storage';
+  if (where === 'public' && isData) {
+    out.push({
+      id: `public-subnet-data-${n.id}`,
+      severity: 'error',
+      pillar: 'security',
+      nodeIds: [n.id],
+      title: tx(`${name(n)} sits in a public subnet`, `${name(n)} đang nằm trong public subnet`),
+      detail: tx(
+        'A public subnet routes 0.0.0.0/0 to the Internet Gateway, so one wrong security-group rule exposes your data. Move it to a private subnet.',
+        'Public subnet có route 0.0.0.0/0 tới Internet Gateway, chỉ cần một rule security group sai là dữ liệu bị lộ. Hãy chuyển nó vào private subnet.',
+      ),
+    });
+  } else if (where === 'public' && b === 'app') {
+    out.push({
+      id: `public-subnet-app-${n.id}`,
+      severity: 'warning',
+      pillar: 'security',
+      nodeIds: [n.id],
+      title: tx(`${name(n)} runs in a public subnet`, `${name(n)} chạy trong public subnet`),
+      detail: n.def.id === 'lambda'
+        ? tx(
+            'A VPC Lambda never gets a public IP, so a public subnet gives it no internet access anyway. Put it in a private subnet and give it a NAT Gateway or VPC Endpoint.',
+            'Lambda gắn VPC không bao giờ có IP public, nên đặt ở public subnet cũng không ra được internet. Hãy đặt nó vào private subnet và cho đi qua NAT Gateway hoặc VPC Endpoint.',
+          )
+        : tx(
+            'Application servers should sit in private subnets behind a load balancer; only the load balancer and NAT need to be public.',
+            'Server ứng dụng nên nằm trong private subnet, phía sau load balancer; chỉ load balancer và NAT mới cần ở public subnet.',
+          ),
+    });
+  } else if (where === 'private' && b === 'nat') {
+    out.push({
+      id: `private-nat-${n.id}`,
+      severity: 'error',
+      pillar: 'reliability',
+      nodeIds: [n.id],
+      title: tx('NAT Gateway in a private subnet', 'NAT Gateway nằm trong private subnet'),
+      detail: tx(
+        'A NAT Gateway forwards traffic to the Internet Gateway, so it must live in a public subnet. In a private subnet nothing behind it can reach the internet.',
+        'NAT Gateway chuyển traffic ra Internet Gateway nên phải nằm trong public subnet. Đặt trong private subnet thì mọi thứ phía sau nó đều không ra được internet.',
+      ),
+    });
+  }
+
+  // Security group rules open to the whole internet.
+  const openPorts = n.sg.filter((r) => r.source === ANYWHERE).map((r) => r.port);
+  if (where === 'public' && isData && openPorts.length) {
+    out.push({
+      id: `sg-open-data-${n.id}`,
+      severity: 'error',
+      pillar: 'security',
+      nodeIds: [n.id],
+      title: tx(`${name(n)} accepts connections from 0.0.0.0/0`, `${name(n)} nhận kết nối từ 0.0.0.0/0`),
+      detail: tx(
+        `Its security group opens ${openPorts.map(portLabel).join(', ')} to the whole internet. Allow only the app tier's security group (sg-…) as the source.`,
+        `Security group của nó mở ${openPorts.map(portLabel).join(', ')} cho cả internet. Chỉ cho phép security group của tầng app (sg-…) làm nguồn.`,
+      ),
+    });
+  }
+  // Least privilege: a data store should name the app's security group, not a whole range.
+  const broad = n.sg.filter((r) => !r.source.startsWith('sg:') && !(where === 'public' && r.source === ANYWHERE));
+  if ((where === 'public' || where === 'private') && isData && broad.length) {
+    out.push({
+      id: `sg-broad-data-${n.id}`,
+      severity: 'info',
+      pillar: 'security',
+      nodeIds: [n.id],
+      title: tx(`${name(n)} trusts a whole IP range`, `${name(n)} tin cả một dải IP`),
+      detail: tx(
+        `Its security group allows ${broad.map((r) => `${portLabel(r.port)} from ${r.source}`).join(', ')}. Anything that lands in that range can connect. Use the app tier's security group (sg-…) as the source instead.`,
+        `Security group của nó cho phép ${broad.map((r) => `${portLabel(r.port)} từ ${r.source}`).join(', ')}. Bất cứ thứ gì nằm trong dải đó đều kết nối được. Hãy dùng security group của tầng app (sg-…) làm nguồn.`,
+      ),
+    });
+  }
+  if (openPorts.includes(22)) {
+    out.push({
+      id: `sg-open-ssh-${n.id}`,
+      severity: 'warning',
+      pillar: 'security',
+      nodeIds: [n.id],
+      title: tx(`SSH open to the internet on ${name(n)}`, `SSH của ${name(n)} mở cho cả internet`),
+      detail: tx(
+        'Port 22 from 0.0.0.0/0 gets brute-forced within minutes. Use Systems Manager Session Manager, or allow SSH only from your office IP.',
+        'Port 22 mở cho 0.0.0.0/0 sẽ bị dò mật khẩu chỉ sau vài phút. Hãy dùng Systems Manager Session Manager, hoặc chỉ cho SSH từ IP văn phòng.',
+      ),
+    });
+  }
 }

@@ -38,7 +38,6 @@ export const lessonMetaSchema = z.object({
   title: localizedTextSchema,
   summary: localizedTextSchema.optional(),
   estMinutes: z.number().int().positive().optional(),
-  skills: z.array(skillTagSchema).default([]),
   status: statusSchema.default('planned'),
 });
 export type LessonMeta = z.infer<typeof lessonMetaSchema>;

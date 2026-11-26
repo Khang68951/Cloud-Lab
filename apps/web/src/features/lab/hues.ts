@@ -1,4 +1,5 @@
-import type { Category } from '@cloudlab/catalog';
+import type { Category, Placement } from '@cloudlab/catalog';
+import { Cloud, Globe, Lock, RadioTower, type LucideIcon } from 'lucide-react';
 
 /** Category colour (OKLCH hue), loosely following AWS architecture-icon colours. */
 export const CATEGORY_HUE: Record<Category, number> = {
@@ -18,4 +19,13 @@ export const CATEGORY_HUE: Record<Category, number> = {
   media: 70,
   migration: 195,
   business: 5,
+};
+
+/** Icon for each network placement (zone chip on nodes, subnet frames). */
+export const ZONE_ICON: Record<Placement, LucideIcon> = {
+  internet: Globe,
+  edge: RadioTower,
+  public: Globe,
+  private: Lock,
+  managed: Cloud,
 };

@@ -1,5 +1,7 @@
-import { buildDesign, tx, type Scenario } from '@cloudlab/catalog';
-import type { CanvasChallenge, Requirement } from '@cloudlab/exercise-kit';
+import { buildDesign, tx } from '@cloudlab/catalog';
+import { exerciseBuilders, R, scenario, usersOnly } from '../../helpers.ts';
+
+const { challenge } = exerciseBuilders('aws');
 
 /**
  * Canvas challenges. Thresholds are calibrated with `npm run challenges:report`
@@ -7,35 +9,11 @@ import type { CanvasChallenge, Requirement } from '@cloudlab/exercise-kit';
  * reasonable solutions. Tests enforce this (content/src/index.test.ts).
  */
 
-const scenario = (s: Partial<Scenario>): Scenario => ({
-  rps: 100,
-  peakMultiplier: 3,
-  readRatio: 0.8,
-  payloadKB: 5,
-  region: 'us-east-1',
-  ...s,
-});
-
-const usersOnly = (s: Scenario) => buildDesign([['users', 'users', 0, 1]], [], s);
-
-const R = {
-  cost: (max: number): Requirement => ({ type: 'metric', metric: 'monthlyUsd', op: '<=', value: max }),
-  p95: (max: number): Requirement => ({ type: 'metric', metric: 'p95Ms', op: '<=', value: max }),
-  availability: (min: number): Requirement => ({ type: 'metric', metric: 'availability', op: '>=', value: min }),
-  errors: (max = 0.01): Requirement => ({ type: 'metric', metric: 'errorRate', op: '<=', value: max }),
-  survivesAz: (): Requirement => ({
-    type: 'survives',
-    chaos: { azDown: true },
-    label: tx('Keeps serving users when one Availability Zone goes down', 'Vẫn phục vụ người dùng khi một Availability Zone bị sập'),
-  }),
-  noErrors: (): Requirement => ({ type: 'no-findings', severity: 'error' }),
-};
-
 // ---------------------------------------------------------------------------
 
 const staticSiteScenario = scenario({ rps: 30, peakMultiplier: 3, readRatio: 1, payloadKB: 50 });
-export const staticSite: CanvasChallenge = {
-  id: 'aws.lab.static-site',
+export const staticSite = challenge({
+  id: 'lab.static-site',
   kind: 'canvas-design',
   skills: ['aws.foundations.lab', 'aws.edge.cloudfront'],
   title: tx('Your first design: a static website', 'Thiết kế đầu tiên: một website tĩnh'),
@@ -55,7 +33,7 @@ export const staticSite: CanvasChallenge = {
       label: tx('No servers or functions to manage', 'Không có server hay function nào phải quản lý'),
     },
     R.cost(450),
-    R.noErrors(),
+    R.noFindings(),
   ],
   hints: [
     tx('Static files belong in object storage. Which service is that?', 'File tĩnh nên nằm trong object storage. Dịch vụ nào làm việc đó?'),
@@ -76,13 +54,13 @@ export const staticSite: CanvasChallenge = {
     ['users>dns', 'dns>cdn', 'cdn>bucket'],
     staticSiteScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const sideProjectScenario = scenario({ rps: 1, peakMultiplier: 5, readRatio: 0.7, payloadKB: 4 });
-export const sideProject: CanvasChallenge = {
-  id: 'aws.compute.side-project-api',
+export const sideProject = challenge({
+  id: 'compute.side-project-api',
   kind: 'canvas-design',
   skills: ['aws.compute.choosing', 'aws.compute.lambda'],
   title: tx('A side-project API for under $12/month', 'API cho dự án cá nhân dưới $12/tháng'),
@@ -93,7 +71,7 @@ export const sideProject: CanvasChallenge = {
   scenario: sideProjectScenario,
   starter: usersOnly(sideProjectScenario),
   requirements: [
-    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.cost(12), R.errors(), R.survivesAz(), R.availability(0.998), R.noErrors()],
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.cost(12), R.errors(), R.survivesAz(), R.availability(0.998), R.noFindings()],
   hints: [
     tx('Look at the fixed monthly cost of a load balancer and of an always-on instance.', 'Hãy xem chi phí cố định mỗi tháng của một load balancer và của một instance chạy liên tục.'),
     tx('At ~1 request/second, paying per request beats paying per hour.', 'Ở mức ~1 request/giây, trả tiền theo request rẻ hơn trả theo giờ.'),
@@ -113,13 +91,13 @@ export const sideProject: CanvasChallenge = {
     ['users>api', 'api>fn', 'fn>table'],
     sideProjectScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const singleServerScenario = scenario({ rps: 300, peakMultiplier: 3, readRatio: 0.8, payloadKB: 5 });
-export const singleServer: CanvasChallenge = {
-  id: 'aws.compute.single-server-to-ha',
+export const singleServer = challenge({
+  id: 'compute.single-server-to-ha',
   kind: 'canvas-fix',
   skills: ['aws.compute.autoscaling', 'aws.reliability.multi-az'],
   title: tx('From one server to highly available', 'Từ một server lên hệ thống sẵn sàng cao'),
@@ -131,7 +109,7 @@ export const singleServer: CanvasChallenge = {
   starter: buildDesign(
     [
       ['users', 'users', 0, 1],
-      ['app', 'ec2', 1, 1, { instanceType: 't3.medium', count: 1, multiAz: false }],
+      ['app', 'ec2', 1, 1, { subnet: 'public', sg: '80<0.0.0.0/0', instanceType: 't3.medium', count: 1, multiAz: false }],
       ['db', 'rds', 2, 1, { instanceClass: 'db.t3.medium', multiAz: false }],
     ],
     ['users>app', 'app>db'],
@@ -164,13 +142,13 @@ export const singleServer: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>db'],
     singleServerScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const readHeavyScenario = scenario({ rps: 1500, peakMultiplier: 2, readRatio: 0.9, payloadKB: 1 });
-export const readHeavy: CanvasChallenge = {
-  id: 'aws.databases.read-heavy',
+export const readHeavy = challenge({
+  id: 'databases.read-heavy',
   kind: 'canvas-fix',
   skills: ['aws.databases.read-scaling', 'aws.caching.elasticache'],
   title: tx('The database is melting', 'Database đang "chảy"'),
@@ -211,13 +189,13 @@ export const readHeavy: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>cache', 'app>db'],
     readHeavyScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const natScenario = scenario({ rps: 200, peakMultiplier: 2, readRatio: 0.5, payloadKB: 20 });
-export const natTrap: CanvasChallenge = {
-  id: 'aws.networking.nat-trap',
+export const natTrap = challenge({
+  id: 'networking.nat-trap',
   kind: 'canvas-fix',
   skills: ['aws.networking.nat', 'aws.networking.vpc-endpoints', 'aws.cost.data-transfer'],
   title: tx('The mysterious NAT bill', 'Hoá đơn NAT bí ẩn'),
@@ -268,14 +246,14 @@ export const natTrap: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>vpce', 'vpce>bucket'],
     natScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const CDN_BUDGET = 13000;
 const cdnScenario = scenario({ rps: 2000, peakMultiplier: 3, readRatio: 0.95, payloadKB: 10 });
-export const cdnOffload: CanvasChallenge = {
-  id: 'aws.caching.cdn-offload',
+export const cdnOffload = challenge({
+  id: 'caching.cdn-offload',
   kind: 'canvas-fix',
   skills: ['aws.edge.cloudfront', 'aws.caching.offload'],
   title: tx('Fast news for everyone', 'Tin tức nhanh cho mọi người'),
@@ -289,6 +267,7 @@ export const cdnOffload: CanvasChallenge = {
       ['users', 'users', 0, 1],
       ['lb', 'alb', 1, 1],
       ['app', 'ec2', 2, 1, { instanceType: 't3.medium', count: 4, autoscaling: true, maxCount: 12, multiAz: true }],
+      ['vpce', 'vpce', 2, 2, { type: 'gateway' }, 'S3/DynamoDB endpoint'],
       ['db', 'dynamodb', 3, 1],
     ],
     ['users>lb', 'lb>app', 'app>db'],
@@ -312,18 +291,19 @@ export const cdnOffload: CanvasChallenge = {
       ['cdn', 'cloudfront', 1, 1, { hitRatio: 0.9 }],
       ['lb', 'alb', 2, 1],
       ['app', 'ec2', 3, 1, { instanceType: 't3.medium', count: 2, autoscaling: true, maxCount: 12, multiAz: true }],
+      ['vpce', 'vpce', 3, 2, { type: 'gateway' }, 'S3/DynamoDB endpoint'],
       ['db', 'dynamodb', 4, 1],
     ],
     ['users>cdn', 'cdn>lb', 'lb>app', 'app>db'],
     cdnScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const flashSaleScenario = scenario({ rps: 150, peakMultiplier: 10, readRatio: 0, payloadKB: 2 });
-export const flashSale: CanvasChallenge = {
-  id: 'aws.messaging.flash-sale',
+export const flashSale = challenge({
+  id: 'messaging.flash-sale',
   kind: 'canvas-fix',
   skills: ['aws.messaging.sqs', 'aws.messaging.load-levelling'],
   title: tx('Surviving the flash sale', 'Sống sót qua flash sale'),
@@ -336,7 +316,7 @@ export const flashSale: CanvasChallenge = {
     [
       ['users', 'users', 0, 1],
       ['api', 'apigw', 1, 1],
-      ['fn', 'lambda', 2, 1, { durationMs: 60 }, 'Place order'],
+      ['fn', 'lambda', 2, 1, { subnet: 'private', durationMs: 60 }, 'Place order'],
       ['db', 'rds', 3, 1, { instanceClass: 'db.t3.medium', multiAz: true }],
     ],
     ['users>api', 'api>fn', 'fn>db'],
@@ -364,19 +344,19 @@ export const flashSale: CanvasChallenge = {
       ['api', 'apigw', 1, 1],
       ['fn', 'lambda', 2, 1, { durationMs: 30 }, 'Place order'],
       ['q', 'sqs', 3, 0],
-      ['worker', 'lambda', 4, 0, { durationMs: 60 }, 'Save order'],
+      ['worker', 'lambda', 4, 0, { subnet: 'private', durationMs: 60 }, 'Save order'],
       ['db', 'rds', 4, 2, { instanceClass: 'db.t3.medium', multiAz: true }],
     ],
     ['users>api', 'api>fn', 'fn>q', 'q>worker', 'worker>db'],
     flashSaleScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const ninesScenario = scenario({ rps: 100, peakMultiplier: 3, readRatio: 0.8, payloadKB: 5 });
-export const fourNines: CanvasChallenge = {
-  id: 'aws.reliability.three-and-a-half-nines',
+export const fourNines = challenge({
+  id: 'reliability.three-and-a-half-nines',
   kind: 'canvas-design',
   skills: ['aws.reliability.availability-math', 'aws.reliability.multi-az'],
   title: tx('Hit 99.95% availability', 'Đạt availability 99,95%'),
@@ -387,7 +367,7 @@ export const fourNines: CanvasChallenge = {
   scenario: ninesScenario,
   starter: usersOnly(ninesScenario),
   requirements: [
-    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.availability(0.9995), R.survivesAz(), R.errors(), R.cost(500), R.noErrors()],
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.availability(0.9995), R.survivesAz(), R.errors(), R.cost(500), R.noFindings()],
   hints: [
     tx('Look at each component\'s availability: API Gateway and Lambda are 99.95% each — two in a row are already below target.', 'Xem availability của từng thành phần: API Gateway và Lambda mỗi cái 99,95% — hai cái nối tiếp đã thấp hơn mục tiêu.'),
     tx('RDS Multi-AZ is 99.95% on its own, so anything in front of it pulls you below. Which database offers 99.99%?', 'Riêng RDS Multi-AZ đã là 99,95%, nên bất cứ thứ gì đứng trước nó cũng kéo bạn xuống dưới mục tiêu. Database nào cho 99,99%?'),
@@ -402,18 +382,19 @@ export const fourNines: CanvasChallenge = {
       ['users', 'users', 0, 1],
       ['lb', 'alb', 1, 1],
       ['app', 'ec2', 2, 1, { instanceType: 't3.medium', count: 2, autoscaling: true, maxCount: 4, multiAz: true }],
+      ['vpce', 'vpce', 2, 2, { type: 'gateway' }, 'S3/DynamoDB endpoint'],
       ['db', 'dynamodb', 3, 1, { storageGB: 10 }],
     ],
     ['users>lb', 'lb>app', 'app>db'],
     ninesScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const overprovScenario = scenario({ rps: 100, peakMultiplier: 2, readRatio: 0.8, payloadKB: 5 });
-export const cutTheBill: CanvasChallenge = {
-  id: 'aws.cost.cut-the-bill',
+export const cutTheBill = challenge({
+  id: 'cost.cut-the-bill',
   kind: 'canvas-fix',
   skills: ['aws.cost.rightsizing', 'aws.cost.savings-plans'],
   title: tx('Cut the bill by more than 60%', 'Cắt giảm hơn 60% hoá đơn'),
@@ -454,13 +435,13 @@ export const cutTheBill: CanvasChallenge = {
     ['users>lb', 'lb>app', 'app>db'],
     overprovScenario,
   ),
-};
+});
 
 // ---------------------------------------------------------------------------
 
 const shortenerScenario = scenario({ rps: 1000, peakMultiplier: 3, readRatio: 0.95, payloadKB: 1 });
-export const urlShortener: CanvasChallenge = {
-  id: 'aws.capstone.url-shortener',
+export const urlShortener = challenge({
+  id: 'capstone.url-shortener',
   kind: 'canvas-design',
   skills: ['aws.capstone.design', 'aws.databases.choosing', 'aws.caching.elasticache'],
   title: tx('Capstone: a URL shortener', 'Dự án tổng hợp: dịch vụ rút gọn URL'),
@@ -471,7 +452,7 @@ export const urlShortener: CanvasChallenge = {
   scenario: shortenerScenario,
   starter: usersOnly(shortenerScenario),
   requirements: [
-    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.p95(100), R.errors(), R.survivesAz(), R.availability(0.999), R.noErrors(), R.cost(1200)],
+    { type: 'flow', steps: ['entry', 'compute', 'data'] },R.p95(100), R.errors(), R.survivesAz(), R.availability(0.999), R.noFindings(), R.cost(1200)],
   hints: [
     tx('The data model is a single key → value lookup (short code → long URL). Which database is built for that?', 'Mô hình dữ liệu chỉ là tra cứu key → value (mã ngắn → URL dài). Database nào sinh ra cho việc đó?'),
     tx('Redirects are extremely read-heavy and repetitive: caching pays off.', 'Redirect cực kỳ thiên về đọc và lặp lại: cache rất đáng giá.'),
@@ -487,23 +468,11 @@ export const urlShortener: CanvasChallenge = {
       ['dns', 'route53', 1, 1],
       ['lb', 'alb', 2, 1],
       ['app', 'fargate', 3, 1, { taskSize: '0.5-1', count: 2, autoscaling: true, maxCount: 40, multiAz: true }],
+      ['vpce', 'vpce', 3, 2, { type: 'gateway' }, 'S3/DynamoDB endpoint'],
       ['cache', 'elasticache', 4, 0, { nodeType: 'cache.t3.medium', replicas: 1, hitRatio: 0.9 }],
       ['db', 'dynamodb', 4, 2, { storageGB: 20 }],
     ],
     ['users>dns', 'dns>lb', 'lb>app', 'app>cache', 'app>db'],
     shortenerScenario,
   ),
-};
-
-export const ALL_CHALLENGES: CanvasChallenge[] = [
-  staticSite,
-  sideProject,
-  singleServer,
-  readHeavy,
-  natTrap,
-  cdnOffload,
-  flashSale,
-  fourNines,
-  cutTheBill,
-  urlShortener,
-];
+});

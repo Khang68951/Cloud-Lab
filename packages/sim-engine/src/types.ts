@@ -1,4 +1,4 @@
-import type { CostKind, CostLine, Flow, NodeModel } from '@cloudlab/catalog';
+import type { CostKind, CostLine, Flow, NodeModel, Placement, SgRule } from '@cloudlab/catalog';
 import type { LocalizedText } from '@cloudlab/shared';
 
 export const ENGINE_VERSION = 1;
@@ -29,6 +29,29 @@ export interface NodeResult {
   latencyMs: number;
   /** Share of requests this node rejects because it is overloaded. */
   errorRate: number;
+  /** Queues only, when consumers cannot keep up: messages are piling up. */
+  queue?: QueueState;
+  /** Network view of the node: subnet, private IP, listening port and security group. */
+  net: NodeNet;
+}
+
+export interface NodeNet {
+  placement: Placement;
+  /** Private IP ("10.0.2.4") inside the VPC; null outside it or when the subnet is full. */
+  ip: string | null;
+  /** TCP port it accepts connections on (null = no security group). */
+  port: number | null;
+  /** Inbound rules in effect (the defaults when the learner has not edited them). */
+  sg: SgRule[];
+}
+
+export interface QueueState {
+  /** Messages/s the consumers actually pull. */
+  drainRps: number;
+  /** Messages/s added to the backlog (inflow − drain). */
+  backlogRps: number;
+  /** Inflow without the chaos traffic multiplier. */
+  normalInRps: number;
 }
 
 export interface EdgeResult {
@@ -36,6 +59,10 @@ export interface EdgeResult {
   avg: Flow;
   async: boolean;
   valid: boolean;
+  /** The network stops this connection: no route, or the target's security group drops it. */
+  blocked?: { kind: 'route' | 'sg'; reason: LocalizedText };
+  /** Leaves the VPC through this NAT Gateway / VPC endpoint (from the private route table). */
+  via?: { id: string; kind: 'nat' | 'endpoint' };
 }
 
 export type Severity = 'error' | 'warning' | 'info';

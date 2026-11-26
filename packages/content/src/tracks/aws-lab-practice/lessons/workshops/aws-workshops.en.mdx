@@ -1,0 +1,26 @@
+AWS publishes hundreds of **free** hands-on workshops at [workshops.aws](https://workshops.aws) and open-source samples at [github.com/aws-samples](https://github.com/aws-samples). These three challenges rebuild the best-known ones on the canvas, so you understand the architecture **before** (if you want) building the real thing in an AWS account.
+
+| Challenge | Source | Key idea |
+|---|---|---|
+| **Wild Rydes** | Workshop "Build a Serverless Web Application" | The four blocks of every serverless web app: hosting, identity, API, data |
+| **WebSocket chat room** | AWS sample `simple-websockets-chat-app` | A managed API holds the connections; your code runs per message |
+| **Order saga** | Saga pattern on [Serverless Land](https://serverlessland.com) and the Step Functions workshop | An orchestrator keeps state and runs compensations on failure |
+
+## The blocks of a serverless app
+
+```
+Users ─► Amplify / CloudFront+S3      (load the static site)
+Users ─► Cognito                      (sign in, get a JWT)
+Users ─► API Gateway ─► Lambda ─► DynamoDB   (call the API with the JWT)
+```
+
+The three paths are **independent**: loading the page never touches Lambda, signing in never touches the database. That is why a serverless app costs almost nothing when nobody uses it.
+
+## Orchestration vs choreography
+
+- **Choreography** (SNS/EventBridge): each service reacts to events on its own. Flexible, but hard to answer "which step is order #123 at?".
+- **Orchestration** (Step Functions): one workflow calls each step, retries, and undoes work on failure. Easy to follow; the right fit when steps must happen in order.
+
+<Callout type="tip">
+If you want to build the real thing, most of these workshops fit in the **Free Tier**. Delete the stack when you are done — CloudLab cannot replace that clean-up habit.
+</Callout>

@@ -13,12 +13,14 @@ import * as serverless from './tracks/aws-serverless/index.ts';
 import * as systemDesign from './tracks/aws-system-design/index.ts';
 import * as core from './tracks/aws/index.ts';
 
-export { defineTrack } from './define.ts';
+import { buildCourse, type CourseExercises, type CourseInput } from './define.ts';
+
+export { defineTrack, MIN_EXERCISES } from './define.ts';
 export { GLOSSARY, type GlossaryTerm } from './glossary.ts';
 
 interface CourseModule {
-  track: TrackMeta;
-  exercises: Record<string, Record<string, Exercise[]>>;
+  track: CourseInput;
+  exercises: CourseExercises;
 }
 
 /**
@@ -27,11 +29,41 @@ interface CourseModule {
  */
 const COURSES: CourseModule[] = [core, security, networking, compute, data, labPractice, serverless, reliability, cost, devops, analytics, systemDesign];
 
-export const tracks: readonly TrackMeta[] = COURSES.map((c) => c.track);
+export const tracks: readonly TrackMeta[] = COURSES.map((c) => buildCourse(c.track, c.exercises));
 
-const EXERCISES: Record<string, Record<string, Record<string, Exercise[]>>> = Object.fromEntries(
-  COURSES.map((c) => [c.track.slug, c.exercises]),
-);
+/**
+ * Security groups in Lab challenges start empty (the learner writes every
+ * rule) once security groups have been studied: from this lesson on in its
+ * course, and in every course that builds on that course. Earlier challenges
+ * keep each port pre-opened so beginners can focus on the design.
+ */
+const SG_LESSON = { track: 'aws-networking', module: 'vpc-design', lesson: 'security-groups' };
+
+const requires = (slug: string, target: string): boolean => {
+  const t = tracks.find((x) => x.slug === slug);
+  return !!t && t.prerequisites.some((p) => p === target || requires(p, target));
+};
+
+function withSgMode(track: TrackMeta, exercises: CourseExercises): CourseExercises {
+  const lessons = track.modules.flatMap((m) => m.lessons.map((l) => [m.slug, l.slug] as const));
+  const from = track.slug === SG_LESSON.track ? lessons.findIndex(([m, l]) => m === SG_LESSON.module && l === SG_LESSON.lesson) : -1;
+  const whole = requires(track.slug, SG_LESSON.track);
+  if (!whole && from < 0) return exercises;
+  return Object.fromEntries(
+    track.modules.map((m) => [
+      m.slug,
+      Object.fromEntries(
+        m.lessons.map((l) => {
+          const manual = whole || lessons.findIndex(([mm, ll]) => mm === m.slug && ll === l.slug) >= from;
+          const list = exercises[m.slug]?.[l.slug] ?? [];
+          return [l.slug, manual ? list.map((e) => (e.kind === 'canvas-design' || e.kind === 'canvas-fix' ? { ...e, manualSg: true } : e)) : list];
+        }),
+      ),
+    ]),
+  );
+}
+
+const EXERCISES: Record<string, CourseExercises> = Object.fromEntries(COURSES.map((c, i) => [c.track.slug, withSgMode(tracks[i]!, c.exercises)]));
 
 export function getTrack(slug: string): TrackMeta | undefined {
   return tracks.find((t) => t.slug === slug);

@@ -1,9 +1,11 @@
-import { getService } from '@cloudlab/catalog';
+import { getService, placementOf } from '@cloudlab/catalog';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Inbox } from 'lucide-react';
+import { ZoneChip } from './ZoneChip';
 import { memo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { currentLocale } from '@/i18n';
-import { formatUsd } from '@/lib/format';
+import { formatNumber, formatUsd } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useLab } from './context';
 import type { LabNode } from './model';
@@ -30,6 +32,10 @@ function ServiceNodeImpl({ id, data, selected }: NodeProps<LabNode>) {
   const util = r?.utilization ?? 0;
   const finite = r ? Number.isFinite(r.model.capacityRps) : false;
   const totalRps = r ? r.avg.r + r.avg.w : 0;
+  const queue = r?.queue;
+  const zone = placementOf(def, data.config);
+  const compact = (x: number) =>
+    x >= 1000 ? `${formatNumber(x / 1000, locale, { maximumFractionDigits: 1 })}k` : formatNumber(x, locale, { maximumFractionDigits: 0 });
 
   return (
     <div
@@ -39,10 +45,12 @@ function ServiceNodeImpl({ id, data, selected }: NodeProps<LabNode>) {
         status === 'saturated' && !selected && 'border-danger',
         status === 'busy' && !selected && 'border-warning',
         status === 'down' && 'opacity-60 grayscale',
+        zone === 'managed' && !selected && status === 'ok' && 'border-dashed',
         highlighted.has(id) && 'ring-4 ring-warning/60',
       )}
       style={{ '--hue': CATEGORY_HUE[def.category] } as CSSProperties}
       data-status={status}
+      data-zone={zone}
     >
       {HANDLES.map((h) => (
         <Handle
@@ -53,6 +61,8 @@ function ServiceNodeImpl({ id, data, selected }: NodeProps<LabNode>) {
           className="size-3! border-2! border-card! bg-primary! opacity-0 transition-opacity group-hover:opacity-100 [.connecting_&]:opacity-100"
         />
       ))}
+
+      {!isUsers && <ZoneChip zone={zone} az={r?.model.azLayout} ip={r?.net.ip} />}
 
       <div className="flex items-center gap-2.5 p-2.5">
         <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-(--tc-soft) text-(--tc)">
@@ -65,6 +75,20 @@ function ServiceNodeImpl({ id, data, selected }: NodeProps<LabNode>) {
           </div>
         </div>
       </div>
+
+      {queue && queue.backlogRps > 0 && (
+        <div
+          className="relative overflow-hidden border-t bg-warning-soft px-2.5 py-1 text-[11px] font-semibold text-warning"
+          title={t('queuePilingHelp', { drain: formatNumber(queue.drainRps, locale, { maximumFractionDigits: 0 }) })}
+          data-testid="queue-backlog"
+        >
+          <span className="queue-fill absolute inset-y-0 left-0 bg-warning/20" aria-hidden />
+          <span className="relative flex items-center gap-1 tabular-nums">
+            <Inbox className="size-3" aria-hidden />
+            {t('queuePiling', { rps: compact(queue.backlogRps) })}
+          </span>
+        </div>
+      )}
 
       {(!isUsers || (r?.monthlyUsd ?? 0) > 0) && (
         <div className="flex items-center justify-between gap-2 border-t px-2.5 py-1.5 text-[11px]">

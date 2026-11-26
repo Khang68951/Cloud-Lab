@@ -26,6 +26,8 @@
   },
   "challenge": {
     "requirements": "Yêu cầu",
+    "hiddenOptimizations_one": "+ {{count}} yêu cầu tối ưu sẽ hiện qua gợi ý trong Lab.",
+    "hiddenOptimizations_other": "+ {{count}} yêu cầu tối ưu sẽ hiện qua gợi ý trong Lab.",
     "open": "Mở trong Lab"
   },
   "filters": {

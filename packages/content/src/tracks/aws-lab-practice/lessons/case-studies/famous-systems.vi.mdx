@@ -1,0 +1,17 @@
+Ba bài này là những bài toán **có thật** mà các sản phẩm lớn đã phải giải, được mô tả công khai trong [System Design Primer](https://github.com/donnemartin/system-design-primer) và AWS Solutions Library.
+
+| Thử thách | Nguồn gốc | Bài toán khó nhất |
+|---|---|---|
+| **Home timeline Twitter** | System Design Primer | Đọc nhiều gấp 20 lần ghi → tính sẵn timeline (fan-out on write) |
+| **Video theo yêu cầu** | AWS Solution "Video on Demand on AWS" | Chuyển mã một lần, phân phối hàng triệu lần → CDN quyết định hoá đơn |
+| **Phòng chờ ảo** | AWS Solution "Virtual Waiting Room on AWS" | Traffic tăng 30 lần trong vài giây → cho vào theo nhịp qua queue |
+
+## Câu hỏi đầu tiên luôn là: tỉ lệ đọc/ghi và hình dạng traffic
+
+- **Đọc ≫ ghi** (timeline, video): làm việc nặng **lúc ghi** để lúc đọc thật rẻ — cache, CDN, dữ liệu tính sẵn.
+- **Đỉnh nhọn, ngắn** (mở bán vé): đừng scale backend theo đỉnh — **làm phẳng** đỉnh bằng queue.
+- **Việc chậm** (chuyển mã video): đưa ra khỏi đường request bằng sự kiện (cạnh nét đứt).
+
+<Callout type="tip">
+Sau khi qua mỗi bài, hãy đọc bản gốc (primer hoặc trang AWS Solution): bạn sẽ thấy các phần CloudLab đã lược bớt — đó chính là bước tiếp theo để học.
+</Callout>

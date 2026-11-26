@@ -1,4 +1,4 @@
-import { tx } from '@cloudlab/catalog';
+import { DEFAULT_NETWORK, tx, type Design } from '@cloudlab/catalog';
 import type { LocalizedText } from '@cloudlab/shared';
 import { simulate, type SimResult } from '@cloudlab/sim-engine';
 import { flowLabel, hasFlow } from './flow.ts';
@@ -80,9 +80,17 @@ export function checkRequirement(r: Requirement, design: CanvasChallenge['starte
   }
 }
 
-/** Grade a canvas design; the challenge's scenario always wins over the design's. */
-export function gradeCanvas(ex: CanvasChallenge, design: CanvasChallenge['starter']): GradeResult & { sim: SimResult } {
-  const d = { ...design, scenario: ex.scenario };
+/**
+ * The design as the challenge sees it: its scenario and its security group
+ * mode always win over whatever the learner's design carries.
+ */
+export function challengeDesign(ex: CanvasChallenge, design: Design): Design {
+  return { ...design, scenario: ex.scenario, network: { ...(design.network ?? DEFAULT_NETWORK), manualSg: ex.manualSg === true } };
+}
+
+/** Grade a canvas design against a challenge. */
+export function gradeCanvas(ex: CanvasChallenge, design: Design): GradeResult & { sim: SimResult } {
+  const d = challengeDesign(ex, design);
   const sim = simulate(d);
   const checks = ex.requirements.map((r) => checkRequirement(r, d, sim));
   const passedCount = checks.filter((c) => c.passed).length;

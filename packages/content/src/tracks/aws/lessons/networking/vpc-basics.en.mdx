@@ -31,4 +31,4 @@ VPC 10.0.0.0/16
 Security Groups can reference **other Security Groups** as a source. "DB accepts only from app-sg" is far safer and easier to maintain than lists of IP addresses.
 </Callout>
 
-In the Lab, "databases belong in private subnets" is enforced by the **"exposed to the internet tier"** finding — connect Users/ALB straight into a database and the Review tab reports a security error.
+The Lab simulates this for real. Every node inside the VPC sits in the public or private subnet (shown on the node and as frames on the canvas), gets a private IP, and has a security group. Connect Users straight to something in the private subnet and the edge turns red with **"No route"**: those requests fail. A security group without a matching rule shows **"SG blocks"**. Click a node and open its **Network** section to change its subnet and rules. The networking course goes deeper in *Security groups, ports and protocols*.

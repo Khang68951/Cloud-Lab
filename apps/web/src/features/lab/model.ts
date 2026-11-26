@@ -1,4 +1,4 @@
-import type { Design, Scenario, ServiceConfig } from '@cloudlab/catalog';
+import type { Design, NetworkConfig, Scenario, ServiceConfig } from '@cloudlab/catalog';
 import type { Edge, Node } from '@xyflow/react';
 
 export interface ServiceNodeData extends Record<string, unknown> {
@@ -29,7 +29,7 @@ export function toFlow(design: Design): { nodes: LabNode[]; edges: LabEdge[] } {
   };
 }
 
-export function toDesign(nodes: LabNode[], edges: LabEdge[], scenario: Scenario): Design {
+export function toDesign(nodes: LabNode[], edges: LabEdge[], scenario: Scenario, network?: NetworkConfig): Design {
   return {
     nodes: nodes.map((n) => ({
       id: n.id,
@@ -47,6 +47,7 @@ export function toDesign(nodes: LabNode[], edges: LabEdge[], scenario: Scenario)
       targetHandle: e.targetHandle ?? null,
     })),
     scenario,
+    ...(network ? { network } : {}),
   };
 }
 
@@ -56,6 +57,7 @@ export function structuralKey(d: Design): string {
     d.nodes.map((n) => [n.id, n.service, n.config]),
     d.edges.map((e) => [e.id, e.source, e.target]),
     d.scenario,
+    d.network ?? null,
   ]);
 }
 
